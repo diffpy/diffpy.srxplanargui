@@ -32,8 +32,8 @@ dist = setup(
         dependency_links = [],
         entry_points = {
             # define console_scripts here, see setuptools docs for details.
-            'console_scripts' : ['srxgui = dpx.srxplanargui.srxplanargui:main'
-                                 'srxplanargui = dpx.srxplanargui.srxplanargui:main'
+            'console_scripts' : ['srxgui = dpx.srxplanargui.srxgui:main',
+                                 'srxplanargui = dpx.srxplanargui.srxgui:main'
                                  ],
         },
 

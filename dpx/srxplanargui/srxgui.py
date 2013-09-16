@@ -48,7 +48,7 @@ class SrXgui(GetX):
     xbeamcenter = Float(1024.0)
     ybeamcenter = Float(1024.0)
     distance = Float(200.0)
-    rotationd = 
+    '''rotationd = 
     tiltd
     tthstepd
     qstep
@@ -65,7 +65,7 @@ class SrXgui(GetX):
     polcorrectionenable
     polcorrectf
     selfcorrenable
-    maskedges
+    maskedges'''
     
     
     
