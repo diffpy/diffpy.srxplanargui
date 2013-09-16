@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: dpx.srxplanargui
+Version: 0.1.dev-20130916
+Summary: GUI for SrXplanar, a program integrate 2D diffraction image.
+Home-page: UNKNOWN
+Author: Simon J.L. Billinge
+Author-email: sb2896@columbia.edu
+License: BSD
+Description: UNKNOWN
+Keywords: PDF x-ray Fourier transform
+Platform: UNKNOWN

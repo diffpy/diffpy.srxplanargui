@@ -1,0 +1,20 @@
+The main contributors to this package were:
+
+    Xiaohao Yang
+
+The DPX team is located in the Billinge-group at the Applied Physics
+and Applied Mathematics Department of the Columbia University in New York. 
+Currently the team consists of
+
+    Simon Billinge
+    Pavol Juhas
+    Emil Bozin
+    Xiaohao Yang
+
+
+For more information on the DPX project email sb2896@columbia.edu
+
+
+Acknowledgments:
+
+I am greateful to all members of the Billinge Group for their support, assistance, and answers to my inane questions. 
