@@ -29,13 +29,14 @@ from traitsui.api import \
     HGroup, VGroup, Tabbed, \
     RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor
-from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar
+from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
 from pyface.api import ImageResource
 
 from dpx.srxplanargui.selectfiles import AddFiles
+from diffpy.srxplanar.srxplanar import SrXplanar
+from diffpy.srxplanar.srxplanarconfig import SrXplanarConfig
 
-
-class SrXgui(GetX):
+class SrXgui(HasTraits):
     
     addfiles = Instance(AddFiles)
     
@@ -48,56 +49,170 @@ class SrXgui(GetX):
     xbeamcenter = Float(1024.0)
     ybeamcenter = Float(1024.0)
     distance = Float(200.0)
-    '''rotationd = 
-    tiltd
-    tthstepd
-    qstep
+    rotationd = Float(0.0) 
+    tiltd = Float(0.0)
+    tthstepd = Float(0.02)
+    qstep = Float(0.02)
     
-    fliphorizontal
-    flipvertical
-    xdimension
-    ydimension
-    xpixelsize
-    ypixelsize
+    fliphorizontal = Bool(False)
+    flipvertical = Bool(True)
+    xdimension = Int(2048)
+    ydimension = Int(2048)
+    xpixelsize = Float(0.2)
+    ypixelsize = Float(0.2)
     
-    uncertaintyenable
-    sacorrectionenable
-    polcorrectionenable
-    polcorrectf
-    selfcorrenable
-    maskedges'''
+    uncertaintyenable = Bool(True)
+    sacorrectionenable = Bool(True)
+    polcorrectionenable = Bool(True)
+    polcorrectf = Float(0.95)
+    selfcorrenable = Bool(True)
+    maskedges = Array()
     
     
+    def _maskedges_default(self):
+        return np.array([20,20,20,20,100])
+    
+    def applyConfig(self):
+        if os.path.exists(self.fit2dmask):
+            if not self.fit2dmask in self.addmask:
+                self.addmask.append(self.fit2dmask)
+        
+        conflist = ['savedirectory','addmask', 'integrationspace', 'wavelength', 'xbeamcenter',
+                    'ybeamcenter', 'distance', 'rotationd', 'tiltd', 'tthstepd', 'qstep',
+                    'fliphorizontal', 'flipvertical', 'xdimension', 'ydimension', 'xpixelsize',
+                    'ypixelsize', 'uncertaintyenable', 'sacorrectionenable', 'polcorrectionenable',
+                    'polcorrectf', 'selfcorrenable' ,'maskedges']
+        
+        for conf in conflist:
+            setattr(self.srxconfig, conf, getattr(self, conf))
+        self.srxconfig.updateConfig()
+        return
+    
+    ssfile = File
+    def processSelected(self, ss=False):
+        if self.addfiles.selected:
+            self.applyConfig()
+            self.srx.updateConfig()
+            filelist = [f.fullname for f in self.addfiles.selected]
+            if ss:
+                self.srx.integrateFilelist(filelist, summation=True)
+            else:
+                self.srx.integrateFilelist(filelist, summation=False)
+        return
+    
+    def _integratebb_fired(self):
+        self.processSelected(False)
+        return
+    
+    def _integratessbb_fired(self):
+        #self.edit_traits(view = 'ssfile_view')
+        self.processSelected(True)
+        return
     
     def __init__(self):
         '''
         init the object, createt the notifications
         '''
         super(SrXgui, self).__init__()
+        self.addfiles = AddFiles()
+        self.srxconfig = SrXplanarConfig()
+        self.srx = SrXplanar(self.srxconfig)
         return
+    
+    integratebb = Button('Integrate separately')
+    integratessbb = Button('Sum and Integrate')
+    
+    basic = \
+        Group(
+              Group(
+                    Item('savedirectory'),
+                    Item('addmask'),
+                    Item('fit2dmask'),
+                    Item('integrationspace'),
+                    
+                    show_border = True
+                    ),
+              Group(Item('wavelength', visible_when='integrationspace == "qspace"'),
+                    Item('xbeamcenter'),
+                    Item('ybeamcenter'),
+                    Item('distance'),
+                    Item('rotationd'), 
+                    Item('tiltd'),
+                    Item('tthstepd', visible_when='integrationspace == "twotheta"'),
+                    Item('qstep', visible_when='integrationspace == "qspace"'),
+                    
+                    show_border = True,
+                    ),
+              HGroup(spring,
+                     Item('integratebb'),
+                     Item('integratessbb'),
+                     spring,
+                     
+                     show_labels = False,
+                     ),
+              label = 'Basic'
+              )
+    
+    advanced = \
+        Group(
+              Group(Item('uncertaintyenable', label='uncertainty'),
+                    Item('sacorrectionenable', label='solid angle corr.'),
+                    Item('polcorrectionenable', label='polarization corr.'),
+                    Item('polcorrectf', label = 'polarization factor'),
+                    Item('selfcorrenable', label = 'self corr.'),
+                    
+                    show_border = True,
+                    ),
+              Group(Item('fliphorizontal'),
+                    Item('flipvertical'),
+                    Item('xdimension'),
+                    Item('ydimension'),
+                    Item('xpixelsize'),
+                    Item('ypixelsize'),
+                    Item('maskedges', editor = ArrayEditor(width = -50)),
+                    
+                    show_border = True,
+                    ),
+              HGroup(spring,
+                     Item('integratebb'),
+                     Item('integratessbb'),
+                     spring,
+                     
+                     show_labels = False,
+                     ),
+              label = 'Advanced'
+              )
+    
+    ssfile_view = \
+        View(Item('ssfile', label='file name'),
+             
+             title = 'save',
+             buttons = OKCancelButtons,
+             )
     
     traits_view = \
             View(
-                 HGroup(Item('selectfiles', editor = InstanceEditor(view = 'traits_view'),
-                             style = 'custom', width=220),
+                 HGroup(Item('addfiles', editor = InstanceEditor(view = 'traits_view'),
+                             style = 'custom'),
+                        Tabbed(basic,
+                               advanced
+                               ),
 
                        layout = 'split',
-                       springy = True,
+                       #springy = True,
                        dock = 'tab',
                        show_labels = False
                        ),
                  resizable=True, 
                  title='SrXplanar GUI',
-                 width=700, 
+                 width=800, 
                  height=600,
                  kind = 'live',
-                 toolbar = toolbar,
                  #menubar = menu1,
-                 handler = GetXguiHandler(ddmenu = dropdown_menu)
                  )
             
 def main():
-    gui = SrXgui(args=sys.argv[1:])
+    gui = SrXgui()
     gui.configure_traits(view = 'traits_view')
     return
 

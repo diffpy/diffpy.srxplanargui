@@ -79,7 +79,7 @@ class AddFiles(HasTraits):
     # Summary of current number of files:
     summary = Property # Str
     # some meta data
-    _filetypedict = {'tif': ['.tif', '.tiff'],
+    _filetypedict = {'tif': ['.tif', '.tiff', '.tif.bz2'],
                      'all': 'all',
                      }
 
@@ -186,12 +186,11 @@ class AddFiles(HasTraits):
                 ),
         ),
         title     = 'Add files',
-        width     = 500,
+        #width     = 500,
         height    = 600,
         resizable = True,
         handler = AddFilesHandler(),
         )
-
 
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
