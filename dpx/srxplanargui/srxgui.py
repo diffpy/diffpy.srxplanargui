@@ -68,6 +68,7 @@ class SrXgui(HasTraits):
     selfcorrenable = Bool(True)
     maskedges = Array()
     
+    configfile = File('srxplanar.cfg')
     
     def _maskedges_default(self):
         return np.array([20,20,20,20,100])
@@ -109,6 +110,22 @@ class SrXgui(HasTraits):
         self.processSelected(True)
         return
     
+    def _saveconfigbb_fired(self):
+        self.applyConfig()
+        self.srxconfig.writeConfig(self.configfile, mode='full')
+        return
+    
+    def _loadconfigbb_fired(self):
+        self.srxconfig.updateConfig(filename=self.configfile)
+        conflist = ['addmask', 'integrationspace', 'wavelength', 'xbeamcenter',
+                    'ybeamcenter', 'distance', 'rotationd', 'tiltd', 'tthstepd', 'qstep',
+                    'fliphorizontal', 'flipvertical', 'xdimension', 'ydimension', 'xpixelsize',
+                    'ypixelsize', 'uncertaintyenable', 'sacorrectionenable', 'polcorrectionenable',
+                    'polcorrectf', 'selfcorrenable' ,'maskedges']
+        for conf in conflist:
+            setattr(self, conf, getattr(self.srxconfig, conf))
+        return
+    
     def __init__(self):
         '''
         init the object, createt the notifications
@@ -121,6 +138,8 @@ class SrXgui(HasTraits):
     
     integratebb = Button('Integrate separately')
     integratessbb = Button('Sum and Integrate')
+    saveconfigbb = Button('Save integration config')
+    loadconfigbb = Button('Load integration config')
     
     basic = \
         Group(
@@ -146,6 +165,14 @@ class SrXgui(HasTraits):
               HGroup(spring,
                      Item('integratebb'),
                      Item('integratessbb'),
+                     spring,
+                     
+                     show_labels = False,
+                     ),
+              Item('configfile'),
+              HGroup(spring,
+                     Item('saveconfigbb'),
+                     Item('loadconfigbb'),
                      spring,
                      
                      show_labels = False,
@@ -176,6 +203,14 @@ class SrXgui(HasTraits):
               HGroup(spring,
                      Item('integratebb'),
                      Item('integratessbb'),
+                     spring,
+                     
+                     show_labels = False,
+                     ),
+              Item('configfile'),
+              HGroup(spring,
+                     Item('saveconfigbb'),
+                     Item('loadconfigbb'),
                      spring,
                      
                      show_labels = False,
