@@ -143,6 +143,16 @@ class SrXgui(HasTraits):
     
     basic = \
         Group(
+              Group(Item('configfile'),
+                    HGroup(spring,
+                           Item('saveconfigbb'),
+                           Item('loadconfigbb'),
+                           spring,
+                           
+                           show_labels = False,
+                           ),
+                    show_border = True,
+                    ),
               Group(
                     Item('savedirectory'),
                     Item('addmask'),
@@ -169,14 +179,8 @@ class SrXgui(HasTraits):
                      
                      show_labels = False,
                      ),
-              Item('configfile'),
-              HGroup(spring,
-                     Item('saveconfigbb'),
-                     Item('loadconfigbb'),
-                     spring,
-                     
-                     show_labels = False,
-                     ),
+              
+              
               label = 'Basic'
               )
     
@@ -207,14 +211,7 @@ class SrXgui(HasTraits):
                      
                      show_labels = False,
                      ),
-              Item('configfile'),
-              HGroup(spring,
-                     Item('saveconfigbb'),
-                     Item('loadconfigbb'),
-                     spring,
-                     
-                     show_labels = False,
-                     ),
+
               label = 'Advanced'
               )
     
