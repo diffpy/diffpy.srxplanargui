@@ -115,22 +115,22 @@ class SrXConfig(ConfigBaseTraits):
                     label = 'Configuration'
                     ),
               Group(
-                    Item('savedirectory'),
-                    Item('addmask'),
-                    Item('fit2dmask'),
+                    Item('savedirectory', label = 'Output dir.'),
+                    Item('addmask', label = 'Masks'),
+                    Item('fit2dmask', label = 'Fit2D mask'),
                     
                     show_border = True,
                     label = 'Files and masks',
                     ),
-              Group(Item('integrationspace'),
-                    Item('wavelength', visible_when='integrationspace == "qspace"'),
-                    Item('xbeamcenter'),
-                    Item('ybeamcenter'),
-                    Item('distance'),
-                    Item('rotationd'), 
-                    Item('tiltd'),
-                    Item('tthstepd', visible_when='integrationspace == "twotheta"'),
-                    Item('qstep', visible_when='integrationspace == "qspace"'),
+              Group(Item('integrationspace', label = 'Integration space'),
+                    Item('wavelength', visible_when = 'integrationspace == "qspace"', label = 'Wavelength'),
+                    Item('xbeamcenter', label = 'x beamcenter'),
+                    Item('ybeamcenter', label = 'y beamcenter'),
+                    Item('distance', label = 'Distance'),
+                    Item('rotationd', label = 'Rotation'), 
+                    Item('tiltd', label = 'Tilt rotation'),
+                    Item('tthstepd', label = 'Integration step', visible_when='integrationspace == "twotheta"'),
+                    Item('qstep', label = 'Integration step', visible_when='integrationspace == "qspace"'),
                     
                     show_border = True,
                     label = 'Geometry parameters'
@@ -141,20 +141,20 @@ class SrXConfig(ConfigBaseTraits):
     
     advanced_group = \
         Group(
-              Group(Item('uncertaintyenable', label='uncertainty'),
-                    Item('sacorrectionenable', label='solid angle corr.'),
-                    Item('polcorrectionenable', label='polarization corr.'),
+              Group(Item('uncertaintyenable', label='Uncertainty', editor = BooleanEditor()),
+                    Item('sacorrectionenable', label='solid angle corr.', editor = BooleanEditor()),
+                    Item('polcorrectionenable', label='polarization corr.', editor = BooleanEditor()),
                     Item('polcorrectf', label = 'polarization factor'),
                     
                     show_border = True,
                     label = 'Corrections'
                     ),
-              Group(Item('fliphorizontal'),
-                    Item('flipvertical'),
-                    Item('xdimension'),
-                    Item('ydimension'),
-                    Item('xpixelsize'),
-                    Item('ypixelsize'),
+              Group(Item('fliphorizontal', label = 'Flip horizontally', editor = BooleanEditor()),
+                    Item('flipvertical', label = 'Flip vertically', editor = BooleanEditor()),
+                    Item('xdimension', label = 'x dimension'),
+                    Item('ydimension', label = 'y dimension'),
+                    Item('xpixelsize', label = 'x pixel size'),
+                    Item('ypixelsize', label = 'x pixel size'),
                     Item('maskedges', editor = ArrayEditor(width = -50)),
                     
                     show_border = True,
