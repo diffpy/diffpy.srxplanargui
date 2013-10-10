@@ -33,13 +33,12 @@ from traitsui.api import \
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
 from pyface.api import ImageResource
 
-
 from dpx.confutils.configtraits import ConfigBaseTraits
 from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPropertyRW
 from dpx.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist,\
         _defaultdata, checkMax, parseFit2D
 
-class SrXConfig(ConfigBaseTraits):
+class SrXconfig(ConfigBaseTraits):
     '''
     config class, based on ConfigBase class in diffpy.confutils
     '''
@@ -63,7 +62,7 @@ class SrXConfig(ConfigBaseTraits):
         fget = lambda self: self.tthmax if self.integrationspace == 'twotheta' else self.qmax)
     tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax', 
         fget = lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
-    
+        
     fit2dmask = File('')
     
     def _preUpdateSelf(self, **kwargs):
@@ -98,8 +97,23 @@ class SrXConfig(ConfigBaseTraits):
                 self.addmask.append(self.fit2dmask)
         return
     
+    def _opendirectory_changed(self):
+        newdir = os.path.join(self.opendirectory, 'chi')
+        if not os.path.exists(newdir):
+            os.mkdir(newdir)
+        self.savedirectory = newdir
+        return
+    
     saveconfigbb = Button('Save integration config')
     loadconfigbb = Button('Load integration config')
+    
+    def _saveconfigbb_fired(self):
+        self.writeConfig(self.configfile, mode='full')
+        return
+    
+    def _loadconfigbb_fired(self):
+        self.updateConfig(filename=self.configfile)
+        return
     
     basic_group = \
         Group(
@@ -114,7 +128,7 @@ class SrXConfig(ConfigBaseTraits):
                     show_border = True,
                     label = 'Configuration'
                     ),
-              Group(
+              Group(Item('opendirectory', label = 'Input dir.'),
                     Item('savedirectory', label = 'Output dir.'),
                     Item('addmask', label = 'Masks'),
                     Item('fit2dmask', label = 'Fit2D mask'),
@@ -136,21 +150,21 @@ class SrXConfig(ConfigBaseTraits):
                     label = 'Geometry parameters'
                     ),
               
-              label = 'Basic'
+              #label = 'Basic'
               )
     
     advanced_group = \
         Group(
-              Group(Item('uncertaintyenable', label='Uncertainty', editor = BooleanEditor()),
-                    Item('sacorrectionenable', label='solid angle corr.', editor = BooleanEditor()),
-                    Item('polcorrectionenable', label='polarization corr.', editor = BooleanEditor()),
+              Group(Item('uncertaintyenable', label='Uncertainty'),
+                    Item('sacorrectionenable', label='solid angle corr.'),
+                    Item('polcorrectionenable', label='polarization corr.'),
                     Item('polcorrectf', label = 'polarization factor'),
                     
                     show_border = True,
                     label = 'Corrections'
                     ),
-              Group(Item('fliphorizontal', label = 'Flip horizontally', editor = BooleanEditor()),
-                    Item('flipvertical', label = 'Flip vertically', editor = BooleanEditor()),
+              Group(Item('fliphorizontal', label = 'Flip horizontally'),
+                    Item('flipvertical', label = 'Flip vertically'),
                     Item('xdimension', label = 'x dimension'),
                     Item('ydimension', label = 'y dimension'),
                     Item('xpixelsize', label = 'x pixel size'),
@@ -161,7 +175,7 @@ class SrXConfig(ConfigBaseTraits):
                     label = 'Detector parameters'
                     ),
 
-              label = 'Advanced'
+              #label = 'Advanced'
               )
         
     basic_view = \
@@ -170,7 +184,7 @@ class SrXConfig(ConfigBaseTraits):
              resizable = True,
              scrollable = True,
              #handler = handler,
-             #icon = ImageResource('icon.ico'),
+             icon = ImageResource('icon.ico'),
              )
     advanced_view = \
         View(advanced_group,
@@ -178,7 +192,7 @@ class SrXConfig(ConfigBaseTraits):
              resizable = True,
              scrollable = True,
              #handler = handler,
-             #icon = ImageResource('icon.ico'),
+             icon = ImageResource('icon.ico'),
              )
         
     srx_view = \
@@ -198,10 +212,10 @@ class SrXConfig(ConfigBaseTraits):
              height    = 800,
              resizable = True,
              #handler = handler,
-             #icon = ImageResource('icon.ico'),
+             icon = ImageResource('icon.ico'),
              )
     
-SrXConfig.initConfigClass()
+SrXconfig.initConfigClass()
 
 if __name__=='__main__':
     a = SrXConfig()

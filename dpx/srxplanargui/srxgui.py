@@ -31,70 +31,23 @@ from traitsui.api import \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
 from pyface.api import ImageResource
+from enthought.pyface.api import SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
-from diffpy.srxplanar.srxplanar import SrXplanar
-from diffpy.srxplanar.srxplanarconfig import SrXplanarConfig
+from dpx.srxplanargui.srxconfig import SrXconfig
+from dpx.srxplanar.srxplanar import SrXplanar
 
 class SrXgui(HasTraits):
     
     addfiles = Instance(AddFiles)
+    srxconfig = Instance(SrXconfig)
+    splash = Any
     
-    savedirectory = Directory(os.getcwd())
-    addmask = List(['edgemask'])
-    fit2dmask = File()
-    
-    integrationspace = Enum(['qspace', 'twotheta'])
-    wavelength = Float(0.1)
-    xbeamcenter = Float(1024.0)
-    ybeamcenter = Float(1024.0)
-    distance = Float(200.0)
-    rotationd = Float(0.0) 
-    tiltd = Float(0.0)
-    tthstepd = Float(0.02)
-    qstep = Float(0.02)
-    
-    fliphorizontal = Bool(False)
-    flipvertical = Bool(True)
-    xdimension = Int(2048)
-    ydimension = Int(2048)
-    xpixelsize = Float(0.2)
-    ypixelsize = Float(0.2)
-    
-    uncertaintyenable = Bool(True)
-    sacorrectionenable = Bool(True)
-    polcorrectionenable = Bool(True)
-    polcorrectf = Float(0.95)
-    selfcorrenable = Bool(True)
-    maskedges = Array()
-    
-    configfile = File('srxplanar.cfg')
-    
-    def _maskedges_default(self):
-        return np.array([20,20,20,20,100])
-    
-    def applyConfig(self):
-        if os.path.exists(self.fit2dmask):
-            if not self.fit2dmask in self.addmask:
-                self.addmask.append(self.fit2dmask)
-        
-        conflist = ['savedirectory','addmask', 'integrationspace', 'wavelength', 'xbeamcenter',
-                    'ybeamcenter', 'distance', 'rotationd', 'tiltd', 'tthstepd', 'qstep',
-                    'fliphorizontal', 'flipvertical', 'xdimension', 'ydimension', 'xpixelsize',
-                    'ypixelsize', 'uncertaintyenable', 'sacorrectionenable', 'polcorrectionenable',
-                    'polcorrectf', 'selfcorrenable' ,'maskedges']
-        
-        for conf in conflist:
-            setattr(self.srxconfig, conf, getattr(self, conf))
-        self.srxconfig.updateConfig()
-        return
-    
-    ssfile = File
     def processSelected(self, ss=False):
         if self.addfiles.selected:
-            self.applyConfig()
             self.srx.updateConfig()
             filelist = [f.fullname for f in self.addfiles.selected]
+            self.srx.prepareCalculation(filelist)
             if ss:
                 self.srx.integrateFilelist(filelist, summation=True)
             else:
@@ -110,30 +63,18 @@ class SrXgui(HasTraits):
         self.processSelected(True)
         return
     
-    def _saveconfigbb_fired(self):
-        self.applyConfig()
-        self.srxconfig.writeConfig(self.configfile, mode='full')
-        return
-    
-    def _loadconfigbb_fired(self):
-        self.srxconfig.updateConfig(filename=self.configfile)
-        conflist = ['addmask', 'integrationspace', 'wavelength', 'xbeamcenter',
-                    'ybeamcenter', 'distance', 'rotationd', 'tiltd', 'tthstepd', 'qstep',
-                    'fliphorizontal', 'flipvertical', 'xdimension', 'ydimension', 'xpixelsize',
-                    'ypixelsize', 'uncertaintyenable', 'sacorrectionenable', 'polcorrectionenable',
-                    'polcorrectf', 'selfcorrenable' ,'maskedges']
-        for conf in conflist:
-            setattr(self, conf, getattr(self.srxconfig, conf))
-        return
-    
-    def __init__(self):
+    def __init__(self, configfile=None, args=None, **kwargs):
         '''
         init the object, createt the notifications
         '''
-        super(SrXgui, self).__init__()
-        self.addfiles = AddFiles()
-        self.srxconfig = SrXplanarConfig()
+        super(SrXgui, self).__init__(configfile=None, args=None, **kwargs)
+        if not kwargs.has_key('srxconfig'):
+            self.srxconfig = SrXconfig(filename = configfile, args=args, **kwargs)
+
+        self.addfiles = AddFiles(srxconfig = self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
+        
+        self.splash.close()
         return
     
     integratebb = Button('Integrate separately')
@@ -141,79 +82,6 @@ class SrXgui(HasTraits):
     saveconfigbb = Button('Save integration config')
     loadconfigbb = Button('Load integration config')
     
-    basic = \
-        Group(
-              Group(Item('configfile'),
-                    HGroup(spring,
-                           Item('saveconfigbb'),
-                           Item('loadconfigbb'),
-                           spring,
-                           
-                           show_labels = False,
-                           ),
-                    show_border = True,
-                    ),
-              Group(
-                    Item('savedirectory'),
-                    Item('addmask'),
-                    Item('fit2dmask'),
-                    Item('integrationspace'),
-                    
-                    show_border = True
-                    ),
-              Group(Item('wavelength', visible_when='integrationspace == "qspace"'),
-                    Item('xbeamcenter'),
-                    Item('ybeamcenter'),
-                    Item('distance'),
-                    Item('rotationd'), 
-                    Item('tiltd'),
-                    Item('tthstepd', visible_when='integrationspace == "twotheta"'),
-                    Item('qstep', visible_when='integrationspace == "qspace"'),
-                    
-                    show_border = True,
-                    ),
-              HGroup(spring,
-                     Item('integratebb'),
-                     Item('integratessbb'),
-                     spring,
-                     
-                     show_labels = False,
-                     ),
-              
-              
-              label = 'Basic'
-              )
-    
-    advanced = \
-        Group(
-              Group(Item('uncertaintyenable', label='uncertainty'),
-                    Item('sacorrectionenable', label='solid angle corr.'),
-                    Item('polcorrectionenable', label='polarization corr.'),
-                    Item('polcorrectf', label = 'polarization factor'),
-                    Item('selfcorrenable', label = 'self corr.'),
-                    
-                    show_border = True,
-                    ),
-              Group(Item('fliphorizontal'),
-                    Item('flipvertical'),
-                    Item('xdimension'),
-                    Item('ydimension'),
-                    Item('xpixelsize'),
-                    Item('ypixelsize'),
-                    Item('maskedges', editor = ArrayEditor(width = -50)),
-                    
-                    show_border = True,
-                    ),
-              HGroup(spring,
-                     Item('integratebb'),
-                     Item('integratessbb'),
-                     spring,
-                     
-                     show_labels = False,
-                     ),
-
-              label = 'Advanced'
-              )
     
     ssfile_view = \
         View(Item('ssfile', label='file name'),
@@ -221,30 +89,40 @@ class SrXgui(HasTraits):
              title = 'save',
              buttons = OKCancelButtons,
              )
-    
+            
     traits_view = \
             View(
                  HGroup(Item('addfiles', editor = InstanceEditor(view = 'traits_view'),
-                             style = 'custom'),
-                        Tabbed(basic,
-                               advanced
-                               ),
-
+                             style = 'custom', label = 'Files'),
+                        Group(Item('srxconfig', editor = InstanceEditor(view = 'basic_view'), 
+                                   style = 'custom', label='Basic', show_label = False),
+                              Item('srxconfig', editor = InstanceEditor(view = 'advanced_view'), 
+                                   style = 'custom', label='Advanced', show_label = False),
+                              layout = 'tabbed',
+                              springy = True,
+                              ),
                        layout = 'split',
-                       #springy = True,
+                       springy = True,
                        dock = 'tab',
                        show_labels = False
                        ),
+                 Item('integratebb'),
+                 Item('integratessbb'),
+                 
                  resizable=True, 
-                 title='SrXplanar GUI',
+                 title='SrXgui',
                  width=800, 
-                 height=600,
+                 height=700,
                  kind = 'live',
-                 #menubar = menu1,
+                 icon = ImageResource('icon.ico'),
+                 #handler = GetXguiHandler(ddmenu = dropdown_menu),
                  )
             
 def main():
-    gui = SrXgui()
+    splash = SplashScreen(image=ImageResource('splash.png'))
+    splash.open()
+    
+    gui = SrXgui(splash=splash)
     gui.configure_traits(view = 'traits_view')
     return
 

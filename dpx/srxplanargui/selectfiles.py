@@ -37,6 +37,7 @@ from collections import OrderedDict
 
 from diffpy.pdfgetx.functs import sortKeyNumericString
 from dpx.srxplanargui.datacontainer import DataContainer
+from dpx.srxplanargui.srxconfig import SrXconfig
 
 #-- The Live Search table editor definition ------------------------------------
 
@@ -58,9 +59,13 @@ class AddFilesHandler(Handler):
     
 class AddFiles(HasTraits):
     
+    srxconfig = Instance(SrXconfig)
+    
     # The currenty inputdir directory being searched:
-    #inputdir = DelegatesTo('getxconfig')
-    inputdir = Directory(os.getcwd())#, entries = 10 )
+    #inputdir = DelegatesTo('srxconfig')
+    inputdir = Directory()#, entries = 10 )
+    def _inputdir_default(self):
+        return self.srxconfig.opendirectory
     # Should sub directories be included in the search:
     recursive = Bool(False)
     # The file types to include in the search:
@@ -135,12 +140,12 @@ class AddFiles(HasTraits):
             rv = '0 files selected in a total of 0 files.'
         return rv
     
-    @on_trait_change('inputdir')
+    @on_trait_change('srxconfig.opendirectory')
     def _changeInputdir(self):
         '''
         change inputdir of getxconfig
         '''
-        pass
+        self.inputdir = self.srxconfig.opendirectory
         return
     
     #-- Traits UI Views --------------------------------------------------------
@@ -167,13 +172,9 @@ class AddFiles(HasTraits):
     traits_view = View(
         VGroup(
             VGroup(
-                HGroup(Item('inputdir', id = 'inputdir', label = 'Path', width = 0.5),
-                       Item('recursive' ),
-                       Item('filetype', label = 'Type' ),
-                       ),
                 HGroup(Item('search',  id = 'search', width = 0.5,
                             editor = HistoryEditor(auto_set = False)),
-                       Item( 'casesensitive' , label = 'case sensitive')
+                       Item('filetype', label = 'Type' ),
                        ),
                 Item('datafiles', id = 'datafiles', editor = tableeditor),
                 Item('summary', editor = TitleEditor()),
@@ -185,7 +186,7 @@ class AddFiles(HasTraits):
                 show_labels = False
                 ),
         ),
-        title     = 'Add files',
+        #title     = 'Add files',
         #width     = 500,
         height    = 600,
         resizable = True,
