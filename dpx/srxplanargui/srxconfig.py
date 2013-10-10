@@ -19,9 +19,12 @@ import re, os, sys
 from functools import partial
 import argparse
 
-from traits.api import Directory, String, List, Enum, Bool, File, Float, Int, \
-                        HasTraits, Property, Range, cached_property, Str, Instance, Array,\
-                        Event, CFloat, CInt, on_trait_change
+
+from traits.api import \
+    Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt,\
+    HasTraits, Property, Instance, Event, Button, Any, \
+    on_trait_change, DelegatesTo, cached_property, property_depends_on
+    
 from traitsui.api import \
     Item, Group, View, Handler, Controller, spring, Action, \
     HGroup, VGroup, Tabbed, \
@@ -56,7 +59,12 @@ class SrXConfig(ConfigBaseTraits):
     tthstep = Property(depends_on='tthstepd', fget = lambda self: np.radians(self.tthstepd))
     tthmax = Property(depends_on='tthmaxd', fget = lambda self: np.radians(self.tthmaxd))
     
-    aa = Bool(True)
+    tthorqmax = Property(depends_on='integrationspace, tthmaxd, qmax', 
+        fget = lambda self: self.tthmax if self.integrationspace == 'twotheta' else self.qmax)
+    tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax', 
+        fget = lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
+    
+    fit2dmask = File('')
     
     def _preUpdateSelf(self, **kwargs):
         '''
@@ -69,41 +77,9 @@ class SrXConfig(ConfigBaseTraits):
         :param kwargs: optional kwargs
         '''
         self.tthmaxd, self.qmax = checkMax(self)
-        if self.integrationspace == 'twotheta':
-            self.tthorqmax = self.tthmax
-            self.tthorqstep = self.tthstep
-        elif self.integrationspace == 'qspace':
-            self.tthorqmax = self.qmax
-            self.tthorqstep = self.qstep
         return
     
-    #def _postUpdateConfig(self, nofit2d=False, **kwargs):
-    def _postUpdateConfig(self, **kwargs):
-        '''
-        post processing after parse args or kwargs, this method is called after 
-        in self._postPocessing and before creating config file action  
-        
-        load fit2d config if specified in config, and set nocalculatio flag when create 
-        config or create mask
-        
-        :param nofit2d: boolean, if True, it will skip loading fit2d calibration, this is useful
-            when you reload/update some parameters but don't want to reload fit2d calibration 
-            results.
-        :param kwargs: optional kwargs
-        '''
-        '''if not nofit2d:
-            self._loadFromFit2D(self.fit2dconfig)'''
-        
-        self._loadFromFit2D(self.fit2dconfig)
-        if (self.createconfig!='')and(self.createconfig!=None):
-            self.nocalculation = True
-        if (self.createconfigfull!='')and(self.createconfigfull!=None):
-            self.nocalculation = True
-        if self.createmask!='':
-            self.nocalculation = True
-        return
-    
-    def _loadFromFit2D(self, filename):
+    def _fit2dconfig_changed(self):
         '''
         load parameters from fit2d calibration information. copy/paste the fit2d calibration 
         results to a txt file. this function will load xbeamcenter, ybeamceter... from the file
@@ -116,13 +92,118 @@ class SrXConfig(ConfigBaseTraits):
             self._updateSelf()
         return
     
-    traits_view = View(Item('flipvertical', editor = BooleanEditor()),
-                       Item('aa')
-                       )
+    def _fit2dmask_changed(self):
+        if os.path.exists(self.fit2dmask):
+            if not self.fit2dmask in self.addmask:
+                self.addmask.append(self.fit2dmask)
+        return
+    
+    saveconfigbb = Button('Save integration config')
+    loadconfigbb = Button('Load integration config')
+    
+    basic_group = \
+        Group(
+              Group(Item('configfile'),
+                    HGroup(spring,
+                           Item('saveconfigbb'),
+                           Item('loadconfigbb'),
+                           spring,
+                           
+                           show_labels = False,
+                           ),
+                    show_border = True,
+                    label = 'Configuration'
+                    ),
+              Group(
+                    Item('savedirectory'),
+                    Item('addmask'),
+                    Item('fit2dmask'),
+                    
+                    show_border = True,
+                    label = 'Files and masks',
+                    ),
+              Group(Item('integrationspace'),
+                    Item('wavelength', visible_when='integrationspace == "qspace"'),
+                    Item('xbeamcenter'),
+                    Item('ybeamcenter'),
+                    Item('distance'),
+                    Item('rotationd'), 
+                    Item('tiltd'),
+                    Item('tthstepd', visible_when='integrationspace == "twotheta"'),
+                    Item('qstep', visible_when='integrationspace == "qspace"'),
+                    
+                    show_border = True,
+                    label = 'Geometry parameters'
+                    ),
+              
+              label = 'Basic'
+              )
+    
+    advanced_group = \
+        Group(
+              Group(Item('uncertaintyenable', label='uncertainty'),
+                    Item('sacorrectionenable', label='solid angle corr.'),
+                    Item('polcorrectionenable', label='polarization corr.'),
+                    Item('polcorrectf', label = 'polarization factor'),
+                    
+                    show_border = True,
+                    label = 'Corrections'
+                    ),
+              Group(Item('fliphorizontal'),
+                    Item('flipvertical'),
+                    Item('xdimension'),
+                    Item('ydimension'),
+                    Item('xpixelsize'),
+                    Item('ypixelsize'),
+                    Item('maskedges', editor = ArrayEditor(width = -50)),
+                    
+                    show_border = True,
+                    label = 'Detector parameters'
+                    ),
 
+              label = 'Advanced'
+              )
+        
+    basic_view = \
+        View(basic_group,
+             
+             resizable = True,
+             scrollable = True,
+             #handler = handler,
+             #icon = ImageResource('icon.ico'),
+             )
+    advanced_view = \
+        View(advanced_group,
+             
+             resizable = True,
+             scrollable = True,
+             #handler = handler,
+             #icon = ImageResource('icon.ico'),
+             )
+        
+    srx_view = \
+        View(
+             Group(basic_group,
+                   advanced_group,
+                   
+                   show_labels = False,
+                   show_border = True,
+                   layout = 'tabbed',
+                   #layout = 'split',
+                   #orientation = 'horizontal',
+                   springy = True,
+                   dock = 'tab',
+                   ),
+             width     = 600,
+             height    = 800,
+             resizable = True,
+             #handler = handler,
+             #icon = ImageResource('icon.ico'),
+             )
+    
 SrXConfig.initConfigClass()
 
 if __name__=='__main__':
     a = SrXConfig()
     #a.updateConfig()
-    a.configure_traits()
+    a.configure_traits(view='srx_view')
