@@ -28,7 +28,7 @@ from traitsui.api import \
     RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, BooleanEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
-from pyface.api import ImageResource
+from pyface.api import ImageResource, GUI
 from enthought.pyface.api import SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
@@ -36,9 +36,11 @@ from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.srxgui import SrXgui, SrXguiHandler
 from dpx.srxplanar.srxplanar import SrXplanar
 
-from dpx.confutils.tools import checkMD5, checkCRC32
+from dpx.confutils.tools import checkFileVal
 
 class SrXguiLive(SrXgui):
+    
+    getxgui = Any
     
     def __init__(self, configfile=None, args=None, **kwargs):
         '''
@@ -63,6 +65,51 @@ class SrXguiLive(SrXgui):
         self.capturing = False
         return
     
+    ###LIVE###
+    def newImages(self):
+        newexistfileset = self.srx.loadimage.genFileSet() 
+        newfileset = newexistfileset - self.existfileset
+        newfilelist = sorted(list(newfileset))
+        newfilelistfull = map(lambda name: os.path.abspath(self.tifdirectory+'/'+name), newfilelist)
+        if len(newfilelist)>0:
+            for newfile in newfilelistfull:
+                checkFileVal(newfile)
+            
+            for i in range(len(newfilelist)):
+                self.jobqueue.put(['newimage', {'imagename':newfilelist[i]}])
+            self.existfileset = newexistfileset
+        return
+    
+    def addNewImagesToGetXgui(self, filelist):
+        '''
+        add new images to getxgui, if images are already there, refresh them
+        
+        :param filelist: list of full path of new images
+        '''
+        
+        
+    
+    def watching(self):
+        wdir = self.srxconfig.opendirectory
+        
+        self.existfileset = self.srx.loadimage.genFileSet()
+        self.lastmtime = os.path.getmtime(wdir)
+        self.lastctime = os.path.getctime(wdir)
+        self.lastatime = os.path.getatime(wdir)
+    
+        while self.capturing:
+            if os.path.getatime(tifpath) != self.lastatime:
+                GUI.invoke_later(self.newImages)
+                self.lastatime = os.path.getatime(tifpath)
+            if os.path.getmtime(tifpath) != self.lastmtime:
+                GUI.invoke_later(self.newImages)
+                self.lastmtime = os.path.getmtime(tifpath)
+            if os.path.getctime(tifpath) != self.lastctime:
+                GUI.invoke_later(self.newImages)
+                self.lastctime = os.path.getctime(tifpath)
+            time.sleep(0.5)
+        return 
+    
     capturing = Bool(False)
     startlivebb = Button('Start capturing')
     stoplivebb = Button('Stop capturing')
@@ -80,6 +127,8 @@ class SrXguiLive(SrXgui):
                      layout = 'tabbed',
                      springy = True,
                      ),
+               
+               enabled_when = 'not capturing',
                layout = 'split',
                springy = True,
                dock = 'tab',
@@ -89,8 +138,8 @@ class SrXguiLive(SrXgui):
     traits_view = \
         View(Group(main_group,
                    HGroup(spring,
-                          Item('integratbb'),
-                          Item('integratssbb'),
+                          Item('integratbb', enabled_when = 'not capturing',),
+                          Item('integratssbb', enabled_when = 'not capturing',),
                           spring,
                           Item('startlivebb', enabled_when='capturing == False'),
                           Item('stoplivebb', enabled_when='capturing == True'),
