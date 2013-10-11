@@ -34,6 +34,9 @@ from enthought.pyface.api import SplashScreen
 from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.srxgui import SrXgui, SrXguiHandler
+from dpx.srxplanar.srxplanar import SrXplanar
+
+from dpx.confutils.tools import checkMD5, checkCRC32
 
 class SrXguiLive(SrXgui):
     
@@ -106,6 +109,9 @@ class SrXguiLive(SrXgui):
              handler = SrXguiHandler(),
              buttons = [OKButton, about_action],
              )
+
+
+
 
 def main():
     splash = SplashScreen(image=ImageResource('splash.png'))
