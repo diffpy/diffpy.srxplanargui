@@ -59,13 +59,16 @@ class LivingThread(threading.Thread):
         maingui = self.maingui
         while self.capturing:
             if os.path.getatime(wdir) != self.lastatime:
-                GUI.invoke_later(maingui.newImages)
+                #GUI.invoke_later(maingui.newImages)
+                maingui.newImages()
                 self.lastatime = os.path.getatime(wdir)
             if os.path.getmtime(wdir) != self.lastmtime:
-                GUI.invoke_later(maingui.newImages)
+                #GUI.invoke_later(maingui.newImages)
+                maingui.newImages()
                 self.lastmtime = os.path.getmtime(wdir)
             if os.path.getctime(wdir) != self.lastctime:
-                GUI.invoke_later(maingui.newImages)
+                #GUI.invoke_later(maingui.newImages)
+                maingui.newImages()
                 self.lastctime = os.path.getctime(wdir)
             time.sleep(0.5)
         return
@@ -79,6 +82,9 @@ class SrXguiLive(SrXgui):
         '''
         init the object, createt the notifications
         '''
+        self.splash = SplashScreen(image=ImageResource('splash.png'))
+        self.splash.open()
+    
         super(SrXgui, self).__init__(configfile=None, args=None, **kwargs)
         if not kwargs.has_key('srxconfig'):
             self.srxconfig = SrXconfig(filename = configfile, args=args, **kwargs)
@@ -88,6 +94,29 @@ class SrXguiLive(SrXgui):
         
         self.loadConfig('default')
         self.splash.close()
+        return
+    
+    @on_trait_change('srxconfig.savedirectory')
+    def _changedir(self):
+        if self.srxconfig.savedirectory.endswith('chi'):
+            newdir = self.srxconfig.savedirectory[:-3]+'pdf'
+        else:
+            newdir = os.path.join(self.srxconfig.savedirectory, 'pdf')
+        self.getxgui.getxconfig.inputdir = self.srxconfig.savedirectory
+        self.getxgui.getxconfig.savedir = newdir
+        return
+    
+    def processSelected(self, ss=False):
+        if self.addfiles.selected:
+            self.srx.updateConfig()
+            filelist = [f.fullname for f in self.addfiles.selected]
+            self.srx.prepareCalculation(filelist)
+            if ss:
+                rvlist = self.srx.integrateFilelist(filelist, summation=True)
+            else:
+                rvlist = self.srx.integrateFilelist(filelist, summation=False)
+            newchifilelist = [rv['filename'] for rv in rvlist]
+            GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
         return
 
     def _startlivebb_changed(self):
@@ -119,13 +148,12 @@ class SrXguiLive(SrXgui):
         if len(newfilelist)>0:
             for newfile in newfilelistfull:
                 checkFileVal(newfile)
-            
-            self.srx.prepareCalculation(newfilelistfull)
+            if len(self.last10data)<5:
+                self.srx.prepareCalculation(newfilelistfull)
             rvlist = self.srx.integrateFilelist(newfilelistfull, summation=False)
-            newchifilelist = [rv['filename'] for rv in rvlist]
-            self.addfiles.refreshdatalist = True
             
-            self.addNewImagesToGetXgui(newchifilelist)
+            newchifilelist = [rv['filename'] for rv in rvlist]
+            GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
             self.existfileset = newexistfileset
         return
     
@@ -135,6 +163,8 @@ class SrXguiLive(SrXgui):
         
         :param filelist: list of full path of new images
         '''
+        self.addfiles.refreshdatalist = True
+        
         newdatacontainers = self.getxgui.selectfiles.addFiles(filelist)
         self.last10data.extend(newdatacontainers)
         self.last10data = self.last10data[-10:]
@@ -197,10 +227,11 @@ class SrXguiLive(SrXgui):
 
 
 def main():
-    splash = SplashScreen(image=ImageResource('splash.png'))
-    splash.open()
+    #splash = SplashScreen(image=ImageResource('splash.png'))
+    #splash.open()
     
-    gui = SrXguiLive(splash=splash)
+    #gui = SrXguiLive(splash=splash)
+    gui = SrXguiLive()
     gui.configure_traits(view = 'traits_view')
     return
 
