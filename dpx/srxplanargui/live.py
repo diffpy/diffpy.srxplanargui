@@ -16,6 +16,8 @@
 import numpy as np
 import re, os, sys
 from functools import partial
+import threading
+import time
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt,\
@@ -38,6 +40,37 @@ from dpx.srxplanar.srxplanar import SrXplanar
 
 from dpx.confutils.tools import checkFileVal
 
+class LivingThread(threading.Thread):
+    
+    def __init__(self, wdir, maingui):
+        threading.Thread.__init__(self)
+        self.daemon=True
+        
+        self.wdir = wdir
+        self.maingui = maingui
+        self.capturing = True
+        self.lastmtime = os.path.getmtime(wdir)
+        self.lastctime = os.path.getctime(wdir)
+        self.lastatime = os.path.getatime(wdir)
+        return
+    
+    def run(self):
+        wdir = self.wdir
+        maingui = self.maingui
+        while self.capturing:
+            if os.path.getatime(wdir) != self.lastatime:
+                GUI.invoke_later(maingui.newImages)
+                self.lastatime = os.path.getatime(wdir)
+            if os.path.getmtime(wdir) != self.lastmtime:
+                GUI.invoke_later(maingui.newImages)
+                self.lastmtime = os.path.getmtime(wdir)
+            if os.path.getctime(wdir) != self.lastctime:
+                GUI.invoke_later(maingui.newImages)
+                self.lastctime = os.path.getctime(wdir)
+            time.sleep(0.5)
+        return
+    
+
 class SrXguiLive(SrXgui):
     
     getxgui = Any
@@ -49,7 +82,7 @@ class SrXguiLive(SrXgui):
         super(SrXgui, self).__init__(configfile=None, args=None, **kwargs)
         if not kwargs.has_key('srxconfig'):
             self.srxconfig = SrXconfig(filename = configfile, args=args, **kwargs)
-
+            
         self.addfiles = AddFiles(srxconfig = self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
         
@@ -59,10 +92,22 @@ class SrXguiLive(SrXgui):
 
     def _startlivebb_changed(self):
         self.capturing = True
+        
+        wdir = self.srxconfig.opendirectory
+        self.liveplot = None
+        self.last10data = []
+        self.srx.updateConfig()        
+        self.existfileset = self.srx.loadimage.genFileSet()
+        
+        self.livingthread = LivingThread(wdir, self)
+        self.livingthread.daemon = True
+        self.livingthread.start()
         return
     
     def _stoplivebb_changed(self):
         self.capturing = False
+        self.livingthread.capturing = False
+        self.livingthread.join()
         return
     
     ###LIVE###
@@ -70,13 +115,17 @@ class SrXguiLive(SrXgui):
         newexistfileset = self.srx.loadimage.genFileSet() 
         newfileset = newexistfileset - self.existfileset
         newfilelist = sorted(list(newfileset))
-        newfilelistfull = map(lambda name: os.path.abspath(self.tifdirectory+'/'+name), newfilelist)
+        newfilelistfull = map(lambda name: os.path.abspath(self.srxconfig.opendirectory+'/'+name), newfilelist)
         if len(newfilelist)>0:
             for newfile in newfilelistfull:
                 checkFileVal(newfile)
             
-            for i in range(len(newfilelist)):
-                self.jobqueue.put(['newimage', {'imagename':newfilelist[i]}])
+            self.srx.prepareCalculation(newfilelistfull)
+            rvlist = self.srx.integrateFilelist(newfilelistfull, summation=False)
+            newchifilelist = [rv['filename'] for rv in rvlist]
+            self.addfiles.refreshdatalist = True
+            
+            self.addNewImagesToGetXgui(newchifilelist)
             self.existfileset = newexistfileset
         return
     
@@ -86,29 +135,14 @@ class SrXguiLive(SrXgui):
         
         :param filelist: list of full path of new images
         '''
-        
-        
-    
-    def watching(self):
-        wdir = self.srxconfig.opendirectory
-        
-        self.existfileset = self.srx.loadimage.genFileSet()
-        self.lastmtime = os.path.getmtime(wdir)
-        self.lastctime = os.path.getctime(wdir)
-        self.lastatime = os.path.getatime(wdir)
-    
-        while self.capturing:
-            if os.path.getatime(tifpath) != self.lastatime:
-                GUI.invoke_later(self.newImages)
-                self.lastatime = os.path.getatime(tifpath)
-            if os.path.getmtime(tifpath) != self.lastmtime:
-                GUI.invoke_later(self.newImages)
-                self.lastmtime = os.path.getmtime(tifpath)
-            if os.path.getctime(tifpath) != self.lastctime:
-                GUI.invoke_later(self.newImages)
-                self.lastctime = os.path.getctime(tifpath)
-            time.sleep(0.5)
-        return 
+        newdatacontainers = self.getxgui.selectfiles.addFiles(filelist)
+        self.last10data.extend(newdatacontainers)
+        self.last10data = self.last10data[-10:]
+        if (self.liveplot != None) and (self.liveplot in self.getxgui.plots):
+            self.liveplot.datacontainers = self.last10data
+        else:
+            self.liveplot, liveplotpanel = self.getxgui.createNewPlot(newdatacontainers)            
+        return
     
     capturing = Bool(False)
     startlivebb = Button('Start capturing')
