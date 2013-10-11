@@ -51,7 +51,9 @@ class SrXconfig(ConfigBaseTraits):
 
     _optdatalist = _optdatalist
         
-    _defaultdata = _defaultdata
+    _defaultdata = {'configfile': [],
+                    'headertitle': 'SrXgui configration' 
+                    }
     
     rotation = Property(depends_on='rotationd', fget = lambda self: np.radians(self.rotationd))
     tilt = Property(depends_on='tiltd', fget = lambda self: np.radians(self.tiltd))

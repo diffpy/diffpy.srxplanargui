@@ -172,10 +172,11 @@ class AddFiles(HasTraits):
     traits_view = View(
         VGroup(
             VGroup(
-                HGroup(Item('search',  id = 'search', width = 0.5,
-                            editor = HistoryEditor(auto_set = False)),
-                       Item('filetype', label = 'Type' ),
-                       ),
+                Group(
+                    Item('filetype', label = 'Type' ),
+                    Item('search',  id = 'search', width = 0.5,
+                         editor = HistoryEditor(auto_set = False)),
+                    ),
                 Item('datafiles', id = 'datafiles', editor = tableeditor),
                 Item('summary', editor = TitleEditor()),
                 HGroup(spring,
