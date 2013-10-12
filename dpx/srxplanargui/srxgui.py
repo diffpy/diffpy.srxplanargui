@@ -30,8 +30,7 @@ from traitsui.api import \
     RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, ImageEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
-from pyface.api import ImageResource
-from enthought.pyface.api import SplashScreen
+from pyface.api import ImageResource, SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
