@@ -46,15 +46,15 @@ class SrXguiHandler(Handler):
         info.object.saveConfig('default')
         return True
     
-    def _showquickhelp(self, info):
-        info.object.help.edit_traits(view = 'quickstart_view')
+    def _quickstart(self, info):
+        info.object._helpbb_changed()
         return
     
 class SrXgui(HasTraits):
     
     addfiles = Instance(AddFiles)
     srxconfig = Instance(SrXconfig)
-    help = SrXguiHelp()
+    help = Instance(SrXguiHelp)
     splash = Any
     
     def saveConfig(self, filename=None):
@@ -108,6 +108,7 @@ class SrXgui(HasTraits):
 
         self.addfiles = AddFiles(srxconfig = self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
+        self.help = SrXguiHelp()
         
         self.loadConfig('default')
         self.splash.close()
@@ -124,10 +125,6 @@ class SrXgui(HasTraits):
     def _helpbb_changed(self):
         self.help.edit_traits(view = 'quickstart_view')
         return
-
-    help_action = \
-        Action(name = 'Help',
-               action = '_showquickhelp')
     
     integratbb = Button('Integrate separately')
     integratssbb = Button('Sum and Integrate')

@@ -37,6 +37,7 @@ from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.srxgui import SrXgui, SrXguiHandler
 from dpx.srxplanar.srxplanar import SrXplanar
+from dpx.srxplanargui.help import SrXguiHelp
 
 from dpx.confutils.tools import checkFileVal
 
@@ -91,6 +92,7 @@ class SrXguiLive(SrXgui):
             
         self.addfiles = AddFiles(srxconfig = self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
+        self.help = SrXguiHelp()
         
         self.loadConfig('default')
         self.splash.close()
@@ -178,9 +180,9 @@ class SrXguiLive(SrXgui):
     startlivebb = Button('Start capturing')
     stoplivebb = Button('Stop capturing')
     
-    help_action = \
-        Action(name = 'Help',
-               action = '_showquickhelp')
+    quickstart_action = \
+        Action(name = 'Quick start',
+               action = '_quickstart')
          
     main_group = \
         HGroup(Item('addfiles', editor = InstanceEditor(view = 'traits_view'),
@@ -221,7 +223,7 @@ class SrXguiLive(SrXgui):
              kind = 'live',
              icon = ImageResource('icon.ico'),
              handler = SrXguiHandler(),
-             buttons = [OKButton, help_action],
+             buttons = [OKButton, quickstart_action],
              )
 
 
