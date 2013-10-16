@@ -26,6 +26,7 @@ dist = setup(
         namespace_packages = ['dpx'],
         packages = find_packages(),
         include_package_data = True,
+        zip_safe = False,
         scripts = [],
         data_files = [],
         install_requires = [],
