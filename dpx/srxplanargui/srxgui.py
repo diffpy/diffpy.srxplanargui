@@ -35,6 +35,7 @@ from pyface.api import ImageResource, SplashScreen
 from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanar.srxplanar import SrXplanar
+from dpx.srxplanargui.help import SrXguiHelp
 
 class SrXguiHandler(Handler):
     
@@ -45,14 +46,15 @@ class SrXguiHandler(Handler):
         info.object.saveConfig('default')
         return True
     
-    def _aboutmgs(self, info):
-        info.object.edit_traits(view = "about_view")
+    def _showquickhelp(self, info):
+        info.object.help.edit_traits(view = 'quickstart_view')
         return
     
 class SrXgui(HasTraits):
     
     addfiles = Instance(AddFiles)
     srxconfig = Instance(SrXconfig)
+    help = SrXguiHelp()
     splash = Any
     
     def saveConfig(self, filename=None):
@@ -119,17 +121,17 @@ class SrXgui(HasTraits):
         self.processSelected(True)
         return
     
-    def _aboutbb_changed(self):
-        self.edit_traits(view = 'about_view')
+    def _helpbb_changed(self):
+        self.help.edit_traits(view = 'quickstart_view')
         return
-    
-    about_action = \
-        Action(name = 'About',
-               action = '_aboutmgs')
+
+    help_action = \
+        Action(name = 'Help',
+               action = '_showquickhelp')
     
     integratbb = Button('Integrate separately')
     integratssbb = Button('Sum and Integrate')
-    aboutbb = Button('About')
+    helpbb = Button('Help')
     
     main_group = \
         HGroup(Item('addfiles', editor = InstanceEditor(view = 'traits_view'),
@@ -152,7 +154,7 @@ class SrXgui(HasTraits):
                    HGroup(spring,
                           Item('integratbb'),
                           Item('integratssbb'),
-                          Item('aboutbb'),
+                          Item('helpbb'),
                           spring,
                           show_labels = False,
                           ),
@@ -165,18 +167,7 @@ class SrXgui(HasTraits):
              icon = ImageResource('icon.ico'),
              handler = SrXguiHandler(),
              )
-    
-    qsimage = ImageResource('splash.png')
-    
-    about_view = \
-        View(Item('qsimage', editor = ImageEditor(), width = 0.5, show_label=False),
-             title = 'Quick start',
-             width = 960,
-             height = 520, 
-             resizable = True,
-             buttons = [OKButton],
-             icon = ImageResource('icon.ico'),
-             )
+
             
 def main():
     splash = SplashScreen(image=ImageResource('splash.png'))
