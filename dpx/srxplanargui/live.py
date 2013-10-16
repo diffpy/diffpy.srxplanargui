@@ -178,9 +178,10 @@ class SrXguiLive(SrXgui):
     startlivebb = Button('Start capturing')
     stoplivebb = Button('Stop capturing')
     
-    about_action = \
-        Action(name = 'About',
-               action = '_aboutmgs')  
+    help_action = \
+        Action(name = 'Help',
+               action = '_showquickhelp')
+         
     main_group = \
         HGroup(Item('addfiles', editor = InstanceEditor(view = 'traits_view'),
                     style = 'custom', label = 'Files', width=0.4),
@@ -220,7 +221,7 @@ class SrXguiLive(SrXgui):
              kind = 'live',
              icon = ImageResource('icon.ico'),
              handler = SrXguiHandler(),
-             buttons = [OKButton, about_action],
+             buttons = [OKButton, help_action],
              )
 
 
