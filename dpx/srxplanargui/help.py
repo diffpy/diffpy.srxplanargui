@@ -106,12 +106,15 @@ the Billinge Group.
     def _get_qsimage(self):
         return self.imgs[self.qsindex]
     
+    hheight = 556 if sys.platform.startswith('win') else 524
+    hwidth = 980 if sys.platform.startswith('win') else 964
+    
     qsindex = Int(0)
     quickstart_view = \
         View(Item('qsimage', editor = ImageEditor(), width = 0.5, show_label=False),
              title = 'Quick start',
-             width = 980,
-             height = 550, 
+             width = hwidth,
+             height = hheight, 
              resizable = True,
              buttons = [previous_action, next_action, OKButton],
              handler = HelpHandler(),
