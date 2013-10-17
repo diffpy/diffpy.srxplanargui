@@ -127,7 +127,7 @@ class SrXgui(HasTraits):
         return
     
     integratbb = Button('Integrate separately')
-    integratssbb = Button('Sum and Integrate')
+    integratessbb = Button('Sum and Integrate')
     helpbb = Button('Help')
     
     main_group = \
@@ -150,7 +150,7 @@ class SrXgui(HasTraits):
         View(Group(main_group,
                    HGroup(spring,
                           Item('integratbb'),
-                          Item('integratssbb'),
+                          Item('integratessbb'),
                           Item('helpbb'),
                           spring,
                           show_labels = False,
