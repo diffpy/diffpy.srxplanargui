@@ -93,6 +93,8 @@ class SrXguiLive(SrXgui):
         self.addfiles = AddFiles(srxconfig = self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
         self.help = SrXguiHelp()
+        self.liveplot = None
+        self.last10data = []
         
         self.loadConfig('default')
         self.splash.close()
@@ -206,7 +208,7 @@ class SrXguiLive(SrXgui):
         View(Group(main_group,
                    HGroup(spring,
                           Item('integratbb', enabled_when = 'not capturing',),
-                          Item('integratssbb', enabled_when = 'not capturing',),
+                          Item('integratessbb', enabled_when = 'not capturing',),
                           spring,
                           Item('startlivebb', enabled_when='capturing == False'),
                           Item('stoplivebb', enabled_when='capturing == True'),
