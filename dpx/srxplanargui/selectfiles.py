@@ -111,7 +111,10 @@ class AddFiles(HasTraits):
         '''
         inputdir = self.inputdir
         if inputdir == '':
-            inputdir = getcwd()
+            inputdir = os.getcwd()
+        if not os.path.exists(inputdir):
+            self.srxconfig.opendirectory = os.getcwd()
+            inputdir = os.getcwd()
 
         filetypes = self._filetypedict[self.filetype]
         if self.recursive:
