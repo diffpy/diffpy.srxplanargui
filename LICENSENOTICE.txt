@@ -5,7 +5,7 @@ prohibited.  If you don’t know whether or not your anticipated use is under
 a license, you must contact Prof. Simon Billinge at sb2896@columbia.edu.
 Use of this software without a license is prohibited.
 
-Copyright 2009-2013, Trustees of Columbia University in the City of New York.
+Copyright 2009-2014, Trustees of Columbia University in the City of New York.
 
 
 For more information please email Prof. Simon Billinge at sb2896@columbia.edu
