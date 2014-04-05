@@ -54,7 +54,7 @@ class SrXguiHelp(HasTraits):
     # quick start
     #######################
 
-    imgs = [ImageResource('%d.PNG' % i) for i in range(1, 3)]
+    imgs = [ImageResource('%02d.png' % i) for i in range(1, 3)]
 
     qslen = Int(1)
 
