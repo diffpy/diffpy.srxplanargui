@@ -19,6 +19,7 @@ from functools import partial
 import threading
 import time
 
+# imports
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
