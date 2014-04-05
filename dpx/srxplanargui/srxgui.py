@@ -165,7 +165,6 @@ class SrXgui(HasTraits):
              handler=SrXguiHandler(),
              )
 
-
 def main():
     splash = SplashScreen(image=ImageResource('splash.png'))
     splash.open()
