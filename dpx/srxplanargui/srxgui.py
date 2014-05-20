@@ -19,6 +19,28 @@ import numpy as np
 import os
 import sys
 
+# break if help passed to the args
+sysargv = sys.argv[1:]
+if ('--help' in sysargv) or('-h' in sysargv):
+    from dpx.srxplanargui.srxconfig import SrXconfig
+    SrXconfig(args=sysargv)
+
+from traits.etsconfig.api import ETSConfig
+if any([aa == 'wx' for aa in sysargv]):
+    ETSConfig.toolkit = 'wx'
+    import wx
+    import traitsui.wx.constants
+    traitsui.wx.constants.WindowColor = wx.Colour(244, 243, 238)
+else:
+    ETSConfig.toolkit = 'qt4'
+    from pyface.qt import QtGui, QtCore
+
+from pyface.api import ImageResource, SplashScreen
+# open splash screen
+splash = SplashScreen(image=ImageResource('01.png'))
+if not any([aa == '-h' or aa == '--help' for aa in sysargv]):
+    splash.open()
+
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -30,12 +52,12 @@ from traitsui.api import \
     RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, ImageEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
-from pyface.api import ImageResource, SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
 from dpx.srxplanargui.help import SrXguiHelp
+from diffpy.srxplanar.calibrate import selfCalibrate
 
 class SrXguiHandler(Handler):
 
@@ -49,6 +71,36 @@ class SrXguiHandler(Handler):
     def _quickstart(self, info):
         info.object._helpbb_changed()
         return
+    
+    def _saveconfigView(self, info):
+        info.object._saveconfigView()
+        return
+    
+    def _loadconfigView(self, info):
+        info.object._loadconfigView()
+        return
+    
+    def _helpView(self, info):
+        info.object._helpbb_changed()
+        return
+    
+class SaveLoadHandler(Handler):
+    def _saveconfig(self, info):
+        '''
+        save config file to getxgui.configfile
+        '''
+        info.object.saveConfig(info.object.configfile)
+        info.ui.dispose()
+        return
+
+    def _loadconfig(self, info):
+        '''
+        load config file from getxgui.configfile
+        '''
+
+        info.object.loadConfig(info.object.configfile)
+        info.ui.dispose()
+        return
 
 class SrXgui(HasTraits):
 
@@ -61,30 +113,19 @@ class SrXgui(HasTraits):
         '''
         save config
         '''
-        configfile = os.path.join(os.path.expanduser('~'), 'srxconfig.cfg')
-        if filename == None:
-            if os.path.exists(self.srxconfig.configfile):
-                configfile = self.srxconfig.configfile
-        else:
-            if filename != 'default':
-                configfile = filename
-        self.srxconfig.writeConfig(configfile, mode='full')
+        # configfile = self.detectConfigfile(filename)
+        self.srxconfig.writeConfig(filename, mode='full')
+        self.configfile = filename  
         return
 
     def loadConfig(self, filename=None):
         '''
         load config
         '''
-        configfile = os.path.join(os.path.expanduser('~'), 'srxconfig.cfg')
-        if filename == None:
-            if os.path.exists(self.srxconfig.configfile):
-                configfile = self.srxconfig.configfile
-        else:
-            if os.path.exists(filename):
-                configfile = filename
-
+        configfile = self.detectConfigfile(filename)
         if os.path.exists(configfile):
             self.srxconfig.updateConfig(filename=configfile)
+            self.configfile = configfile
         return
 
     def processSelected(self, ss=False):
@@ -97,12 +138,37 @@ class SrXgui(HasTraits):
             else:
                 self.srx.integrateFilelist(filelist, summation=False)
         return
+    
+    def detectConfigfile(self, filename):
+        '''
+        current directory > home directory, if none, then return the curdir+filename
+        if 'default', then return home+filename
+        '''
+        if filename == None:
+            configfile = os.path.join(os.path.curdir, 'srxconfig.cfg')
+        elif filename == 'default':
+            configfile = os.path.join(os.path.expanduser('~'), 'srxconfig.cfg')    
+        else:
+            if os.path.abspath(filename):
+                if os.path.exists(filename):
+                    configfile = filename
+                else:
+                    filename = os.path.split(filename)[1]
+                    configfile = os.path.join(os.path.curdir, filename)
+            else:
+                configfile = os.path.join(os.path.curdir, filename)
+        return configfile
 
     def __init__(self, configfile=None, args=None, **kwargs):
         '''
         init the object, createt the notifications
         '''
-        super(SrXgui, self).__init__(configfile=None, args=None, **kwargs)
+        super(SrXgui, self).__init__(**kwargs)
+        configfile = self.detectConfigfile(configfile)
+        if not os.path.exists(configfile):
+            configfile = self.detectConfigfile('default')
+        self.configfile = configfile
+        
         if not kwargs.has_key('srxconfig'):
             self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
 
@@ -110,9 +176,53 @@ class SrXgui(HasTraits):
         self.srx = SrXplanar(self.srxconfig)
         self.help = SrXguiHelp()
 
-        self.loadConfig('default')
+        # self.loadConfig(configfile)
         self.splash.close()
         return
+    
+    ###########################################################
+    def _saveconfigView(self):
+        self.edit_traits(view='saveconfig_view')
+        return
+    def _loadconfigView(self):
+        self.edit_traits(view='loadconfig_view')
+        return
+    
+    configfile = File()
+    saveconfig_action = \
+        Action(name='OK ',
+               action='_saveconfig')
+    loadconfig_action = \
+        Action(name='OK ',
+               action='_loadconfig')
+    savebutton_action = \
+        Action(name='Save Config',
+               action='_saveconfigView')
+    loadbutton_action = \
+        Action(name='Load Config',
+               action='_loadconfigView')
+
+    saveconfig_view = \
+            View(Item('configfile'),
+
+                 resizable=True,
+                 title='Save config',
+                 width=500,
+                 buttons=[saveconfig_action, CancelButton],
+                 handler=SaveLoadHandler(),
+                 icon=ImageResource('icon.ico'),
+                 )
+    loadconfig_view = \
+            View(Item('configfile'),
+
+                 resizable=True,
+                 title='Load config',
+                 width=500,
+                 buttons=[loadconfig_action, CancelButton],
+                 handler=SaveLoadHandler(),
+                 icon=ImageResource('icon.ico'),
+                 )
+    #############################################################
 
     def _integratbb_changed(self):
         self.processSelected(False)
@@ -125,50 +235,92 @@ class SrXgui(HasTraits):
     def _helpbb_changed(self):
         self.help.edit_traits(view='quickstart_view')
         return
+    
+    def _selfcalibratebb_changed(self):
+        uncertaintybak = self.srx.config.uncertaintyenable
+        self.srx.updateConfig(uncertaintyenable=False)
+        selfCalibrate(self.srx, self.addfiles.selected[0].fullname,
+                      [self.srxconfig.xbeamcenter, self.srxconfig.ybeamcenter])
+        self.srx.updateConfig(uncertaintyenable=uncertaintybak)
+        return
+    
+    helpbutton_action = \
+        Action(name='Help ',
+               action='_helpView')
 
     integratbb = Button('Integrate separately')
     integratessbb = Button('Sum and Integrate')
+    selfcalibratebb = Button('Calibrate')
     helpbb = Button('Help')
 
     main_group = \
-        HGroup(Item('addfiles', editor=InstanceEditor(view='traits_view'),
-                    style='custom', label='Files', width=0.4),
-               Group(Item('srxconfig', editor=InstanceEditor(view='basic_view'),
-                          style='custom', label='Basic', show_label=False),
-                     Item('srxconfig', editor=InstanceEditor(view='advanced_view'),
-                          style='custom', label='Advanced', show_label=False),
-                     layout='tabbed',
-                     springy=True,
-                     ),
+        HGroup(
+            Item('addfiles', editor=InstanceEditor(view='traits_view'),
+                 style='custom', label='Files', width=0.4),
+            VGroup(
+                Group(
+                    Item('srxconfig', editor=InstanceEditor(view='basic_view'),
+                         style='custom', label='Basic', show_label=False),
+                    Item('srxconfig', editor=InstanceEditor(view='advanced_view'),
+                         style='custom', label='Advanced', show_label=False),
+                    layout='tabbed',
+                    springy=True,
+                    ),
+                HGroup(
+                    spring,
+                    Item('selfcalibratebb'),
+                    Item('integratbb'),
+                    Item('integratessbb'),
+                    Item('helpbb'),
+                    spring,
+                    show_labels=False,
+                    ),
+                ),
+               
                layout='split',
                springy=True,
                dock='tab',
                show_labels=False
                )
-
+    selected = DelegatesTo('addfiles')
     traits_view = \
-        View(Group(main_group,
-                   HGroup(spring,
-                          Item('integratbb'),
-                          Item('integratessbb'),
-                          Item('helpbb'),
-                          spring,
-                          show_labels=False,
+        View(\
+            HGroup(
+                Item('addfiles', editor=InstanceEditor(view='traits_view'),
+                     style='custom', label='Files', width=0.4),
+                VGroup(
+                    Group(Item('srxconfig', editor=InstanceEditor(view='basic_view'),
+                               style='custom', label='Basic', show_label=False),
+                          Item('srxconfig', editor=InstanceEditor(view='advanced_view'),
+                               style='custom', label='Advanced', show_label=False),
+                          layout='tabbed',
+                          springy=True,
                           ),
+                    HGroup(spring,
+                           Item('selfcalibratebb', enabled_when='len(selected)>0'),
+                           Item('integratbb'),
+                           Item('integratessbb'),
+                           spring,
+                           show_labels=False,
+                           ),
+                    ),
+                   
+                   layout='split',
+                   springy=True,
+                   dock='tab',
+                   show_labels=False
                    ),
              resizable=True,
              title='SrXgui',
              width=800,
              height=700,
              kind='live',
+             buttons=[helpbutton_action, savebutton_action, loadbutton_action, OKButton],
              icon=ImageResource('icon.ico'),
              handler=SrXguiHandler(),
              )
 
 def main():
-    splash = SplashScreen(image=ImageResource('01.png'))
-    splash.open()
-
     gui = SrXgui(splash=splash)
     gui.configure_traits(view='traits_view')
     return
