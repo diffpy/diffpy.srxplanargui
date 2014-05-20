@@ -105,53 +105,39 @@ class SrXconfig(ConfigBaseTraits):
             os.mkdir(newdir)
         self.savedirectory = newdir
         return
+    
+    directory_group = \
+        Group(Item('opendirectory', label='Input dir.'),
+              Item('savedirectory', label='Output dir.'),
+              show_border=True,
+              label='Files',
+              )
+    mask_group = \
+        Group(Item('fit2dmask', label='Fit2D mask'),
+              Item('addmask', label='Masks'),
+              show_border=True,
+              label='Masks',
+              )
+    
+    geometry_group = \
+        Group(Item('integrationspace', label='Integration space'),
+              Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength'),
+              Item('xbeamcenter', label='x beamcenter'),
+              Item('ybeamcenter', label='y beamcenter'),
+              Item('distance', label='Distance'),
+              Item('rotationd', label='Rotation'),
+              Item('tiltd', label='Tilt rotation'),
+              Item('tthstepd', label='Integration step', visible_when='integrationspace == "twotheta"'),
+              Item('qstep', label='Integration step', visible_when='integrationspace == "qspace"'),
 
-    saveconfigbb = Button('Save integration config')
-    loadconfigbb = Button('Load integration config')
-
-    def _saveconfigbb_fired(self):
-        self.writeConfig(self.configfile, mode='full')
-        return
-
-    def _loadconfigbb_fired(self):
-        self.updateConfig(filename=self.configfile)
-        return
+              show_border=True,
+              label='Geometry parameters'
+              ),
 
     basic_group = \
-        Group(
-              Group(Item('configfile'),
-                    HGroup(spring,
-                           Item('saveconfigbb'),
-                           Item('loadconfigbb'),
-                           spring,
-
-                           show_labels=False,
-                           ),
-                    show_border=True,
-                    label='Configuration'
-                    ),
-              Group(Item('opendirectory', label='Input dir.'),
-                    Item('savedirectory', label='Output dir.'),
-                    Item('addmask', label='Masks'),
-                    Item('fit2dmask', label='Fit2D mask'),
-
-                    show_border=True,
-                    label='Files and masks',
-                    ),
-              Group(Item('integrationspace', label='Integration space'),
-                    Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength'),
-                    Item('xbeamcenter', label='x beamcenter'),
-                    Item('ybeamcenter', label='y beamcenter'),
-                    Item('distance', label='Distance'),
-                    Item('rotationd', label='Rotation'),
-                    Item('tiltd', label='Tilt rotation'),
-                    Item('tthstepd', label='Integration step', visible_when='integrationspace == "twotheta"'),
-                    Item('qstep', label='Integration step', visible_when='integrationspace == "qspace"'),
-
-                    show_border=True,
-                    label='Geometry parameters'
-                    ),
-
+        Group(directory_group,
+              mask_group,
+              geometry_group,
               # label = 'Basic'
               )
 

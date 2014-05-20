@@ -22,9 +22,11 @@ from traits.etsconfig.api import ETSConfig
 
 if ETSConfig.toolkit == 'qt4':
     from traitsui.qt4.table_editor import TableEditor as TableEditorBE
+    tableautosize = True
 else:
     from traitsui.wx.table_editor import TableEditor as TableEditorBE
-
+    tableautosize = False
+    
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -153,18 +155,21 @@ class AddFiles(HasTraits):
         columns=[
             ObjectColumn(name='basename',
                          label='Name',
-                         width=0.70,
+                         # width=0.70,
                          editable=False,
                          ),
         ],
-        auto_size=False,
-        show_toolbar=False,
-        show_lines=False,
-        # menu_name = 'rmenu',
+        auto_size=tableautosize,
+        # show_toolbar = True,
+        deletable=True,
+        # reorderable = True,
+        edit_on_first_click=False,
         filter_name='filter',
         selection_mode='rows',
         selected='selected',
         dclick='dclick',
+        label_bg_color='(244, 243, 238)',
+        cell_bg_color='(234, 233, 228)',
         )
 
     selectallbb = Button('Select all')
@@ -172,10 +177,10 @@ class AddFiles(HasTraits):
     traits_view = View(
         VGroup(
             VGroup(
-                Group(
-                    Item('filetype', label='Type'),
-                    Item('search', id='search', width=0.5,
+                HGroup(
+                    Item('search', id='search', springy=True,
                          editor=HistoryEditor(auto_set=False)),
+                    Item('filetype', label='Type'),
                     ),
                 Item('datafiles', id='datafiles', editor=tableeditor),
                 Item('summary', editor=TitleEditor()),

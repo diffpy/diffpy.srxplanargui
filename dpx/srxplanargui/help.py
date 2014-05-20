@@ -47,8 +47,16 @@ class HelpHandler(Handler):
 
 class SrXguiHelp(HasTraits):
 
-    hheight = 556 if sys.platform.startswith('win') else 524
-    hwidth = 980 if sys.platform.startswith('win') else 964
+    if sys.platform.startswith('win'):
+        if ETSConfig.toolkit == 'qt4':
+            hheight = 510
+            hwidth = 960
+        else:
+            hheight = 556
+            hwidth = 980
+    else:
+        hheight = 524
+        hwidth = 964
 
     #######################
     # quick start
