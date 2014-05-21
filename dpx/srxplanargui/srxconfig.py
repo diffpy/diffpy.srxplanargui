@@ -38,6 +38,12 @@ from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPro
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
         _defaultdata, checkMax, parseFit2D
 
+class CalibrationHandler(Handler):
+    
+    def close (self, info, is_ok):
+        info.object.calibrationflag = is_ok
+        return True
+
 class SrXconfig(ConfigBaseTraits):
     '''
     config class, based on ConfigBase class in diffpy.confutils
@@ -180,6 +186,40 @@ class SrXconfig(ConfigBaseTraits):
              resizable=True,
              scrollable=True,
              # handler = handler,
+             icon=ImageResource('icon.ico'),
+             )
+    
+    inst0 = Str('Caution! The calibration takes long time and program may lose response')
+    inst1 = Str('Please specify the wavelength and distance between sample and detector')
+    inst2 = Str('Plasee specify the initial value of following parameters')
+    calibrate_View = \
+        View(
+            Group(
+                Item('inst0', style='readonly', show_label=False),
+                Item('inst1', style='readonly', show_label=False),
+                HGroup(
+                    Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength'),
+                    Item('distance', label='Distance'),
+                    ),
+                Item('inst2', style='readonly', show_label=False),
+                HGroup(
+                    Item('xbeamcenter', label='x beamcenter'),
+                    Item('ybeamcenter', label='y beamcenter'),
+                    ),
+                HGroup(
+                    Item('rotationd', label='Rotation'),
+                    Item('tiltd', label='Tilt rotation')
+                    ),
+
+                show_border=True,
+                label='Calibration'
+                ),
+             
+             width=600,
+             height=200,
+             resizable=True,
+             buttons=[OKButton, CancelButton],
+             handler=CalibrationHandler(),
              icon=ImageResource('icon.ico'),
              )
 
