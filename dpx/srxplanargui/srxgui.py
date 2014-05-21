@@ -108,6 +108,28 @@ class SrXgui(HasTraits):
     srxconfig = Instance(SrXconfig)
     help = Instance(SrXguiHelp)
     splash = Any
+    
+    def __init__(self, configfile=None, args=None, **kwargs):
+        '''
+        init the object, createt the notifications
+        '''
+        super(SrXgui, self).__init__(**kwargs)
+        configfile = self.detectConfigfile(configfile)
+        if not os.path.exists(configfile):
+            configfile = self.detectConfigfile('default')
+        self.configfile = configfile
+        
+        if not kwargs.has_key('srxconfig'):
+            self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
+
+        self.addfiles = AddFiles(srxconfig=self.srxconfig)
+        self.srx = SrXplanar(self.srxconfig)
+        self.help = SrXguiHelp()
+
+        # self.loadConfig(configfile)
+        self.splash.close()
+        return
+
 
     def saveConfig(self, filename=None):
         '''
@@ -159,27 +181,7 @@ class SrXgui(HasTraits):
                 configfile = os.path.join(os.path.curdir, filename)
         return configfile
 
-    def __init__(self, configfile=None, args=None, **kwargs):
-        '''
-        init the object, createt the notifications
-        '''
-        super(SrXgui, self).__init__(**kwargs)
-        configfile = self.detectConfigfile(configfile)
-        if not os.path.exists(configfile):
-            configfile = self.detectConfigfile('default')
-        self.configfile = configfile
         
-        if not kwargs.has_key('srxconfig'):
-            self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
-
-        self.addfiles = AddFiles(srxconfig=self.srxconfig)
-        self.srx = SrXplanar(self.srxconfig)
-        self.help = SrXguiHelp()
-
-        # self.loadConfig(configfile)
-        self.splash.close()
-        return
-    
     ###########################################################
     def _saveconfigView(self):
         self.edit_traits(view='saveconfig_view')
@@ -237,11 +239,10 @@ class SrXgui(HasTraits):
         return
     
     def _selfcalibratebb_changed(self):
-        uncertaintybak = self.srx.config.uncertaintyenable
-        self.srx.updateConfig(uncertaintyenable=False)
-        selfCalibrate(self.srx, self.addfiles.selected[0].fullname,
-                      [self.srxconfig.xbeamcenter, self.srxconfig.ybeamcenter])
-        self.srx.updateConfig(uncertaintyenable=uncertaintybak)
+        self.srxconfig.edit_traits(view='calibrate_View', kind='livemodal')
+        if self.srxconfig.calibrationflag:
+            selfCalibrate(self.srx, self.addfiles.selected[0].fullname,
+                          [self.srxconfig.xbeamcenter, self.srxconfig.ybeamcenter])
         return
     
     helpbutton_action = \
@@ -282,9 +283,21 @@ class SrXgui(HasTraits):
                dock='tab',
                show_labels=False
                )
+        
+    calibrate_view = \
+        View(Item('srxconfig'),
+             # Item('srxconfig', editor=InstanceEditor(view='calibrate_view'),
+             #     style='custom'),
+             width=600,
+             height=200,
+             resizable=True,
+             # handler = handler,
+             icon=ImageResource('icon.ico'),
+             )
+        
     selected = DelegatesTo('addfiles')
     traits_view = \
-        View(\
+        View(
             HGroup(
                 Item('addfiles', editor=InstanceEditor(view='traits_view'),
                      style='custom', label='Files', width=0.4),
@@ -297,7 +310,7 @@ class SrXgui(HasTraits):
                           springy=True,
                           ),
                     HGroup(spring,
-                           Item('selfcalibratebb', enabled_when='len(selected)>0'),
+                           Item('selfcalibratebb', enabled_when='selected and len(selected)>0'),
                            Item('integratbb'),
                            Item('integratessbb'),
                            spring,

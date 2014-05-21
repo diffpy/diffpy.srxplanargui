@@ -86,7 +86,12 @@ class SrXguiLive(SrXgui):
         self.splash = SplashScreen(image=ImageResource('01.png'))
         self.splash.open()
 
-        super(SrXgui, self).__init__(configfile=None, args=None, **kwargs)
+        super(SrXgui, self).__init__(**kwargs)
+        configfile = self.detectConfigfile(configfile)
+        if not os.path.exists(configfile):
+            configfile = self.detectConfigfile('default')
+        self.configfile = configfile
+        
         if not kwargs.has_key('srxconfig'):
             self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
 
@@ -96,7 +101,6 @@ class SrXguiLive(SrXgui):
         self.liveplot = None
         self.last10data = []
 
-        self.loadConfig('default')
         self.splash.close()
         return
 
