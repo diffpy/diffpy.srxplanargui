@@ -19,6 +19,8 @@ import re, os, sys
 from functools import partial
 import argparse
 
+from traits.etsconfig.api import ETSConfig
+ETSConfig.toolkit == 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
