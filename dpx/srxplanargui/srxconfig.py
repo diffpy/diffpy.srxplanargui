@@ -40,12 +40,6 @@ from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPro
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
         _defaultdata, checkMax, parseFit2D
 
-class CalibrationHandler(Handler):
-    
-    def close (self, info, is_ok):
-        info.object.calibrationflag = is_ok
-        return True
-
 class SrXconfig(ConfigBaseTraits):
     '''
     config class, based on ConfigBase class in diffpy.confutils
@@ -73,7 +67,7 @@ class SrXconfig(ConfigBaseTraits):
     tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax',
         fget=lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
 
-    fit2dmask = File('')
+    maskfile = File()
 
     def _preUpdateSelf(self, **kwargs):
         '''
@@ -101,10 +95,9 @@ class SrXconfig(ConfigBaseTraits):
             self._updateSelf()
         return
 
-    def _fit2dmask_changed(self):
-        if os.path.exists(self.fit2dmask):
-            if not self.fit2dmask in self.addmask:
-                self.addmask.append(self.fit2dmask)
+    def _maskfile_changed(self):
+        if os.path.exists(self.maskfile):
+            self.addmask = ['edgemask', maskfile]
         return
 
     def _opendirectory_changed(self):
@@ -121,12 +114,12 @@ class SrXconfig(ConfigBaseTraits):
               label='Files',
               )
     mask_group = \
-        Group(Item('fit2dmask', label='Fit2D mask'),
-              Item('addmask', label='Masks'),
+        Group(Item('maskfile', label='Fit2D mask'),
               show_border=True,
               label='Masks',
               )
-    
+        
+    geometry_visible = Bool(False)
     geometry_group = \
         Group(Item('integrationspace', label='Integration space'),
               Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength'),
@@ -139,115 +132,65 @@ class SrXconfig(ConfigBaseTraits):
               Item('qstep', label='Integration step', visible_when='integrationspace == "qspace"'),
 
               show_border=True,
-              label='Geometry parameters'
+              # label='Geometry parameters',
+              visible_when='geometry_visible',
+              )
+    
+    correction_visible = Bool(False)
+    correction_group = \
+        Group(Item('uncertaintyenable', label='Uncertainty'),
+              Item('sacorrectionenable', label='solid angle corr.'),
+              Item('polcorrectionenable', label='polarization corr.'),
+              Item('polcorrectf', label='polarization factor'),
+              
+              show_border=True,
+              # label='Corrections'
+              visible_when='correction_visible'
+              )
+    
+    detector_visible = Bool(False)
+    detector_group = \
+        Group(Item('fliphorizontal', label='Flip horizontally'),
+              Item('flipvertical', label='Flip vertically'),
+              Item('xdimension', label='x dimension'),
+              Item('ydimension', label='y dimension'),
+              Item('xpixelsize', label='x pixel size'),
+              Item('ypixelsize', label='x pixel size'),
+              Item('maskedges', editor=ArrayEditor(width=-40)),
+
+              show_border=True,
+              # label='Detector parameters'
+              visible_when='detector_visible'
               ),
 
-    basic_group = \
-        Group(directory_group,
-              mask_group,
-              geometry_group,
-              # label = 'Basic'
-              )
 
-    advanced_group = \
-        Group(
-              Group(Item('uncertaintyenable', label='Uncertainty'),
-                    Item('sacorrectionenable', label='solid angle corr.'),
-                    Item('polcorrectionenable', label='polarization corr.'),
-                    Item('polcorrectf', label='polarization factor'),
-
-                    show_border=True,
-                    label='Corrections'
-                    ),
-              Group(Item('fliphorizontal', label='Flip horizontally'),
-                    Item('flipvertical', label='Flip vertically'),
-                    Item('xdimension', label='x dimension'),
-                    Item('ydimension', label='y dimension'),
-                    Item('xpixelsize', label='x pixel size'),
-                    Item('ypixelsize', label='x pixel size'),
-                    Item('maskedges', editor=ArrayEditor(width=-50)),
-
-                    show_border=True,
-                    label='Detector parameters'
-                    ),
-
-              # label = 'Advanced'
-              )
-
-    basic_view = \
-        View(basic_group,
-
-             resizable=True,
-             scrollable=True,
-             # handler = handler,
-             icon=ImageResource('icon.ico'),
-             )
-    advanced_view = \
-        View(advanced_group,
-
-             resizable=True,
-             scrollable=True,
-             # handler = handler,
-             icon=ImageResource('icon.ico'),
-             )
-    
-    inst0 = Str('Caution! The calibration takes long time and program may lose response')
-    inst1 = Str('Please specify the wavelength and distance between sample and detector')
-    inst2 = Str('Plasee specify the initial value of following parameters')
-    calibrate_View = \
+    main_view = \
         View(
             Group(
-                Item('inst0', style='readonly', show_label=False),
-                Item('inst1', style='readonly', show_label=False),
-                HGroup(
-                    Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength'),
-                    Item('distance', label='Distance'),
-                    ),
-                Item('inst2', style='readonly', show_label=False),
-                HGroup(
-                    Item('xbeamcenter', label='x beamcenter'),
-                    Item('ybeamcenter', label='y beamcenter'),
-                    ),
-                HGroup(
-                    Item('rotationd', label='Rotation'),
-                    Item('tiltd', label='Tilt rotation')
-                    ),
-
+                directory_group,
+                mask_group,
+                Group(
+                Group(Item('geometry_visible', label='Geometry parameters'),
+                      geometry_group,),
+                Group(Item('correction_visible', label='corrections'),
+                      correction_group,),
+                Group(Item('detector_visible', label='Detector parameters'),
+                      detector_group,),
+                # label = 'Basic'
                 show_border=True,
-                label='Calibration'
                 ),
-             
-             width=600,
-             height=200,
-             resizable=True,
-             buttons=[OKButton, CancelButton],
-             handler=CalibrationHandler(),
-             icon=ImageResource('icon.ico'),
-             )
+                ),
 
-    srx_view = \
-        View(
-             Group(basic_group,
-                   advanced_group,
-
-                   show_labels=False,
-                   show_border=True,
-                   layout='tabbed',
-                   # layout = 'split',
-                   # orientation = 'horizontal',
-                   springy=True,
-                   dock='tab',
-                   ),
-             width=600,
-             height=800,
              resizable=True,
+             scrollable=True,
              # handler = handler,
              icon=ImageResource('icon.ico'),
              )
+        
 
 SrXconfig.initConfigClass()
 
 if __name__ == '__main__':
-    a = SrXConfig()
+    a = SrXconfig()
     # a.updateConfig()
-    a.configure_traits(view='srx_view')
+    a.configure_traits(view='main_view')

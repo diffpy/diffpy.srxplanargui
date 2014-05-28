@@ -1,0 +1,239 @@
+#!/usr/bin/env python
+##############################################################################
+#
+# dpx.pdfgetxgui    by Simon J. L. Billinge group
+#                   (c) 2012 Trustees of the Columbia University
+#                   in the City of New York.  All rights reserved.
+#
+# File coded by:    Xiaohao Yang
+#
+# See AUTHORS.txt for a list of people who contributed.
+# See LICENSE.txt for license information.
+#
+##############################################################################
+
+import numpy as np
+import os
+import sys
+import re
+
+from traits.etsconfig.api import ETSConfig
+if ETSConfig.toolkit == 'wx':
+    try:
+        import wx
+        if wx.versions() > 2.8:
+            ETSConfig.toolkit = 'qt4'
+    except:
+        ETSConfig.toolkit = 'qt4'
+else:
+    ETSConfig.toolkit = 'qt4'
+    
+from traits.api import \
+    Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
+    HasTraits, Property, Instance, Event, Button, Any, \
+    on_trait_change, DelegatesTo, cached_property, property_depends_on
+
+from traitsui.api import \
+    Item, Group, View, Handler, Controller, spring, Action, \
+    HGroup, VGroup, Tabbed, \
+    RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
+    ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, ImageEditor
+from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
+from pyface.api import ImageResource, SplashScreen
+
+from dpx.srxplanargui.srxconfig import SrXconfig
+from diffpy.srxplanar.srxplanar import SrXplanar
+from diffpy.srxplanar.calibrate import selfCalibrate
+
+class CalibrationHandler(Handler):
+
+    def closed(self, info, is_ok):
+        '''
+        notify main gui to delete current plot in plots list
+        '''
+        if is_ok:
+            info.object.calibration()
+        return True
+
+class Calibration(HasTraits):
+    image = File
+    dspacefile = File
+    srx = Instance(SrXplanar)
+    srxconfig = Instance(SrXconfig)
+    pythonbin = File
+    pyFAIdir = Directory
+    caliscript = File
+    
+    xpixelsize = DelegatesTo('srxconfig')
+    ypixelsize = DelegatesTo('srxconfig')
+    wavelength = DelegatesTo('srxconfig')
+    xbeamcenter = DelegatesTo('srxconfig')
+    ybeamcenter = DelegatesTo('srxconfig')
+    xdimension = DelegatesTo('srxconfig')
+    ydimension = DelegatesTo('srxconfig')
+    distance = DelegatesTo('srxconfig')
+    rotationd = DelegatesTo('srxconfig')
+    tiltd = DelegatesTo('srxconfig')
+    
+    def __init__(self, *args, **kwargs):
+        super(Calibration, self).__init__(*args, **kwargs)
+        self.locatePyFAI()
+        return
+    
+    def locatePyFAI(self):
+        pythonbin = sys.executable
+        if sys.platform == 'win32':
+            pyFAIdir = os.path.join(sys.exec_prefix, 'Scripts')
+        elif sys.platform == 'linux2':
+            pyFAIdir = os.path.join(sys.exec_prefix, 'bin')
+        else:
+            caliscript = os.path.join(sys.exec_prefix, 'bin', 'pyFAI-calib')
+        self.pythonbin = pythonbin
+        self.pyFAIdir = pyFAIdir
+        return
+    
+    @on_trait_change('pyFAIdir')
+    def _pyFAIdirChanged(self):
+        if sys.platform == 'win32':
+            caliscripts = os.path.join(self.pyFAIdir, 'pyFAI-calib.py')
+        elif sys.platform == 'linux2':
+            caliscript = os.path.join(self.pyFAIdir, 'pyFAI-calib')
+        else:
+            caliscript = os.path.join(self.pyFAIdir, 'pyFAI-calib')
+        self.caliscript = caliscript
+        return
+        
+    def callPyFAICalibration(self, image=None, dspacefile=None):
+        if image == None:
+            image = self.image
+        else:
+            self.image = image
+        if dspacefile == None:
+            dspacefile = self.dspacefile
+        else:
+            self.dspacefile = dspacefile
+        
+        flag = False
+        if os.path.exists(image) and os.path.isfile(image):
+            if os.path.exists(dspacefile) and os.path.isfile(dspacefile):
+                flag = True
+        
+        if flag:
+            image = os.path.abspath(image)
+            dspacefile = os.path.abspath(dspacefile)
+            
+            ps = [self.xpixelsize * 1000, self.ypixelsize * 1000]
+            
+            calicmd = [self.pythonbin, self.caliscript]
+            calicmd.extend(['-w', str(self.wavelength)])
+            calicmd.extend(['-S', str(dspacefile)])
+            calicmd.extend(['-p', str(ps[0]) + ',' + str(ps[1])])
+            calicmd.extend([str(image)])
+            
+            import subprocess
+            subprocess.call(calicmd)
+            self.parsePyFAIoutput(image)
+        return
+    
+    def parsePyFAIoutput(self, image=None):
+        if image == None:
+            image = self.image
+        
+        filename = os.path.splitext(image)[0] + '.xy'
+        if os.path.exists(filename):
+            f = open(filename, 'r')
+            lines = f.readlines()
+            f.close()
+        for line in lines:
+            if re.search('# Distance Sample-beamCenter', line):
+                distance = findFloat(line)[0]
+            elif re.search('# Center', line):
+                x, y = findFloat(line)
+            elif re.search('# Tilt', line):
+                tiltd, rotationd = findFloat(line)
+        
+        self.distance = distance
+        self.xbeamcenter = x  # - 0.5
+        self.ybeamcenter = self.ydimension  # - y - 0.5
+        self.tiltd = tiltd
+        self.rotationd = rotationd  # + 180
+        return
+    
+    def selfCalibration(self, image=None):
+        # self.addfiles.selected[0].fullname
+        if image == None:
+            image = self.image
+        
+        if os.path.exists(image) and os.path.isfile(image):
+            selfCalibrate(self.srx, image)
+        return
+    
+    calibrationmode = Enum(['std', 'self'])
+    def calibration(self, image=None, dspacefile=None):
+        if self.calibrationmode == 'std':
+            self.callPyFAICalibration(image, dspacefile)
+        elif self.calibrationmode == 'self':
+            self.selfCalibration(image)
+        else:
+            raise ValueError('calibration mode error')
+        return
+    
+    inst0 = Str('Caution! The calibration takes long time and program may lose response')
+    main_View = \
+        View(
+            Item('calibrationmode', style='custom', label='Calibration mode'),
+            Item('image', label='Image file'),
+             
+            Item('dspacefile', label='D-space file', visible_when='calibrationmode=="std"'),
+            Item('pyFAIdir', label='pyFAI dir.', visible_when='calibrationmode=="std"'),
+            HGroup(
+                Item('xpixelsize', label='Pixel size x (mm)'),
+                Item('ypixelsize', label='Pixel size y (mm)'),
+                visible_when='calibrationmode=="std"'
+                   ),
+             
+            HGroup(
+                Item('inst0', style='readonly', show_label=False),
+                visible_when='calibrationmode=="self"',
+                # show_border=True
+                ),
+            HGroup(
+                Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
+                Item('distance', label='Distance(mm)'),
+                label='Please specify the wavelength and distance between sample and detector',
+                show_border=True,
+                visible_when='calibrationmode=="self"'
+                ),
+            # Item('inst2', style='readonly', show_label=False),
+            VGroup(
+                HGroup(
+                    Item('xbeamcenter', label='x beamcenter (pixel)'),
+                    Item('ybeamcenter', label='y beamcenter (pixel)'),
+                    ),
+                HGroup(
+                    Item('rotationd', label='Rotation (degree)'),
+                    Item('tiltd', label='Tilt rotation (degree)')
+                    ),
+                show_border=True,
+                label='Plasee specify the initial value of following parameters',
+                visible_when='calibrationmode=="self"'
+                ),
+            
+            width=600,
+            height=300,
+            resizable=True,
+            buttons=[OKButton, CancelButton],
+            handler=CalibrationHandler(),
+            icon=ImageResource('icon.ico'),
+            )
+        
+def findFloat(line):
+    temp = re.findall('[-+]?\d*\.\d+|[-+]?\d+', line)
+    return map(float, temp)
+    
+if __name__ == '__main__':
+    srxconfig = SrXconfig()
+    cali = Calibration(srxconfig=srxconfig)
+    # cali.callPyFAICalibration('ceo2.tif', 'ceo2.d')
+    # cali.parsePyFAIoutput()
+    cali.configure_traits(view='main_View')
