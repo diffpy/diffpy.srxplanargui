@@ -45,6 +45,13 @@ from dpx.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
 from diffpy.srxplanar.calibrate import selfCalibrate
 
+try:
+    import pyFAI
+    missingpyFAI = False
+except:
+    missingpyFAI = True
+    print "Please download and install pyFAI to do the calibration"
+
 class CalibrationHandler(Handler):
 
     def closed(self, info, is_ok):
