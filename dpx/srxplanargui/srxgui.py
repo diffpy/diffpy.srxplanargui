@@ -57,7 +57,7 @@ from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
 from dpx.srxplanargui.help import SrXguiHelp
-from diffpy.srxplanar.calibrate import selfCalibrate
+from dpx.srxplanargui.calibration import Calibration
 
 class SrXguiHandler(Handler):
 
@@ -84,22 +84,17 @@ class SrXguiHandler(Handler):
         info.object._helpbb_changed()
         return
     
-class SaveLoadHandler(Handler):
-    def _saveconfig(self, info):
-        '''
-        save config file to getxgui.configfile
-        '''
-        info.object.saveConfig(info.object.configfile)
-        info.ui.dispose()
-        return
+class SaveHandler(Handler):
+    
+    def closed(self, info, is_ok):
+        if is_ok:
+            info.object.saveConfig(info.object.configfile)
+        return True
 
-    def _loadconfig(self, info):
-        '''
-        load config file from getxgui.configfile
-        '''
-
-        info.object.loadConfig(info.object.configfile)
-        info.ui.dispose()
+class LoadHandler(Handler):
+    def closed(self, info, is_ok):
+        if is_ok:
+            info.object.loadConfig(info.object.configfile)
         return
 
 class SrXgui(HasTraits):
@@ -108,6 +103,7 @@ class SrXgui(HasTraits):
     srxconfig = Instance(SrXconfig)
     help = Instance(SrXguiHelp)
     splash = Any
+    calibration = Instance(Calibration)
     
     def __init__(self, configfile=None, args=None, **kwargs):
         '''
@@ -125,6 +121,7 @@ class SrXgui(HasTraits):
         self.addfiles = AddFiles(srxconfig=self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
         self.help = SrXguiHelp()
+        self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
 
         # self.loadConfig(configfile)
         self.splash.close()
@@ -191,12 +188,6 @@ class SrXgui(HasTraits):
         return
     
     configfile = File()
-    saveconfig_action = \
-        Action(name='OK ',
-               action='_saveconfig')
-    loadconfig_action = \
-        Action(name='OK ',
-               action='_loadconfig')
     savebutton_action = \
         Action(name='Save Config',
                action='_saveconfigView')
@@ -210,8 +201,8 @@ class SrXgui(HasTraits):
                  resizable=True,
                  title='Save config',
                  width=500,
-                 buttons=[saveconfig_action, CancelButton],
-                 handler=SaveLoadHandler(),
+                 buttons=[OKButton, CancelButton],
+                 handler=SaveHandler(),
                  icon=ImageResource('icon.ico'),
                  )
     loadconfig_view = \
@@ -220,8 +211,8 @@ class SrXgui(HasTraits):
                  resizable=True,
                  title='Load config',
                  width=500,
-                 buttons=[loadconfig_action, CancelButton],
-                 handler=SaveLoadHandler(),
+                 buttons=[OKButton, CancelButton],
+                 handler=LoadHandler(),
                  icon=ImageResource('icon.ico'),
                  )
     #############################################################
@@ -239,10 +230,14 @@ class SrXgui(HasTraits):
         return
     
     def _selfcalibratebb_changed(self):
-        self.srxconfig.edit_traits(view='calibrate_View', kind='livemodal')
-        if self.srxconfig.calibrationflag:
-            selfCalibrate(self.srx, self.addfiles.selected[0].fullname,
-                          [self.srxconfig.xbeamcenter, self.srxconfig.ybeamcenter])
+        image = None
+        if self.addfiles.selected != None:
+            if len(self.addfiles.selected) == 1:
+                image = self.addfiles.selected[0].fullname
+        
+        if image != None:
+            self.calibration.image = image
+        self.calibration.edit_traits(view='main_View')
         return
     
     helpbutton_action = \
@@ -251,38 +246,8 @@ class SrXgui(HasTraits):
 
     integratbb = Button('Integrate separately')
     integratessbb = Button('Sum and Integrate')
-    selfcalibratebb = Button('Calibrate')
+    selfcalibratebb = Button('Calibration')
     helpbb = Button('Help')
-
-    main_group = \
-        HGroup(
-            Item('addfiles', editor=InstanceEditor(view='traits_view'),
-                 style='custom', label='Files', width=0.4),
-            VGroup(
-                Group(
-                    Item('srxconfig', editor=InstanceEditor(view='basic_view'),
-                         style='custom', label='Basic', show_label=False),
-                    Item('srxconfig', editor=InstanceEditor(view='advanced_view'),
-                         style='custom', label='Advanced', show_label=False),
-                    layout='tabbed',
-                    springy=True,
-                    ),
-                HGroup(
-                    spring,
-                    Item('selfcalibratebb'),
-                    Item('integratbb'),
-                    Item('integratessbb'),
-                    Item('helpbb'),
-                    spring,
-                    show_labels=False,
-                    ),
-                ),
-               
-               layout='split',
-               springy=True,
-               dock='tab',
-               show_labels=False
-               )
         
     calibrate_view = \
         View(Item('srxconfig'),
@@ -295,22 +260,19 @@ class SrXgui(HasTraits):
              icon=ImageResource('icon.ico'),
              )
         
-    selected = DelegatesTo('addfiles')
     traits_view = \
         View(
             HGroup(
                 Item('addfiles', editor=InstanceEditor(view='traits_view'),
                      style='custom', label='Files', width=0.4),
                 VGroup(
-                    Group(Item('srxconfig', editor=InstanceEditor(view='basic_view'),
+                    Group(Item('srxconfig', editor=InstanceEditor(view='main_view'),
                                style='custom', label='Basic', show_label=False),
-                          Item('srxconfig', editor=InstanceEditor(view='advanced_view'),
-                               style='custom', label='Advanced', show_label=False),
-                          layout='tabbed',
+                          # layout='tabbed',
                           springy=True,
                           ),
                     HGroup(spring,
-                           Item('selfcalibratebb', enabled_when='selected and len(selected)>0'),
+                           Item('selfcalibratebb'),
                            Item('integratbb'),
                            Item('integratessbb'),
                            spring,
@@ -325,8 +287,8 @@ class SrXgui(HasTraits):
                    ),
              resizable=True,
              title='SrXgui',
-             width=800,
-             height=700,
+             width=700,
+             height=600,
              kind='live',
              buttons=[helpbutton_action, savebutton_action, loadbutton_action, OKButton],
              icon=ImageResource('icon.ico'),
