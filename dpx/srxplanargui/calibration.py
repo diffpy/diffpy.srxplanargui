@@ -18,15 +18,15 @@ import sys
 import re
 
 from traits.etsconfig.api import ETSConfig
-if ETSConfig.toolkit == 'wx':
+if ETSConfig.toolkit == '' :
+    ETSConfig.toolkit = 'qt4'
+elif ETSConfig.toolkit == 'wx':
     try:
         import wx
         if wx.versions() > 2.8:
             ETSConfig.toolkit = 'qt4'
     except:
         ETSConfig.toolkit = 'qt4'
-else:
-    ETSConfig.toolkit = 'qt4'
     
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -70,6 +70,7 @@ class Calibration(HasTraits):
     pythonbin = File
     pyFAIdir = Directory
     caliscript = File
+    missingpyFAI = Bool(False)
     
     xpixelsize = DelegatesTo('srxconfig')
     ypixelsize = DelegatesTo('srxconfig')
@@ -85,6 +86,7 @@ class Calibration(HasTraits):
     def __init__(self, *args, **kwargs):
         super(Calibration, self).__init__(*args, **kwargs)
         self.locatePyFAI()
+        self.missingpyFAI = missingpyFAI
         return
     
     def locatePyFAI(self):
@@ -175,9 +177,9 @@ class Calibration(HasTraits):
             selfCalibrate(self.srx, image)
         return
     
-    calibrationmode = Enum(['std', 'self'])
+    calibrationmode = Enum(['calibrant', 'self'])
     def calibration(self, image=None, dspacefile=None):
-        if self.calibrationmode == 'std':
+        if self.calibrationmode == 'calibrant':
             self.callPyFAICalibration(image, dspacefile)
         elif self.calibrationmode == 'self':
             self.selfCalibration(image)
@@ -186,17 +188,35 @@ class Calibration(HasTraits):
         return
     
     inst0 = Str('Caution! The calibration takes long time and program may lose response')
+    inst1 = Str('Please install pyFAI and FabIO to use the calibration function (refer to help).')
+    inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
     main_View = \
         View(
             Item('calibrationmode', style='custom', label='Calibration mode'),
             Item('image', label='Image file'),
-             
-            Item('dspacefile', label='D-space file', visible_when='calibrationmode=="std"'),
-            Item('pyFAIdir', label='pyFAI dir.', visible_when='calibrationmode=="std"'),
+            
+            Group(
+                Item('inst1', style='readonly'),
+                Item('inst2', style='readonly'),
+                visible_when='missingpyFAI and calibrationmode=="calibrant"',
+                show_border=True,
+                show_labels=False,
+                ),
+            Group(
+                Item('dspacefile', label='D-space file'),
+                Item('pyFAIdir', label='pyFAI dir.'),
+                show_border=True,
+                visible_when='calibrationmode=="calibrant"',
+                enabled_when='not missingpyFAI',
+                label='Please specify the d-space file and the location of pyFAI executable'
+                ),
             HGroup(
                 Item('xpixelsize', label='Pixel size x (mm)'),
                 Item('ypixelsize', label='Pixel size y (mm)'),
-                visible_when='calibrationmode=="std"'
+                visible_when='calibrationmode=="calibrant"',
+                enabled_when='not missingpyFAI',
+                show_border=True,
+                label='Please specify the size of pixel'
                    ),
              
             HGroup(
@@ -207,27 +227,40 @@ class Calibration(HasTraits):
             HGroup(
                 Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
                 Item('distance', label='Distance(mm)'),
-                label='Please specify the wavelength and distance between sample and detector',
+                label='Please specify the wavelength and distance between sample and detector:',
                 show_border=True,
                 visible_when='calibrationmode=="self"'
                 ),
-            # Item('inst2', style='readonly', show_label=False),
-            VGroup(
-                HGroup(
+            HGroup(
+                VGroup(
                     Item('xbeamcenter', label='x beamcenter (pixel)'),
-                    Item('ybeamcenter', label='y beamcenter (pixel)'),
-                    ),
-                HGroup(
                     Item('rotationd', label='Rotation (degree)'),
+                    ),
+                VGroup(
+                    Item('ybeamcenter', label='y beamcenter (pixel)'),
                     Item('tiltd', label='Tilt rotation (degree)')
                     ),
                 show_border=True,
-                label='Plasee specify the initial value of following parameters',
+                label='Plasee specify the initial value of following parameters:',
                 visible_when='calibrationmode=="self"'
                 ),
-            
+             HGroup(
+                VGroup(
+                    Item('xdimension', label='x dimension (pixel)'),
+                    Item('xpixelsize', label='Pixel size x (mm)'),
+                    ),
+                VGroup(
+                    Item('ydimension', label='y dimension (pixel)'),
+                    Item('ypixelsize', label='Pixel size y (mm)')
+                    ),
+                show_border=True,
+                label='Plasee specify the dimension of detector and size of pixel:',
+                visible_when='calibrationmode=="self"'
+                ),
+             
+            title='Calibration',
             width=600,
-            height=300,
+            height=400,
             resizable=True,
             buttons=[OKButton, CancelButton],
             handler=CalibrationHandler(),
