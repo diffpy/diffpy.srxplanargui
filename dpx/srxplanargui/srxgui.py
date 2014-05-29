@@ -20,27 +20,17 @@ import os
 import sys
 
 # break if help passed to the args
-sysargv = sys.argv[1:]
-if ('--help' in sysargv) or('-h' in sysargv):
-    from dpx.srxplanargui.srxconfig import SrXconfig
-    SrXconfig(args=sysargv)
-
 from traits.etsconfig.api import ETSConfig
-if any([aa == 'wx' for aa in sysargv]):
-    ETSConfig.toolkit = 'wx'
-    import wx
-    import traitsui.wx.constants
-    traitsui.wx.constants.WindowColor = wx.Colour(244, 243, 238)
-else:
+if ETSConfig.toolkit == '' :
     ETSConfig.toolkit = 'qt4'
-    from pyface.qt import QtGui, QtCore
-
-from pyface.api import ImageResource, SplashScreen
-# open splash screen
-splash = SplashScreen(image=ImageResource('01.png'))
-if not any([aa == '-h' or aa == '--help' for aa in sysargv]):
-    splash.open()
-
+elif ETSConfig.toolkit == 'wx':
+    try:
+        import wx
+        if wx.versions() > 2.8:
+            ETSConfig.toolkit = 'qt4'
+    except:
+        ETSConfig.toolkit = 'qt4'
+    
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -52,6 +42,7 @@ from traitsui.api import \
     RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, ImageEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
+from pyface.api import ImageResource, SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
@@ -65,13 +56,10 @@ class SrXguiHandler(Handler):
         '''
         notify main gui to delete current plot in plots list
         '''
-        info.object.saveConfig('default')
+        configfile = info.object.detectConfigfile('default')
+        info.object.saveConfig(configfile)
         return True
 
-    def _quickstart(self, info):
-        info.object._helpbb_changed()
-        return
-    
     def _saveconfigView(self, info):
         info.object._saveconfigView()
         return
@@ -82,6 +70,19 @@ class SrXguiHandler(Handler):
     
     def _helpView(self, info):
         info.object._helpbb_changed()
+        return
+    
+    # for live mode
+    def _quickstart(self, info):
+        info.object._helpbb_changed()
+        return
+    
+    def _startCapturing(self, info):
+        info.object._startCapturing()
+        return
+    
+    def _stopCapturing(self, info):
+        info.object._stopCapturing()
         return
     
 class SaveHandler(Handler):
@@ -147,15 +148,12 @@ class SrXgui(HasTraits):
             self.configfile = configfile
         return
 
-    def processSelected(self, ss=False):
+    def processSelected(self, summation=False):
         if self.addfiles.selected:
             self.srx.updateConfig()
             filelist = [f.fullname for f in self.addfiles.selected]
             self.srx.prepareCalculation(filelist)
-            if ss:
-                self.srx.integrateFilelist(filelist, summation=True)
-            else:
-                self.srx.integrateFilelist(filelist, summation=False)
+            self.srx.integrateFilelist(filelist, summation=summation)
         return
     
     def detectConfigfile(self, filename):
@@ -188,10 +186,10 @@ class SrXgui(HasTraits):
         return
     
     configfile = File()
-    savebutton_action = \
+    saveconfig_action = \
         Action(name='Save Config',
                action='_saveconfigView')
-    loadbutton_action = \
+    loadconfig_action = \
         Action(name='Load Config',
                action='_loadconfigView')
 
@@ -249,17 +247,6 @@ class SrXgui(HasTraits):
     selfcalibratebb = Button('Calibration')
     helpbb = Button('Help')
         
-    calibrate_view = \
-        View(Item('srxconfig'),
-             # Item('srxconfig', editor=InstanceEditor(view='calibrate_view'),
-             #     style='custom'),
-             width=600,
-             height=200,
-             resizable=True,
-             # handler = handler,
-             icon=ImageResource('icon.ico'),
-             )
-        
     traits_view = \
         View(
             HGroup(
@@ -288,9 +275,9 @@ class SrXgui(HasTraits):
              resizable=True,
              title='SrXgui',
              width=700,
-             height=600,
+             height=650,
              kind='live',
-             buttons=[helpbutton_action, savebutton_action, loadbutton_action, OKButton],
+             buttons=[helpbutton_action, saveconfig_action, loadconfig_action, OKButton],
              icon=ImageResource('icon.ico'),
              handler=SrXguiHandler(),
              )

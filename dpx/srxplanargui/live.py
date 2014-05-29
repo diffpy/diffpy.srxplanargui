@@ -19,6 +19,17 @@ from functools import partial
 import threading
 import time
 
+from traits.etsconfig.api import ETSConfig
+if ETSConfig.toolkit == '' :
+    ETSConfig.toolkit = 'qt4'
+elif ETSConfig.toolkit == 'wx':
+    try:
+        import wx
+        if wx.versions() > 2.8:
+            ETSConfig.toolkit = 'qt4'
+    except:
+        ETSConfig.toolkit = 'qt4'
+
 # imports
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -35,9 +46,10 @@ from pyface.api import ImageResource, GUI, SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
-from dpx.srxplanargui.srxgui import SrXgui, SrXguiHandler
+from dpx.srxplanargui.srxgui import SrXgui, SrXguiHandler, SaveHandler, LoadHandler
 from diffpy.srxplanar.srxplanar import SrXplanar
 from dpx.srxplanargui.help import SrXguiHelp
+from dpx.srxplanargui.calibration import Calibration
 
 from dpx.confutils.tools import checkFileVal
 
@@ -98,6 +110,8 @@ class SrXguiLive(SrXgui):
         self.addfiles = AddFiles(srxconfig=self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
         self.help = SrXguiHelp()
+        self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
+        
         self.liveplot = None
         self.last10data = []
 
@@ -114,34 +128,31 @@ class SrXguiLive(SrXgui):
         self.getxgui.getxconfig.savedir = newdir
         return
 
-    def processSelected(self, ss=False):
+    def processSelected(self, summation=False):
         if self.addfiles.selected:
             self.srx.updateConfig()
             filelist = [f.fullname for f in self.addfiles.selected]
             self.srx.prepareCalculation(filelist)
-            if ss:
-                rvlist = self.srx.integrateFilelist(filelist, summation=True)
-            else:
-                rvlist = self.srx.integrateFilelist(filelist, summation=False)
+            rvlist = self.srx.integrateFilelist(filelist, summation=summation)
             newchifilelist = [rv['filename'] for rv in rvlist]
             GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
         return
 
-    def _startlivebb_changed(self):
+    def _startCapturing(self):
         self.capturing = True
 
         wdir = self.srxconfig.opendirectory
         self.liveplot = None
         self.last10data = []
         self.srx.updateConfig()
-        self.existfileset = self.srx.loadimage.genFileSet()
+        self.existfileset = self.srx.loadimage.genFileSet(fullpath=True)
 
         self.livingthread = LivingThread(wdir, self)
         self.livingthread.daemon = True
         self.livingthread.start()
         return
 
-    def _stoplivebb_changed(self):
+    def _stopCapturing(self):
         self.capturing = False
         self.livingthread.capturing = False
         self.livingthread.join()
@@ -149,16 +160,15 @@ class SrXguiLive(SrXgui):
 
     ###LIVE###
     def newImages(self):
-        newexistfileset = self.srx.loadimage.genFileSet()
+        newexistfileset = self.srx.loadimage.genFileSet(fullpath=True)
         newfileset = newexistfileset - self.existfileset
         newfilelist = sorted(list(newfileset))
-        newfilelistfull = map(lambda name: os.path.abspath(self.srxconfig.opendirectory + '/' + name), newfilelist)
         if len(newfilelist) > 0:
-            for newfile in newfilelistfull:
+            for newfile in newfilelist:
                 checkFileVal(newfile)
             if len(self.last10data) < 5:
-                self.srx.prepareCalculation(newfilelistfull)
-            rvlist = self.srx.integrateFilelist(newfilelistfull, summation=False)
+                self.srx.prepareCalculation(newfilelist)
+            rvlist = self.srx.integrateFilelist(newfilelist, summation=False)
 
             newchifilelist = [rv['filename'] for rv in rvlist]
             GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
@@ -183,57 +193,57 @@ class SrXguiLive(SrXgui):
         return
 
     capturing = Bool(False)
-    startlivebb = Button('Start capturing')
-    stoplivebb = Button('Stop capturing')
-
+    startcapturing_action = \
+        Action(name='Start Capturing',
+               action='_startCapturing')
+    stopcapturing_action = \
+        Action(name='Stop Capturing',
+               action='_stopCapturing')
     quickstart_action = \
         Action(name='Quick start',
                action='_quickstart')
-
-    main_group = \
-        HGroup(Item('addfiles', editor=InstanceEditor(view='traits_view'),
-                    style='custom', label='Files', width=0.4),
-               Group(Item('srxconfig', editor=InstanceEditor(view='basic_view'),
-                          style='custom', label='Basic', show_label=False),
-                     Item('srxconfig', editor=InstanceEditor(view='advanced_view'),
-                          style='custom', label='Advanced', show_label=False),
-                     layout='tabbed',
-                     springy=True,
-                     ),
-
-               enabled_when='not capturing',
-               layout='split',
-               springy=True,
-               dock='tab',
-               show_labels=False
-               )
-
+    saveconfig_action = \
+        Action(name='Save Config',
+               action='_saveconfigView')
+    loadconfig_action = \
+        Action(name='Load Config',
+               action='_loadconfigView')
+    
     traits_view = \
-        View(Group(main_group,
-                   HGroup(spring,
-                          Item('integratbb', enabled_when='not capturing',),
-                          Item('integratessbb', enabled_when='not capturing',),
-                          spring,
-                          Item('startlivebb', enabled_when='capturing == False'),
-                          Item('stoplivebb', enabled_when='capturing == True'),
-                          spring,
-
-                          show_labels=False,
+        View(
+            HGroup(
+                Item('addfiles', editor=InstanceEditor(view='traits_view'),
+                     style='custom', label='Files', width=0.4),
+                VGroup(
+                    Group(Item('srxconfig', editor=InstanceEditor(view='main_view'),
+                               style='custom', label='Basic', show_label=False),
+                          # layout='tabbed',
+                          springy=True,
                           ),
+                    HGroup(spring,
+                           Item('selfcalibratebb'),
+                           Item('integratbb'),
+                           Item('integratessbb'),
+                           spring,
+                           show_labels=False,
+                           ),
+                    ),
+                   
+                   layout='split',
+                   springy=True,
+                   dock='tab',
+                   show_labels=False
                    ),
-
              resizable=True,
              title='SrXgui',
-             width=800,
-             height=700,
+             width=700,
+             height=650,
              kind='live',
              icon=ImageResource('icon.ico'),
              handler=SrXguiHandler(),
-             buttons=[OKButton, quickstart_action],
+             buttons=[quickstart_action, saveconfig_action, loadconfig_action,
+                      startcapturing_action, stopcapturing_action, OKButton],
              )
-
-
-
 
 def main():
     # splash = SplashScreen(image=ImageResource('splash.png'))
