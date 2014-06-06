@@ -195,19 +195,23 @@ class SrXguiLive(SrXgui):
     capturing = Bool(False)
     startcapturing_action = \
         Action(name='Start Capturing',
-               action='_startCapturing')
+               action='_startCapturing',
+               enabled_when='not capturing')
     stopcapturing_action = \
         Action(name='Stop Capturing',
-               action='_stopCapturing')
+               action='_stopCapturing',
+               enabled_when='capturing')
     quickstart_action = \
         Action(name='Quick start',
                action='_quickstart')
     saveconfig_action = \
         Action(name='Save Config',
-               action='_saveconfigView')
+               action='_saveconfigView',
+               enabled_when='not capturing')
     loadconfig_action = \
         Action(name='Load Config',
-               action='_loadconfigView')
+               action='_loadconfigView',
+               enabled_when='not capturing')
     
     traits_view = \
         View(
@@ -221,9 +225,9 @@ class SrXguiLive(SrXgui):
                           springy=True,
                           ),
                     HGroup(spring,
-                           Item('selfcalibratebb'),
-                           Item('integratbb'),
-                           Item('integratessbb'),
+                           Item('selfcalibratebb', enabled_when='not capturing'),
+                           Item('integratbb', enabled_when='not capturing'),
+                           Item('integratessbb', enabled_when='not capturing'),
                            spring,
                            show_labels=False,
                            ),

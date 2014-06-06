@@ -18,7 +18,7 @@
 import numpy as np
 import os
 import sys
-
+from traits.etsconfig.api import ETSConfig
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \

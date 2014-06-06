@@ -43,7 +43,7 @@ from pyface.api import ImageResource, SplashScreen
 
 from dpx.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
-from diffpy.srxplanar.calibrate import selfCalibrate
+from diffpy.srxplanar.selfcalibrate import selfCalibrate
 
 try:
     import pyFAI
