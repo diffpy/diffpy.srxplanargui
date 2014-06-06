@@ -20,7 +20,15 @@ from functools import partial
 import argparse
 
 from traits.etsconfig.api import ETSConfig
-ETSConfig.toolkit == 'qt4'
+if ETSConfig.toolkit == '' :
+    ETSConfig.toolkit = 'qt4'
+elif ETSConfig.toolkit == 'wx':
+    try:
+        import wx
+        if wx.versions() > 2.8:
+            ETSConfig.toolkit = 'qt4'
+    except:
+        ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -39,6 +47,14 @@ from dpx.confutils.configtraits import ConfigBaseTraits
 from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPropertyRW
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
         _defaultdata, checkMax, parseFit2D
+
+_optdatalist.append(
+    ['toolkit', {'sec':'Misc', 'config':'n', 'header':'n',
+                 'l':'toolkit',
+                 'h':'toolkit of PDFgetEgui program, could be wx or qt4',
+                 'c':['wx', 'qt4'],
+                 'd':'qt4', }],
+                    )
 
 class SrXconfig(ConfigBaseTraits):
     '''
@@ -108,13 +124,13 @@ class SrXconfig(ConfigBaseTraits):
         return
     
     directory_group = \
-        Group(Item('opendirectory', label='Input dir.'),
-              Item('savedirectory', label='Output dir.'),
+        Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),
+              Item('savedirectory', label='Output dir.', help='directory of saved files'),
               show_border=True,
               label='Files',
               )
     mask_group = \
-        Group(Item('maskfile', label='Fit2D mask'),
+        Group(Item('maskfile', label='Mask file'),
               show_border=True,
               label='Masks',
               )
@@ -122,9 +138,9 @@ class SrXconfig(ConfigBaseTraits):
     geometry_visible = Bool(False)
     geometry_group = \
         Group(Item('integrationspace', label='Integration space'),
-              Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength'),
-              Item('xbeamcenter', label='x beamcenter'),
-              Item('ybeamcenter', label='y beamcenter'),
+              Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength',),
+              Item('xbeamcenter', label='X beamcenter'),
+              Item('ybeamcenter', label='Y beamcenter'),
               Item('distance', label='Distance'),
               Item('rotationd', label='Rotation'),
               Item('tiltd', label='Tilt rotation'),

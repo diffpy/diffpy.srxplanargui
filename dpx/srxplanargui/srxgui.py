@@ -133,7 +133,8 @@ class SrXgui(HasTraits):
         '''
         save config
         '''
-        # configfile = self.detectConfigfile(filename)
+        if filename == 'default':
+            filename = self.detectConfigfile(filename)
         self.srxconfig.writeConfig(filename, mode='full')
         self.configfile = filename  
         return
@@ -281,11 +282,6 @@ class SrXgui(HasTraits):
              icon=ImageResource('icon.ico'),
              handler=SrXguiHandler(),
              )
-
-def main():
-    gui = SrXgui(splash=splash)
-    gui.configure_traits(view='traits_view')
-    return
 
 if __name__ == '__main__':
     sys.exit(main())
