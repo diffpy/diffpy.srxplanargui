@@ -113,7 +113,7 @@ class SrXconfig(ConfigBaseTraits):
 
     def _maskfile_changed(self):
         if os.path.exists(self.maskfile):
-            self.addmask = ['edgemask', maskfile]
+            self.addmask = ['edgemask', self.maskfile]
         return
 
     def _opendirectory_changed(self):
