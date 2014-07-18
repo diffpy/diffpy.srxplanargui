@@ -104,7 +104,7 @@ class Calibration(HasTraits):
     @on_trait_change('pyFAIdir')
     def _pyFAIdirChanged(self):
         if sys.platform == 'win32':
-            caliscripts = os.path.join(self.pyFAIdir, 'pyFAI-calib.py')
+            caliscript = os.path.join(self.pyFAIdir, 'pyFAI-calib.py')
         elif sys.platform == 'linux2':
             caliscript = os.path.join(self.pyFAIdir, 'pyFAI-calib')
         else:
