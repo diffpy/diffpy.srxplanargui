@@ -117,10 +117,22 @@ class SrXconfig(ConfigBaseTraits):
         return
 
     def _opendirectory_changed(self):
-        newdir = os.path.join(self.opendirectory, 'chi')
-        if not os.path.exists(newdir):
-            os.mkdir(newdir)
-        self.savedirectory = newdir
+        if os.path.exists(self.opendirectory):
+            newdir = os.path.join(self.opendirectory, 'chi')
+            if not os.path.exists(newdir):
+                try:
+                    os.mkdir(newdir)
+                except:
+                    newdir = self.opendirectory
+                self.savedirectory = newdir
+        else:
+            self.opendirectory = os.curdir
+            self.savedirectory = os.curdir
+        return
+    
+    def _savedirectory_changed(self):
+        if not os.path.exists(self.savedirectory):
+            self.savedirectory = os.curdir
         return
     
     directory_group = \
