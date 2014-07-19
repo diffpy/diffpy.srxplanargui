@@ -202,7 +202,7 @@ class SrXgui(HasTraits):
                  width=500,
                  buttons=[OKButton, CancelButton],
                  handler=SaveHandler(),
-                 icon=ImageResource('icon.ico'),
+                 icon=ImageResource('icon.png'),
                  )
     loadconfig_view = \
             View(Item('configfile'),
@@ -212,7 +212,7 @@ class SrXgui(HasTraits):
                  width=500,
                  buttons=[OKButton, CancelButton],
                  handler=LoadHandler(),
-                 icon=ImageResource('icon.ico'),
+                 icon=ImageResource('icon.png'),
                  )
     #############################################################
 
@@ -279,7 +279,7 @@ class SrXgui(HasTraits):
              height=650,
              kind='live',
              buttons=[helpbutton_action, saveconfig_action, loadconfig_action, OKButton],
-             icon=ImageResource('icon.ico'),
+             icon=ImageResource('icon.png'),
              handler=SrXguiHandler(),
              )
 

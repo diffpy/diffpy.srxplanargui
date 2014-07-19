@@ -243,7 +243,7 @@ class SrXguiLive(SrXgui):
              width=700,
              height=650,
              kind='live',
-             icon=ImageResource('icon.ico'),
+             icon=ImageResource('icon.png'),
              handler=SrXguiHandler(),
              buttons=[quickstart_action, saveconfig_action, loadconfig_action,
                       startcapturing_action, stopcapturing_action, OKButton],

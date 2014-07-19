@@ -212,7 +212,7 @@ class SrXconfig(ConfigBaseTraits):
              resizable=True,
              scrollable=True,
              # handler = handler,
-             icon=ImageResource('icon.ico'),
+             icon=ImageResource('icon.png'),
              )
         
 
