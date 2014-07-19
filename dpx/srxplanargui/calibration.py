@@ -96,7 +96,7 @@ class Calibration(HasTraits):
         elif sys.platform == 'linux2':
             pyFAIdir = os.path.join(sys.exec_prefix, 'bin')
         else:
-            caliscript = os.path.join(sys.exec_prefix, 'bin', 'pyFAI-calib')
+            pyFAIdir = os.path.join(sys.exec_prefix, 'bin')
         self.pythonbin = pythonbin
         self.pyFAIdir = pyFAIdir
         return
@@ -105,11 +105,15 @@ class Calibration(HasTraits):
     def _pyFAIdirChanged(self):
         if sys.platform == 'win32':
             caliscript = os.path.join(self.pyFAIdir, 'pyFAI-calib.py')
+            intescript = os.path.join(self.pyFAIdir, 'pyFAI-waxs.py')
         elif sys.platform == 'linux2':
             caliscript = os.path.join(self.pyFAIdir, 'pyFAI-calib')
+            intescript = os.path.join(self.pyFAIdir, 'pyFAI-waxs')
         else:
             caliscript = os.path.join(self.pyFAIdir, 'pyFAI-calib')
+            intescript = os.path.join(self.pyFAIdir, 'pyFAI-waxs')
         self.caliscript = caliscript
+        self.intescript = intescript
         return
         
     def callPyFAICalibration(self, image=None, dspacefile=None):
@@ -135,13 +139,22 @@ class Calibration(HasTraits):
             
             calicmd = [self.pythonbin, self.caliscript]
             calicmd.extend(['-w', str(self.wavelength)])
-            calicmd.extend(['-S', str(dspacefile)])
+            if sys.platform == 'win32':
+                calicmd.extend(['-c', str(dspacefile)])
+            else:
+                calicmd.extend(['-S', str(dspacefile)])
             calicmd.extend(['-p', str(ps[0]) + ',' + str(ps[1])])
             calicmd.extend([str(image)])
             
             import subprocess
             subprocess.call(calicmd)
+            
+            # integrate image
+            ponifile = os.path.splitext(str(image))[0] + '.poni'
+            intecmd = [self.pythonbin, self.intescript, '-p', ponifile, str(image)]
+            subprocess.call(intecmd)
             self.parsePyFAIoutput(image)
+            print 'Calibration finished!'
         return
     
     def parsePyFAIoutput(self, image=None):
@@ -153,6 +166,8 @@ class Calibration(HasTraits):
             f = open(filename, 'r')
             lines = f.readlines()
             f.close()
+        else:
+            raise ValueError('pyFAI result file not exsit')
         for line in lines:
             if re.search('# Distance Sample-beamCenter', line):
                 distance = findFloat(line)[0]
@@ -163,7 +178,7 @@ class Calibration(HasTraits):
         
         self.distance = distance
         self.xbeamcenter = x  # - 0.5
-        self.ybeamcenter = self.ydimension  # - y - 0.5
+        self.ybeamcenter = y  # - y - 0.5
         self.tiltd = tiltd
         self.rotationd = rotationd  # + 180
         return
