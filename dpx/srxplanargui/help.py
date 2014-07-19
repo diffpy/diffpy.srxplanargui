@@ -98,5 +98,5 @@ class SrXguiHelp(HasTraits):
              resizable=True,
              buttons=[previous_action, next_action, OKButton],
              handler=HelpHandler(),
-             icon=ImageResource('icon.ico'),
+             icon=ImageResource('icon.png'),
              )

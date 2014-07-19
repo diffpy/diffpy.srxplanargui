@@ -279,7 +279,7 @@ class Calibration(HasTraits):
             resizable=True,
             buttons=[OKButton, CancelButton],
             handler=CalibrationHandler(),
-            icon=ImageResource('icon.ico'),
+            icon=ImageResource('icon.png'),
             )
         
 def findFloat(line):
