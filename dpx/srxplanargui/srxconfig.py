@@ -124,7 +124,7 @@ class SrXconfig(ConfigBaseTraits):
                     os.mkdir(newdir)
                 except:
                     newdir = self.opendirectory
-                self.savedirectory = newdir
+            self.savedirectory = newdir
         else:
             self.opendirectory = os.curdir
             self.savedirectory = os.curdir
