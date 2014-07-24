@@ -135,6 +135,12 @@ class Calibration(HasTraits):
             image = os.path.abspath(image)
             dspacefile = os.path.abspath(dspacefile)
             
+            # remove .npt and .azim
+            for f in [os.path.splitext(image)[0] + '.npt',
+                      os.path.splitext(image)[0] + '.azim']:
+                if os.path.exists(f):
+                    os.remove(f)
+            
             ps = [self.xpixelsize * 1000, self.ypixelsize * 1000]
             
             calicmd = [self.pythonbin, self.caliscript]
@@ -150,9 +156,10 @@ class Calibration(HasTraits):
             subprocess.call(calicmd)
             
             # integrate image
-            ponifile = os.path.splitext(str(image))[0] + '.poni'
-            intecmd = [self.pythonbin, self.intescript, '-p', ponifile, str(image)]
-            subprocess.call(intecmd)
+            if sys.platform == 'win32':
+                ponifile = os.path.splitext(str(image))[0] + '.poni'
+                intecmd = [self.pythonbin, self.intescript, '-p', ponifile, str(image)]
+                subprocess.call(intecmd)
             self.parsePyFAIoutput(image)
             print 'Calibration finished!'
         return
