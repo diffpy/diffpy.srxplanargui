@@ -202,7 +202,7 @@ class SrXguiLive(SrXgui):
                action='_stopCapturing',
                enabled_when='capturing')
     quickstart_action = \
-        Action(name='Quick start',
+        Action(name='Help ',
                action='_quickstart')
     saveconfig_action = \
         Action(name='Save Config',
@@ -245,8 +245,9 @@ class SrXguiLive(SrXgui):
              kind='live',
              icon=ImageResource('icon.png'),
              handler=SrXguiHandler(),
-             buttons=[quickstart_action, saveconfig_action, loadconfig_action,
-                      startcapturing_action, stopcapturing_action, OKButton],
+             # buttons=[quickstart_action, saveconfig_action, loadconfig_action,
+             #         startcapturing_action, stopcapturing_action, OKButton],
+             buttons=[quickstart_action, saveconfig_action, loadconfig_action, OKButton],
              )
 
 def main():
