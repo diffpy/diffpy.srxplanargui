@@ -240,7 +240,13 @@ class Calibration(HasTraits):
                 show_border=True,
                 label='Please specify the size of pixel'
                    ),
-             
+            HGroup(
+                Item('wavelength', label='Wavelength (A)'),
+                visible_when='calibrationmode=="calibrant"',
+                enabled_when='not missingpyFAI',
+                show_border=True,
+                label='Please specify the wavelength'
+                   ),
             HGroup(
                 Item('inst0', style='readonly', show_label=False),
                 visible_when='calibrationmode=="self"',
