@@ -149,7 +149,7 @@ class SrXconfig(ConfigBaseTraits):
         
     geometry_visible = Bool(False)
     geometry_group = \
-        Group(Item('integrationspace', label='Integration space'),
+        Group(Item('integrationspace', label='Integration grid'),
               Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength',),
               Item('xbeamcenter', label='X beamcenter'),
               Item('ybeamcenter', label='Y beamcenter'),
