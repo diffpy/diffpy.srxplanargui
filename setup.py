@@ -1,18 +1,4 @@
 #!/usr/bin/env python
-##############################################################################
-#
-# dpx.pdfgetxgui    by Simon J. L. Billinge group
-#                   (c) 2012 Trustees of the Columbia University
-#                   in the City of New York.  All rights reserved.
-#
-# File coded by:    Xiaohao Yang
-#
-# See AUTHORS.txt for a list of people who contributed.
-# See LICENSE.txt for license information.
-#
-##############################################################################
-
-# Installation script for diffpy.pdfgetx
 
 """dpx.srxplanargui
 """
@@ -22,7 +8,7 @@ from setuptools import setup, find_packages
 # define distribution
 dist = setup(
         name='dpx.srxplanargui',
-        version='0.1',
+        version='1.0',
         namespace_packages=['dpx'],
         packages=find_packages(),
         include_package_data=True,
