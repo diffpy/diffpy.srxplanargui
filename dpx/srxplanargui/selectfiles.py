@@ -179,7 +179,7 @@ class AddFiles(HasTraits):
             VGroup(
                 HGroup(
                     Item('search', id='search', springy=True,
-                         editor=HistoryEditor(auto_set=False)),
+                         editor=TextEditor(auto_set=False)),
                     Item('filetype', label='Type'),
                     ),
                 Item('datafiles', id='datafiles', editor=tableeditor),
