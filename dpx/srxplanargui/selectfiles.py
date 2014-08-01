@@ -207,7 +207,10 @@ def _createFileNameFilter(pattern, casesensitive):
 
     Return callable object.
     '''
-    from diffpy.pdfgetx.multipattern import MultiPattern
+    try:
+        from diffpy.pdfgetx.multipattern import MultiPattern
+    except:
+        from diffpy.pdfgete.multipattern import MultiPattern
     # MultiPattern always matches for an empty pattern, thus there
     # is no need to handle empty search string in a special way.
     patterns = pattern.split()
