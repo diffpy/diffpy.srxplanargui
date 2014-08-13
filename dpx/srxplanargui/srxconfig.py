@@ -184,7 +184,7 @@ class SrXconfig(ConfigBaseTraits):
               Item('ydimension', label='y dimension'),
               Item('xpixelsize', label='x pixel size'),
               Item('ypixelsize', label='x pixel size'),
-              Item('cropedges', editor=ArrayEditor(width=-40)),
+              Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
 
               show_border=True,
               # label='Detector parameters'
