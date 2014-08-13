@@ -135,6 +135,23 @@ class SrXconfig(ConfigBaseTraits):
             self.savedirectory = os.curdir
         return
     
+    configmode = Enum(['TEM', 'normal'])
+    
+    xpixelsizetem = Property(depends_on='xpixelsize')
+    def _get_xpixelsizetem(self):
+        return self.xpixelsize / self.distance / self.wavelength
+    def _set_xpixelsizetem(self, size):
+        size = float(size)
+        self.updateConfig(xpixelsize=size * self.wavelength * self.distance)
+        return
+    ypixelsizetem = Property(depends_on='ypixelsize')
+    def _get_ypixelsizetem(self):
+        return self.ypixelsize / self.distance / self.wavelength
+    def _set_ypixelsizetem(self, size):
+        size = float(size)
+        self.updateConfig(ypixelsize=size * self.wavelength * self.distance)
+        return
+
     directory_group = \
         Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),
               Item('savedirectory', label='Output dir.', help='directory of saved files'),
@@ -153,7 +170,8 @@ class SrXconfig(ConfigBaseTraits):
               Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength',),
               Item('xbeamcenter', label='X beamcenter'),
               Item('ybeamcenter', label='Y beamcenter'),
-              Item('distance', label='Distance'),
+              Item('distance', label='Camera length', visible_when='configmode == "TEM"'),
+              Item('distance', label='Distance', visible_when='configmode == "normal"'),
               Item('rotationd', label='Rotation'),
               Item('tiltd', label='Tilt rotation'),
               Item('tthstepd', label='Integration step', visible_when='integrationspace == "twotheta"'),
@@ -182,8 +200,10 @@ class SrXconfig(ConfigBaseTraits):
               Item('flipvertical', label='Flip vertically'),
               Item('xdimension', label='x dimension'),
               Item('ydimension', label='y dimension'),
-              Item('xpixelsize', label='x pixel size'),
-              Item('ypixelsize', label='x pixel size'),
+              Item('xpixelsize', label='x pixel size (mm)', visible_when='configmode == "normal"'),
+              Item('ypixelsize', label='x pixel size (mm)', visible_when='configmode == "normal"'),
+              Item('xpixelsizetem', label='x pixel size (A^-1)', tooltip='x pixel size, in A^-1', visible_when='configmode == "TEM"'),
+              Item('ypixelsizetem', label='y pixel size (A^-1)', tooltip='y pixel size, in A^-1', visible_when='configmode == "TEM"'),
               Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
 
               show_border=True,
@@ -191,13 +211,13 @@ class SrXconfig(ConfigBaseTraits):
               visible_when='detector_visible'
               ),
 
-
     main_view = \
         View(
             Group(
                 directory_group,
                 mask_group,
                 Group(
+                Item('configmode'),
                 Group(Item('geometry_visible', label='Geometry parameters'),
                       geometry_group,),
                 Group(Item('correction_visible', label='corrections'),
