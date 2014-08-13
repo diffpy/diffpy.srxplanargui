@@ -82,6 +82,9 @@ class Calibration(HasTraits):
     distance = DelegatesTo('srxconfig')
     rotationd = DelegatesTo('srxconfig')
     tiltd = DelegatesTo('srxconfig')
+    configmode = DelegatesTo('srxconfig')
+    xpixelsizetem = DelegatesTo('srxconfig')
+    ypixelsizetem = DelegatesTo('srxconfig')
     
     def __init__(self, *args, **kwargs):
         super(Calibration, self).__init__(*args, **kwargs)
@@ -259,7 +262,8 @@ class Calibration(HasTraits):
                 ),
             HGroup(
                 Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
-                Item('distance', label='Distance(mm)'),
+                Item('distance', label='Distance(mm)', visible_when='configmode == "TEM"'),
+                Item('distance', label='Camera Length(mm)', visible_when='configmode == "normal"'),
                 Item('slice'),
                 label='Please specify the wavelength and distance between sample and detector:',
                 show_border=True,
@@ -281,11 +285,13 @@ class Calibration(HasTraits):
              HGroup(
                 VGroup(
                     Item('xdimension', label='x dimension (pixel)'),
-                    Item('xpixelsize', label='Pixel size x (mm)'),
+                    Item('xpixelsize', label='Pixel size x (mm)', visible_when='configmode == "normal"'),
+                    Item('xpixelsizetem', label='Pixel size x (A^-1)', visible_when='configmode == "TEM"'),
                     ),
                 VGroup(
                     Item('ydimension', label='y dimension (pixel)'),
-                    Item('ypixelsize', label='Pixel size y (mm)')
+                    Item('ypixelsize', label='Pixel size y (mm)', visible_when='configmode == "normal"'),
+                    Item('ypixelsizetem', label='Pixel size y (A^-1)', visible_when='configmode == "TEM"')
                     ),
                 show_border=True,
                 label='Plasee specify the dimension of detector and size of pixel:',
