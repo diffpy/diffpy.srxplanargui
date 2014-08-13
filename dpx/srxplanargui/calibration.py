@@ -196,10 +196,15 @@ class Calibration(HasTraits):
             image = self.image
         
         if os.path.exists(image) and os.path.isfile(image):
-            selfCalibrate(self.srx, image)
+            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False)
+            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=False)
+            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False)
+            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=True)
         return
     
-    calibrationmode = Enum(['calibrant', 'self'])
+    slice = Enum(['auto', 'x', 'y', 'box'])
+    
+    calibrationmode = Enum(['self', 'calibrant'])
     def calibration(self, image=None, dspacefile=None):
         if self.calibrationmode == 'calibrant':
             self.callPyFAICalibration(image, dspacefile)
@@ -255,6 +260,7 @@ class Calibration(HasTraits):
             HGroup(
                 Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
                 Item('distance', label='Distance(mm)'),
+                Item('slice'),
                 label='Please specify the wavelength and distance between sample and detector:',
                 show_border=True,
                 visible_when='calibrationmode=="self"'

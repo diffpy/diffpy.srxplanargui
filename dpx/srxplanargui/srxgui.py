@@ -121,6 +121,7 @@ class SrXgui(HasTraits):
 
         self.addfiles = AddFiles(srxconfig=self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
+        self.addfiles.srx = self.srx
         self.help = SrXguiHelp()
         self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
 
@@ -147,6 +148,7 @@ class SrXgui(HasTraits):
         if os.path.exists(configfile):
             self.srxconfig.updateConfig(filename=configfile)
             self.configfile = configfile
+            self.srxconfig.maskfile = self.srxconfig.addmask[0]
         return
 
     def processSelected(self, summation=False):
@@ -284,4 +286,4 @@ class SrXgui(HasTraits):
              )
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit()
