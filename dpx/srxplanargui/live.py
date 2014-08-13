@@ -1,24 +1,29 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# diffpy.srxplanar  by DANSE Diffraction group
-#                   Simon J. L. Billinge
-#                   (c) 2010 Trustees of the Columbia University
+# dpx.pdfgetxgui    by Simon J. L. Billinge group
+#                   (c) 2012 Trustees of the Columbia University
 #                   in the City of New York.  All rights reserved.
 #
 # File coded by:    Xiaohao Yang
 #
 # See AUTHORS.txt for a list of people who contributed.
-# See LICENSENOTICE.txt for license information.
+# See LICENSE.txt for license information.
 #
 ##############################################################################
 
+'''provide UI for srxplanar
+'''
+
 import numpy as np
-import re, os, sys
+import re
+import os
+import sys
 from functools import partial
 import threading
 import time
 
+# break if help passed to the args
 from traits.etsconfig.api import ETSConfig
 if ETSConfig.toolkit == '' :
     ETSConfig.toolkit = 'qt4'
@@ -29,8 +34,7 @@ elif ETSConfig.toolkit == 'wx':
             ETSConfig.toolkit = 'qt4'
     except:
         ETSConfig.toolkit = 'qt4'
-
-# imports
+    
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -40,7 +44,7 @@ from traitsui.api import \
     Item, Group, View, Handler, Controller, spring, Action, \
     HGroup, VGroup, Tabbed, \
     RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
-    ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, BooleanEditor
+    ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, ImageEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
 from pyface.api import ImageResource, GUI, SplashScreen
 
@@ -109,6 +113,7 @@ class SrXguiLive(SrXgui):
 
         self.addfiles = AddFiles(srxconfig=self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
+        self.addfiles.srx = self.srx
         self.help = SrXguiHelp()
         self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
         

@@ -46,6 +46,7 @@ except:
     from diffpy.pdfgete.functs import sortKeyNumericString
 from dpx.srxplanargui.datacontainer import DataContainer
 from dpx.srxplanargui.srxconfig import SrXconfig
+from dpx.srxplanargui.imageplot import ImagePlot
 
 #-- The Live Search table editor definition ------------------------------------
 
@@ -64,6 +65,10 @@ class AddFilesHandler(Handler):
             editor.refresh()
         except:
             pass
+        return
+    
+    def object_dclick_changed(self, info):
+        info.object._plotbb_fired()
         return
 
 class AddFiles(HasTraits):
@@ -152,6 +157,18 @@ class AddFiles(HasTraits):
         '''
         self.inputdir = self.srxconfig.opendirectory
         return
+    
+    def _plotbb_fired(self):
+        try:
+            imagefile = self.selected[0].fullname
+        except:
+            imagefile = None
+        if imagefile != None:
+            if os.path.exists(imagefile):
+                imageplot = ImagePlot(imagefile=imagefile, srx=self.srx)
+                imageplot.createPlot()
+                imageplot.edit_traits()
+        return
 
     #-- Traits UI Views --------------------------------------------------------
     tableeditor = TableEditor(
@@ -176,6 +193,7 @@ class AddFiles(HasTraits):
         )
 
     selectallbb = Button('Select all')
+    plotbb = Button('Show image')
 
     traits_view = View(
         VGroup(
@@ -189,6 +207,7 @@ class AddFiles(HasTraits):
                 Item('summary', editor=TitleEditor()),
                 HGroup(spring,
                        Item('selectallbb', show_label=False),
+                       Item('plotbb', show_label=False),
                        spring,
                        ),
                 dock='horizontal',

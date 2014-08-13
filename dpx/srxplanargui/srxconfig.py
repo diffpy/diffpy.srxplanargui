@@ -113,7 +113,7 @@ class SrXconfig(ConfigBaseTraits):
 
     def _maskfile_changed(self):
         if os.path.exists(self.maskfile):
-            self.addmask = ['edgemask', self.maskfile]
+            self.addmask = [self.maskfile]
         return
 
     def _opendirectory_changed(self):
@@ -184,7 +184,7 @@ class SrXconfig(ConfigBaseTraits):
               Item('ydimension', label='y dimension'),
               Item('xpixelsize', label='x pixel size'),
               Item('ypixelsize', label='x pixel size'),
-              Item('maskedges', editor=ArrayEditor(width=-40)),
+              Item('cropedges', editor=ArrayEditor(width=-40)),
 
               show_border=True,
               # label='Detector parameters'
