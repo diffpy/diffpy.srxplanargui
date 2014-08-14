@@ -256,8 +256,8 @@ class Calibration(HasTraits):
                    ),
             HGroup(
                 Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
-                Item('distance', label='Distance(mm)', visible_when='configmode == "TEM"'),
-                Item('distance', label='Camera Length(mm)', visible_when='configmode == "normal"'),
+                Item('distance', label='Distance(mm)', visible_when='configmode == "normal"'),
+                Item('distance', label='Camera Length(mm)', visible_when='configmode == "TEM"'),
                 Item('slice'),
                 label='Please specify the wavelength and distance between sample and detector:',
                 show_border=True,
