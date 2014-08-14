@@ -285,7 +285,8 @@ class Calibration(HasTraits):
                     ),
                 VGroup(
                     Item('ydimension', label='y dimension (pixel)'),
-                    Item('ypixelsize', label='Pixel size y (mm)')
+                    Item('ypixelsize', label='Pixel size y (mm)', visible_when='configmode == "normal"'),
+                    Item('ypixelsizetem', label='Pixel size y (A^-1)', visible_when='configmode == "TEM"'),
                     ),
                 show_border=True,
                 label='Plasee specify the dimension of detector and size of pixel:',
