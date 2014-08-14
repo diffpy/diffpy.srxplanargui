@@ -217,7 +217,6 @@ class Calibration(HasTraits):
             raise ValueError('calibration mode error')
         return
     
-    inst0 = Str('Caution! The calibration takes long time and program may lose response')
     inst1 = Str('Please install pyFAI and FabIO to use the calibration function (refer to help).')
     inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
     main_View = \
@@ -255,11 +254,6 @@ class Calibration(HasTraits):
                 show_border=True,
                 label='Please specify the wavelength'
                    ),
-            HGroup(
-                Item('inst0', style='readonly', show_label=False),
-                visible_when='calibrationmode=="self"',
-                # show_border=True
-                ),
             HGroup(
                 Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
                 Item('distance', label='Distance(mm)', visible_when='configmode == "TEM"'),
