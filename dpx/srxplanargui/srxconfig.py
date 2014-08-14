@@ -139,14 +139,14 @@ class SrXconfig(ConfigBaseTraits):
     
     configmode = Enum(['TEM', 'normal'])
     
-    xpixelsizetem = Property(depends_on='xpixelsize')
+    xpixelsizetem = Property(depends_on='xpixelsize, distance, wavelength')
     def _get_xpixelsizetem(self):
         return self.xpixelsize / self.distance / self.wavelength
     def _set_xpixelsizetem(self, size):
         size = float(size)
         self.updateConfig(xpixelsize=size * self.wavelength * self.distance)
         return
-    ypixelsizetem = Property(depends_on='ypixelsize')
+    ypixelsizetem = Property(depends_on='ypixelsize, distance, wavelength')
     def _get_ypixelsizetem(self):
         return self.ypixelsize / self.distance / self.wavelength
     def _set_ypixelsizetem(self, size):
