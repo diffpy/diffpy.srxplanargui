@@ -56,6 +56,15 @@ _optdatalist.append(
                  'd':'qt4', }],
                     )
 
+for i in _optdatalist:
+    if i[0] == 'polcorrectionenable':
+        i[1] = {'sec':'Others', 'args':'n', 'config':'n', 'header':'n',
+                's':'polarcorr',
+                'h':'enable polarization correction',
+                'n':'?',
+                'co':False,
+                'd':False, }
+
 class SrXconfig(ConfigBaseTraits):
     '''
     config class, based on ConfigBase class in diffpy.confutils
@@ -188,8 +197,8 @@ class SrXconfig(ConfigBaseTraits):
     correction_group = \
         Group(Item('uncertaintyenable', label='Uncertainty'),
               Item('sacorrectionenable', label='solid angle corr.'),
-              Item('polcorrectionenable', label='polarization corr.'),
-              Item('polcorrectf', label='polarization factor'),
+              # Item('polcorrectionenable', label='polarization corr.'),
+              # Item('polcorrectf', label='polarization factor'),
               
               show_border=True,
               # label='Corrections'
