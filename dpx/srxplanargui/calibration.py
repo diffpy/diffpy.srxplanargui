@@ -199,10 +199,10 @@ class Calibration(HasTraits):
             image = self.image
         
         if os.path.exists(image) and os.path.isfile(image):
-            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False)
-            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=False)
-            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False)
-            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=True)
+            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False, xywidth=self.xywidth)
+            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=False, xywidth=self.xywidth)
+            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False, xywidth=self.xywidth)
+            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=True, xywidth=self.xywidth)
         return
     
     slice = Enum(['auto', 'x', 'y', 'box'])
@@ -216,6 +216,8 @@ class Calibration(HasTraits):
         else:
             raise ValueError('calibration mode error')
         return
+    
+    xywidth = Int(6)
     
     inst1 = Str('Please install pyFAI and FabIO to use the calibration function (refer to help).')
     inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
@@ -258,7 +260,6 @@ class Calibration(HasTraits):
                 Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
                 Item('distance', label='Distance(mm)', visible_when='configmode == "normal"'),
                 Item('distance', label='Camera Length(mm)', visible_when='configmode == "TEM"'),
-                Item('slice'),
                 label='Please specify the wavelength and distance between sample and detector:',
                 show_border=True,
                 visible_when='calibrationmode=="self"'
@@ -284,17 +285,24 @@ class Calibration(HasTraits):
                     ),
                 VGroup(
                     Item('ydimension', label='y dimension (pixel)'),
-                    Item('ypixelsize', label='Pixel size y (mm)', visible_when='configmode == "normal"'),
-                    Item('ypixelsizetem', label='Pixel size y (A^-1)', visible_when='configmode == "TEM"')
+                    Item('ypixelsize', label='Pixel size y (mm)')
                     ),
                 show_border=True,
                 label='Plasee specify the dimension of detector and size of pixel:',
                 visible_when='calibrationmode=="self"'
                 ),
+             HGroup(
+                Item('xywidth', label='(x,y) center searching range, +/-'),
+                Item('slice', label='Refining using slab along'),
+                show_border=True,
+                label='Others',
+                visible_when='calibrationmode=="self"',
+                ),
+
              
             title='Calibration',
             width=600,
-            height=400,
+            height=450,
             resizable=True,
             buttons=[OKButton, CancelButton],
             handler=CalibrationHandler(),
