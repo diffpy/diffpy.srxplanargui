@@ -228,7 +228,7 @@ class SrXconfig(ConfigBaseTraits):
                 directory_group,
                 mask_group,
                 Group(
-                Item('configmode'),
+                # Item('configmode'),
                 Group(Item('geometry_visible', label='Geometry parameters'),
                       geometry_group,),
                 Group(Item('correction_visible', label='corrections'),

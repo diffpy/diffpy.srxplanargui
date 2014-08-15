@@ -223,7 +223,7 @@ class Calibration(HasTraits):
     inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
     main_View = \
         View(
-            Item('calibrationmode', style='custom', label='Calibration mode'),
+            # Item('calibrationmode', style='custom', label='Calibration mode'),
             Item('image', label='Image file'),
             
             Group(
