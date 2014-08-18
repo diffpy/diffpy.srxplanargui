@@ -205,7 +205,7 @@ class Calibration(HasTraits):
             selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=True, xywidth=self.xywidth)
         return
     
-    slice = Enum(['auto', 'x', 'y', 'box'])
+    slice = Enum(['auto', 'x', 'y', 'box', 'full'])
     
     calibrationmode = Enum(['self', 'calibrant'])
     def calibration(self, image=None, dspacefile=None):
@@ -242,8 +242,10 @@ class Calibration(HasTraits):
                 label='Please specify the d-space file and the location of pyFAI executable'
                 ),
             HGroup(
-                Item('xpixelsize', label='Pixel size x (mm)'),
-                Item('ypixelsize', label='Pixel size y (mm)'),
+                Item('xpixelsize', label='Pixel size x (mm)', visible_when='configmode == "normal"'),
+                Item('xpixelsizetem', label='Pixel size x (A^-1)', visible_when='configmode == "TEM"'),
+                Item('ypixelsize', label='Pixel size y (mm)', visible_when='configmode == "normal"'),
+                Item('ypixelsizetem', label='Pixel size y (A^-1)', visible_when='configmode == "TEM"'),
                 visible_when='calibrationmode=="calibrant"',
                 enabled_when='not missingpyFAI',
                 show_border=True,
