@@ -105,6 +105,8 @@ class SrXconfig(ConfigBaseTraits):
         :param kwargs: optional kwargs
         '''
         self.tthmaxd, self.qmax = checkMax(self)
+        if len(self.addmask) > 0:
+            self.maskfile = self.addmask[0]
         return
 
     def _fit2dconfig_changed(self):
