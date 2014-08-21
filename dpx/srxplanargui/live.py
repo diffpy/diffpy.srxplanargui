@@ -99,7 +99,7 @@ class SrXguiLive(SrXgui):
         '''
         init the object, createt the notifications
         '''
-        self.splash = SplashScreen(image=ImageResource('01.png'))
+        self.splash = SplashScreen(image=ImageResource('01.png'), show_log_messages=False)
         self.splash.open()
 
         super(SrXgui, self).__init__(**kwargs)
