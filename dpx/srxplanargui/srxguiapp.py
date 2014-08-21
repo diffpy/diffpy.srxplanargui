@@ -37,7 +37,7 @@ else:
 
 from pyface.api import ImageResource, SplashScreen
 # open splash screen
-splash = SplashScreen(image=ImageResource('01.png'))
+splash = SplashScreen(image=ImageResource('01.png'), show_log_messages=False)
 if not any([aa == '-h' or aa == '--help' for aa in sysargv]):
     splash.open()
 
