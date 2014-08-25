@@ -44,6 +44,7 @@ from pyface.api import ImageResource, SplashScreen
 from dpx.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
 from diffpy.srxplanar.selfcalibrate import selfCalibrate
+from diffpy.srxplanar.srxplanarconfig import checkMax
 
 try:
     import pyFAI
@@ -215,6 +216,14 @@ class Calibration(HasTraits):
         return
     
     xywidth = Int(6)
+    qmincali = Float(0.5)
+    qmaxcali = Float(10.0)
+    @on_trait_change('srxconfig.[xpixelsize, ypixelsize, distance, wavelength, xdimension, ydimension]')
+    def _qmaxChanged(self):
+        tthmax, qmax = checkMax(self.srxconfig)
+        self.qmincali = qmax / 10
+        self.qmaxcali = qmax / 2
+        return
     
     inst1 = Str('Please install pyFAI and FabIO to use the calibration function (refer to help).')
     inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
@@ -287,13 +296,18 @@ class Calibration(HasTraits):
                 visible_when='calibrationmode=="self"'
                 ),
              HGroup(
-                Item('xywidth', label='(x,y) center searching range, +/-'),
-                Item('slice', label='Refining using slab along'),
+                VGroup(
+                    Item('xywidth', label='(x,y) center searching range, +/-'),
+                    Item('slice', label='Refining using slab along'),
+                    ),
+                VGroup(
+                    Item('qmincali', label='Qmin in calibration'),
+                    Item('qmaxcali', label='Qmax in calibration')
+                    ),
                 show_border=True,
                 label='Others',
                 visible_when='calibrationmode=="self"',
                 ),
-
              
             title='Calibration',
             width=600,
