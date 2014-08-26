@@ -17,6 +17,7 @@ from setuptools import setup, find_packages
 # It must reside in the same directory as version.py.
 MYDIR = os.path.dirname(os.path.abspath(__file__))
 versioncfgfile = os.path.join(MYDIR, 'dpx', 'srxplanargui', 'version.cfg')
+defaultversion = '1.0'
 
 def gitinfo():
     from subprocess import Popen, PIPE
@@ -29,7 +30,7 @@ def gitinfo():
     if desc != '':
         rv['version'] = desc.strip().split('-')[0].lstrip('v')
     else:
-        rv['version'] = '1.0'
+        rv['version'] = defaultversion
     if glog != '':
         rv['commit'], rv['timestamp'], rv['date'] = glog.strip().split(None, 2)
     else:
@@ -44,7 +45,7 @@ def getversioncfg():
     gitdir = os.path.join(MYDIR, '.git')
     if not os.path.isdir(gitdir):
         # not a git repo
-        cp.set('DEFAULT', 'version', '1.0')
+        cp.set('DEFAULT', 'version', defaultversion)
         cp.set('DEFAULT', 'commit', 'no git')
         cp.set('DEFAULT', 'date', 'no git')
         cp.set('DEFAULT', 'timestamp', 'no git')
