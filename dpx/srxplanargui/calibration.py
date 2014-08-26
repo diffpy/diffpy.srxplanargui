@@ -197,10 +197,8 @@ class Calibration(HasTraits):
             image = self.image
         
         if os.path.exists(image) and os.path.isfile(image):
-            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False, xywidth=self.xywidth)
-            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=False, xywidth=self.xywidth)
-            selfCalibrate(self.srx, image, mode='x', cropedges=self.slice, showresults=False, xywidth=self.xywidth)
-            selfCalibrate(self.srx, image, mode='y', cropedges=self.slice, showresults=True, xywidth=self.xywidth)
+            for mode, showresults in zip(['x', 'y', 'x', 'y'], [False, False, False, True]):
+                selfCalibrate(self.srx, image, mode=mode, cropedges=self.slice, showresults=showresults, xywidth=self.xywidth)
         return
     
     slice = Enum(['auto', 'x', 'y', 'box'])
