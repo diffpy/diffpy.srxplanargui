@@ -66,7 +66,7 @@ class ImagePlot(HasTraits):
         self.plot = plot
         return plot
     
-    hinttext = Str('Zoom: "z";  Reset: "Esc"; Pan: drag/drop; Toggle XY coordinates: "P"')
+    hinttext = Str('Zoom: <z>;  Reset: <Esc>; Pan: <drag/drop>; Toggle XY coordinates: <P>')
     traits_view = View(
                     Group(
                         Item('plot', editor=ComponentEditor(size=(600, 600)),
