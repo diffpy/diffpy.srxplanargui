@@ -219,7 +219,7 @@ class Calibration(HasTraits):
     @on_trait_change('srxconfig.[xpixelsize, ypixelsize, distance, wavelength, xdimension, ydimension]')
     def _qmaxChanged(self):
         tthmax, qmax = checkMax(self.srxconfig)
-        self.qmincali = qmax / 10
+        self.qmincali = min(1.25, qmax / 10)
         self.qmaxcali = qmax / 2
         return
     
