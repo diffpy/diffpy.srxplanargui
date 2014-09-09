@@ -18,60 +18,390 @@ import numpy as np
 import os
 
 # Enthought library imports
-from enable.api import Component, ComponentEditor
-from traits.api import HasTraits, Instance, File, Any, Str
-from traitsui.api import Item, Group, View
+from traits.api import \
+    Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
+    HasTraits, Property, Instance, Event, Button, Any, \
+    on_trait_change, DelegatesTo, cached_property, property_depends_on
+
+from traitsui.api import \
+    Item, Group, View, Handler, Controller, spring, Action, \
+    HGroup, VGroup, Tabbed, \
+    RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
+    ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, ImageEditor
+from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
+from pyface.api import ImageResource, SplashScreen
 
 # Chaco imports
+from enable.api import Component, ComponentEditor, BaseTool, KeySpec
 from chaco.api import ArrayPlotData, jet, Plot
-from chaco.tools.api import PanTool, ZoomTool
+from chaco.tools.api import PanTool, ZoomTool, LineSegmentTool
 from chaco.tools.image_inspector_tool import ImageInspectorTool, \
      ImageInspectorOverlay
+from enable.colors import ColorTrait
+from kiva.agg import points_in_polygon
 
+class SaveLoadMaskHandler(Handler):
+
+    def _save(self, info):
+        '''
+        save mask
+        '''
+        info.object.saveMaskFile()
+        info.ui.dispose()
+        return
+    
+    def _load(self, info):
+        '''
+        load mask
+        '''
+        info.object.loadMaskFile()
+        info.ui.dispose()
+        return
 
 class ImagePlot(HasTraits):
     imagefile = File
     srx = Any
+    srxconfig = Any
     plot = Instance(Component)
+    maskfile = File
+    pointmaskradius = Float(3.0)
+    maskediting = Bool(False)
     
     def createPlot(self):
         # image = np.log(self.srx.loadimage.loadImage(self.imagefile))
         image = self.srx.loadimage.loadImage(self.imagefile)
+        self.maskfile = self.srxconfig.maskfile
+        self.imageorg = image
+        self.imagemax = image.max()
+        self.mask = self.srx.mask.staticMask()
+        image = self.imageorg * np.logical_not(self.mask) + self.mask * self.imagemax
+        
+        y = np.arange(image.shape[0]).reshape((image.shape[0], 1)) * np.ones((1, image.shape[1]))
+        x = np.arange(image.shape[1]).reshape((1, image.shape[1])) * np.ones((image.shape[0], 1))
+        
+        self.pts = np.array(np.vstack([x.ravel(), y.ravel()]).T)
+        
         xbounds = (0, image.shape[1])
         ybounds = (0, image.shape[0])
     
-        pd = ArrayPlotData()
-        pd.set_data("imagedata", image)
+        self.pd = ArrayPlotData()
+        self.pd.set_data("imagedata", image)
     
-        plot = Plot(pd)
-        img_plot = plot.img_plot("imagedata",
-                                 xbounds=xbounds,
-                                 ybounds=ybounds,
-                                 colormap=jet)[0]
+        self.plot = Plot(self.pd)
+        self.img_plot = self.plot.img_plot("imagedata",
+                                           xbounds=xbounds,
+                                           ybounds=ybounds,
+                                           colormap=jet)[0]
     
         # Tweak some of the plot properties
-        plot.title = os.path.split(self.imagefile)[1]
-        plot.padding = 50
+        self.plot.title = os.path.split(self.imagefile)[1]
+        self.plot.aspect_ratio = 1.0
+        self.plot.padding = 50
     
         # Attach some tools to the plot
-        plot.tools.append(PanTool(plot))
-        zoom = ZoomTool(component=plot, tool_mode="box", always_on=False)
-        plot.overlays.append(zoom)
-        imgtool = ImageInspectorTool(img_plot)
-        img_plot.tools.append(imgtool)
-        overlay = ImageInspectorOverlay(component=img_plot, image_inspector=imgtool,
+        self._appendTools()
+        return
+    
+    def saveMaskFile(self):
+        np.save(self.maskfile, self.mask)
+        self.srxconfig.maskfile = self.maskfile
+        return
+    
+    def loadMaskFile(self):
+        self.srxconfig.maskfile = self.maskfile
+        return 
+    
+    def mergeMask(self, points, remove=None):
+        '''
+        :param points: an Mx2 array of x,y point pairs (floating point) that define the 
+            boundaries of a polygon.
+        :param remove: True for remove the new mask from the existing mask
+        '''
+        if remove == None:
+            remove = self.removepolygonmask
+        if len(points) > 2:
+            mask = points_in_polygon(self.pts, points)
+            mask = mask.reshape(self.mask.shape)
+            if remove:
+                self.mask = np.logical_and(self.mask, np.logical_not(mask))
+            else:
+                self.mask = np.logical_or(self.mask, mask)
+            self.refreshImage()
+        return
+    
+    def addPointMask(self, ndx, remove=None):
+        '''
+        :param ndx: (x,y) float
+        '''
+        x, y = ndx
+        r = self.pts - np.array((x, y))
+        r = np.sum(r ** 2, axis=1)
+        mask = r < ((self.pointmaskradius + 1) ** 2)
+        mask = mask.reshape(self.mask.shape)
+        if remove:
+            self.mask = np.logical_and(self.mask, np.logical_not(mask))
+        else:
+            self.mask = np.logical_or(self.mask, mask)
+        self.refreshImage()
+        return
+    
+    def clearMask(self):
+        self.mask = self.mask * 0
+        self.refreshImage()
+        return
+    
+    maskaboveint = Int(10e10)
+    maskbelowint = Int(1)
+    
+    def maskabove(self):
+        mask = self.imageorg > self.maskaboveint
+        self.mask = np.logical_or(self.mask, mask)
+        self.refreshImage()
+        return
+    
+    def maskbelow(self):
+        mask = self.imageorg < self.maskbelowint
+        self.mask = np.logical_or(self.mask, mask)
+        self.refreshImage()
+        return
+    
+    def _appendTools(self):
+        '''
+        append xy position, zoom, pan tools to plot
+        
+        :param plot: the plot object to append on
+        '''
+        plot = self.plot
+        img_plot = self.img_plot
+        
+        # tools
+        self.pan = PanTool(plot)
+        self.zoom = ZoomTool(component=plot, tool_mode="box", always_on=False)
+        self.lstool = MasklineDrawer(self.plot, imageplot=self)
+        self.xyseltool = MaskPointInspector(img_plot, imageplot=self)
+        # self.lstool.imageplot = self
+        
+        img_plot.tools.append(self.xyseltool)
+        overlay = ImageInspectorOverlay(component=img_plot, image_inspector=self.xyseltool,
                                         bgcolor="white", border_visible=True)
-    
         img_plot.overlays.append(overlay)
-        self.plot = plot
-        return plot
+        
+        plot.tools.append(self.pan)
+        plot.overlays.append(self.zoom)
+        return
     
+    def _enableMaskEditing(self):
+        '''
+        enable mask tool and disable pan tool
+        '''
+        self.maskediting = True
+        for i in range(self.plot.tools.count(self.pan)):
+            self.plot.tools.remove(self.pan)
+        self.plot.overlays.append(self.lstool)
+        self.titlebak = self.plot.title 
+        self.plot.title = 'Click: add a vertex; <Ctrl>+Click: remove a vertex; \n          <Enter>: finish the selection'
+        return
+    
+    def _disableMaskEditing(self):
+        '''
+        disable mask tool and enable pan tool
+        '''
+        self.plot.overlays.remove(self.lstool)
+        self.plot.tools.append(self.pan)
+        self.plot.title = self.titlebak
+        self.maskediting = False
+        return
+    
+    def _enablePointMaskEditing(self):
+        self.maskediting = True
+        for i in range(self.plot.tools.count(self.pan)):
+            self.plot.tools.remove(self.pan)
+        self.titlebak = self.plot.title 
+        self.plot.title = 'Click: add a point; <Enter>: exit the point selection'
+        return
+    
+    def _disablePointMaskEditing(self):
+        self.plot.tools.append(self.pan)
+        self.plot.title = self.titlebak
+        self.maskediting = False
+        return
+    
+    def refreshImage(self):
+        '''
+        recalculate the image using self.mask and refresh display
+        '''
+        image = self.imageorg * np.logical_not(self.mask) + self.mask * self.imagemax
+        self.pd.set_data("imagedata", image)
+        self.plot.invalidate_draw()
+        return
+    
+    def reloadMask(self):
+        '''
+        reload the mask from file and refresh display
+        '''
+        self.mask = self.srx.mask.staticMask()
+        self.refreshImage()
+        return
+    
+    def _add_notifications(self):
+        self.on_trait_change(self.reloadMask, 'srxconfig.addmask, srxconfig.addmask[]')
+        return
+
+    def _del_notifications(self):
+        self.on_trait_change(self.reloadMask, 'srxconfig.addmask, srxconfig.addmask[]', remove=True)
+        return
+    
+    addpolygon_bb = Button('Add polygon mask')
+    removepolygon_bb = Button('Remove polygon mask')
+    addpoint_bb = Button('Add point mask')
+    clearmask_bb = Button('Clear mask')
+    maskabove_bb = Button('Mask intensity above')
+    maskbelow_bb = Button('Mask intensity below')
+    loadmaskfile_bb = Button('Load mask')
+    savemaskfile_bb = Button('Save mask')
+    
+    def _addpolygon_bb_fired(self):
+        self.removepolygonmask = False
+        self._enableMaskEditing()
+        return
+    def _removepolygon_bb_fired(self):
+        self.removepolygonmask = True
+        self._enableMaskEditing()
+        return
+    def _addpoint_bb_fired(self):
+        self._enablePointMaskEditing()
+        self.xyseltool.enablemaskselect = True
+        return
+    def _clearmask_bb_fired(self):
+        self.clearMask()
+        return
+    def _maskabove_bb_fired(self):
+        self.maskabove()
+        return
+    def _maskbelow_bb_fired(self):
+        self.maskbelow()
+        return
+    def _loadmaskfile_bb_fired(self):
+        self.edit_traits('loadmaskfile_view')
+        return
+    def _savemaskfile_bb_fired(self):
+        self.maskfile = os.path.splitext(self.maskfile)[0] + '.npy'
+        self.edit_traits('savemaskfile_view')
+        return
+
+    def __init__(self, **kwargs):
+        '''
+        init the object and create notification
+        '''
+        HasTraits.__init__(self, **kwargs)
+        self.createPlot()
+        self._add_notifications()
+        return
+        
     hinttext = Str('Zoom: <z>;  Reset: <Esc>; Pan: <drag/drop>; Toggle XY coordinates: <P>')
     traits_view = View(
                     Group(
-                        Item('plot', editor=ComponentEditor(size=(600, 600)),
+                        Item('plot', editor=ComponentEditor(size=(550, 550)),
                              show_label=False),
+                        VGroup(
+                            HGroup(
+                                Item('addpolygon_bb', enabled_when='not maskediting'),
+                                Item('removepolygon_bb', enabled_when='not maskediting'),
+                                spring,
+                                Item('maskabove_bb', enabled_when='not maskediting'),
+                                Item('maskaboveint', enabled_when='not maskediting'),
+                                show_labels=False,
+                                ),
+                            HGroup(
+                                Item('addpoint_bb', enabled_when='not maskediting'),
+                                Item('pointmaskradius'),
+                                spring,
+                                Item('maskbelow_bb', enabled_when='not maskediting'),
+                                Item('maskbelowint', enabled_when='not maskediting'),
+                                show_labels=False,
+                                ),
+                            HGroup(
+                                Item('clearmask_bb', enabled_when='not maskediting'),
+                                spring,
+                                Item('loadmaskfile_bb'),
+                                Item('savemaskfile_bb'),
+                                show_labels=False,
+                                ),
+                            show_labels=False,
+                            show_border=True,
+                            label='Mask'
+                            ),
                         orientation="vertical"),
-                    resizable=True, title='2D image',
+                    resizable=True,
+                    title='2D image',
                     statusbar=['hinttext'],
+                    width=600,
+                    height=700,
                     )
+    
+    savemaskfile_action = \
+        Action(name='OK ',
+               action='_save')
+    loadmaskfile_action = \
+        Action(name='OK ',
+               action='_load')
+
+    savemaskfile_view = \
+        View(Item('maskfile'),
+             buttons=[savemaskfile_action, CancelButton],
+             title='Save mask file',
+             width=500,
+             resizable=True,
+             handler=SaveLoadMaskHandler(),
+             icon=ImageResource('icon.png'),
+             )
+        
+    loadmaskfile_view = \
+        View(Item('maskfile'),
+             buttons=[loadmaskfile_action, CancelButton],
+             title='Load mask file',
+             width=500,
+             resizable=True,
+             handler=SaveLoadMaskHandler(),
+             icon=ImageResource('icon.png'),
+             )
+    
+    
+class MasklineDrawer(LineSegmentTool):
+    """
+    """
+    
+    imageplot = Any
+    
+    def _finalize_selection(self):
+        self.imageplot._disableMaskEditing()
+        self.imageplot.mergeMask(self.points)
+        return
+    
+    def __init__(self, *args, **kwargs):
+        LineSegmentTool.__init__(self, *args, **kwargs)
+        self.line.line_color = "red"
+        self.line.vertex_color = "white"
+        return
+    
+class MaskPointInspector(ImageInspectorTool):
+    
+    exitmask_key = KeySpec('Enter')
+    imageplot = Any
+    enablemaskselect = Bool(False)
+    
+    def normal_key_pressed(self, event):
+        if self.inspector_key.match(event):
+            self.visible = not self.visible
+            event.handled = True
+        if self.exitmask_key.match(event):
+            self.enablemaskselect = False
+            self.imageplot._disablePointMaskEditing()
+        return
+            
+    def normal_left_down(self, event):
+        if self.enablemaskselect:
+            ndx = self.component.map_index((event.x, event.y))
+            self.imageplot.addPointMask(ndx)
+        return
+        
