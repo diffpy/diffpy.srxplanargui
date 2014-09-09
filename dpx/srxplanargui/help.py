@@ -64,7 +64,7 @@ class SrXguiHelp(HasTraits):
 
     imgs = [ImageResource('%02d.png' % i) for i in range(1, 11)]
 
-    qslen = Int(10)
+    qslen = Int(9)
 
     next_action = \
         Action(name='Next',
