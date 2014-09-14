@@ -67,6 +67,16 @@ class ImagePlot(HasTraits):
     pointmaskradius = Float(3.0)
     maskediting = Bool(False)
     
+    brightpixel = Bool(True)
+    darkpixel = Bool(True)
+    avgmask = Bool(True)
+    brightpixelr = Float(1.2, desc='Pixels with intensity larger than this relative threshold value will be masked')
+    brightpixelsize = Int(5, desc='Size of testing area for detecting bright pixels')
+    darkpixelr = Float(0.1, desc='Pixels with intensity less than this relative threshold value will be masked')
+    avgmaskhigh = Float(2.0, desc='Comparing to the average intensity of similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked')
+    avgmasklow = Float(0.5, desc='Comparing to the average intensity of similar diffraction angle, \npixels with intensity less than avg_int*low will be masked')
+    cropedges = Array(dtype=np.int, desc='The number of pixels masked at each edge (left, right, top, bottom).')
+    
     def createPlot(self):
         # image = np.log(self.srx.loadimage.loadImage(self.imagefile))
         image = self.srx.loadimage.loadImage(self.imagefile)
@@ -108,7 +118,10 @@ class ImagePlot(HasTraits):
         return
     
     def loadMaskFile(self):
-        self.srxconfig.maskfile = self.maskfile
+        if self.srxconfig.maskfile == self.maskfile:
+            self.reloadMask()
+        else:
+            self.srxconfig.maskfile = self.maskfile
         return 
     
     def mergeMask(self, points, remove=None):
@@ -163,6 +176,60 @@ class ImagePlot(HasTraits):
         mask = self.imageorg < self.maskbelowint
         self.mask = np.logical_or(self.mask, mask)
         self.refreshImage()
+        return
+    
+    def genAdvMask(self):
+        pic = self.imageorg
+        if self.darkpixel or self.brightpixel:
+            rv = np.zeros((self.srxconfig.ydimension, self.srxconfig.xdimension))
+            if self.darkpixel:
+                rv += self.srx.mask.darkPixelMask(pic)
+            if self.brightpixel:
+                rv += self.srx.mask.brightPixelMask(pic)
+            dymask = np.logical_or((rv > 0), self.mask)    
+        else:
+            dymask = self.mask
+        if self.avgmask:
+            avgmask = self.srx.genAvgMask(pic, self.avgmaskhigh, self.avgmasklow, dymask)
+            dymask = np.logical_or(dymask, avgmask)
+        else:
+            ones = np.ones((self.srxconfig.ydimension, self.srxconfig.xdimension), dtype=bool)
+            ce = self.cropedges
+            ones[ce[2]:-ce[3], ce[0]:-ce[1]] = dymask[ce[2]:-ce[3], ce[0]:-ce[1]]
+            dymask = ones
+        return dymask
+    
+    def previewAdvMask(self):
+        dymask = self.genAdvMask()
+        self.refreshImage(dymask)
+        return
+    
+    def applyAdvMask(self):
+        self._applyMaskPar()
+        return
+    
+    def applyAdvMaskP(self):
+        dymask = self.genAdvMask()
+        self.mask = dymask
+        self.refreshImage()
+        self.brightpixel = False
+        self.darkpixel = False
+        self.avgmask = False
+        self._applyMaskPar()
+        return
+    
+    def _loadMaskPar(self):
+        parlist = ['brightpixel', 'darkpixel', 'avgmask', 'brightpixelr',
+                   'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
+        for p in parlist:
+            setattr(self, p, getattr(self.srxconfig, p))
+        return
+    
+    def _applyMaskPar(self):
+        parlist = ['brightpixel', 'darkpixel', 'avgmask', 'brightpixelr',
+                   'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
+        for p in parlist:
+            setattr(self.srxconfig, p, getattr(self, p))
         return
     
     def _appendTools(self):
@@ -226,11 +293,12 @@ class ImagePlot(HasTraits):
         self.maskediting = False
         return
     
-    def refreshImage(self):
+    def refreshImage(self, mask=None):
         '''
         recalculate the image using self.mask and refresh display
         '''
-        image = self.imageorg * np.logical_not(self.mask) + self.mask * self.imagemax
+        mask = self.mask if mask == None else mask
+        image = self.imageorg * np.logical_not(mask) + mask * self.imagemax
         self.pd.set_data("imagedata", image)
         self.plot.invalidate_draw()
         return
@@ -244,17 +312,18 @@ class ImagePlot(HasTraits):
         return
     
     def _add_notifications(self):
-        self.on_trait_change(self.reloadMask, 'srxconfig.addmask, srxconfig.addmask[]')
+        self.on_trait_change(self.reloadMask, 'srxconfig.maskfile')
         return
 
     def _del_notifications(self):
-        self.on_trait_change(self.reloadMask, 'srxconfig.addmask, srxconfig.addmask[]', remove=True)
+        self.on_trait_change(self.reloadMask, 'srxconfig.maskfile', remove=True)
         return
     
     addpolygon_bb = Button('Add polygon mask')
     removepolygon_bb = Button('Remove polygon mask')
     addpoint_bb = Button('Add point mask')
-    clearmask_bb = Button('Clear mask')
+    clearmask_bb = Button('Clear mask', desc='Clear the mask')
+    advancedmask_bb = Button('Advanced mask', desc='The advanced mask is dynamically generated for each image.')
     maskabove_bb = Button('Mask intensity above')
     maskbelow_bb = Button('Mask intensity below')
     loadmaskfile_bb = Button('Load mask')
@@ -275,6 +344,9 @@ class ImagePlot(HasTraits):
     def _clearmask_bb_fired(self):
         self.clearMask()
         return
+    def _advancedmask_bb_fired(self):
+        self.edit_traits('advancedmask_view')
+        return
     def _maskabove_bb_fired(self):
         self.maskabove()
         return
@@ -288,6 +360,21 @@ class ImagePlot(HasTraits):
         self.maskfile = os.path.splitext(self.maskfile)[0] + '.npy'
         self.edit_traits('savemaskfile_view')
         return
+    
+    previewadvmask_bb = Button('Preview', desc='preview the dynamic mask for current image')
+    applyadvmask_bb = Button('Apply', desc='apply the parameters and the dynamic mask will be generated during integration')
+    applyadvmaskp_bb = Button('Apply permanently', desc='merge the current dynamic mask to the static mask')
+    
+    def _previewadvmask_bb_fired(self):
+        self.previewAdvMask()
+        return
+    def _applyadvmask_bb_fired(self):
+        self.applyAdvMask()
+        return
+    def _applyadvmaskp_bb_fired(self):
+        self.applyAdvMaskP()
+        return
+            
 
     def __init__(self, **kwargs):
         '''
@@ -295,6 +382,7 @@ class ImagePlot(HasTraits):
         '''
         HasTraits.__init__(self, **kwargs)
         self.createPlot()
+        self._loadMaskPar()
         self._add_notifications()
         return
         
@@ -314,7 +402,7 @@ class ImagePlot(HasTraits):
                                 ),
                             HGroup(
                                 Item('addpoint_bb', enabled_when='not maskediting'),
-                                Item('pointmaskradius'),
+                                Item('pointmaskradius', label='Size:', show_label=True),
                                 spring,
                                 Item('maskbelow_bb', enabled_when='not maskediting'),
                                 Item('maskbelowint', enabled_when='not maskediting'),
@@ -322,6 +410,7 @@ class ImagePlot(HasTraits):
                                 ),
                             HGroup(
                                 Item('clearmask_bb', enabled_when='not maskediting'),
+                                Item('advancedmask_bb', enabled_when='not maskediting'),
                                 spring,
                                 Item('loadmaskfile_bb'),
                                 Item('savemaskfile_bb'),
@@ -365,7 +454,52 @@ class ImagePlot(HasTraits):
              handler=SaveLoadMaskHandler(),
              icon=ImageResource('icon.png'),
              )
-    
+
+    advancedmask_view = \
+        View(
+            Group(
+                VGroup(
+                    Item('cropedges', label='Mask edges', editor=ArrayEditor(width=-50)),
+                    label='Edge mask',
+                    show_border=True,
+                    ),
+                VGroup(
+                    Item('darkpixel', label='Enable'),
+                    Item('darkpixelr', label='Threshold', enabled_when='darkpixel'),
+                    label='Dark pixel mask',
+                    show_border=True,
+                    ),
+                VGroup(
+                    Item('brightpixel', label='Enable'),
+                    Item('brightpixelsize', label='Testing size', enabled_when='brightpixel'),
+                    Item('brightpixelr', label='Threshold', enabled_when='brightpixel'),
+                    label='Bright pixel mask',
+                    show_border=True,
+                    ),
+                VGroup(
+                    Item('avgmask', label='Enable'),
+                    Item('avgmaskhigh', label='High', enabled_when='avgmask'),
+                    Item('avgmasklow', label='Low', enabled_when='avgmask'),
+                    label='Average mask',
+                    show_border=True,
+                    ),
+                HGroup(
+                    spring,
+                    Item('previewadvmask_bb'),
+                    Item('applyadvmask_bb'),
+                    Item('applyadvmaskp_bb'),
+                    spring,
+                    
+                    show_labels=False,
+                    ),
+                ),
+             
+             title='Advanced mask',
+             width=320,
+             resizable=True,
+             buttons=[OKButton, CancelButton],
+             icon=ImageResource('icon.png'),
+             )
     
 class MasklineDrawer(LineSegmentTool):
     """
