@@ -82,9 +82,7 @@ class SrXconfig(ConfigBaseTraits):
         fget=lambda self: self.tthmax if self.integrationspace == 'twotheta' else self.qmax)
     tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax',
         fget=lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
-
-    maskfile = File()
-
+    
     def _preUpdateSelf(self, **kwargs):
         '''
         additional process called in self._updateSelf, this method is called
@@ -96,8 +94,9 @@ class SrXconfig(ConfigBaseTraits):
         :param kwargs: optional kwargs
         '''
         self.tthmaxd, self.qmax = checkMax(self)
-        if len(self.addmask) > 0:
-            self.maskfile = self.addmask[0]
+        '''addmask = [b for b in self.addmask if not (b in ['brightpixel', 'darkpixel'])]
+        if len(addmask) > 0:
+            self.maskfile = addmask[0]'''
         return
 
     def _fit2dconfig_changed(self):
@@ -113,12 +112,13 @@ class SrXconfig(ConfigBaseTraits):
             self._updateSelf()
         return
 
-    def _maskfile_changed(self):
+    '''def _maskfile_changed(self):
+        addmask = [b for b in self.addmask if (b in ['brightpixel', 'darkpixel'])]
         if os.path.exists(self.maskfile):
-            self.addmask = [self.maskfile]
+            self.addmask = addmask + [self.maskfile]
         else:
-            self.addmask = []
-        return
+            self.addmask = addmask
+        return'''
 
     def _opendirectory_changed(self):
         if os.path.exists(self.opendirectory):
@@ -171,9 +171,14 @@ class SrXconfig(ConfigBaseTraits):
     correction_visible = Bool(False)
     correction_group = \
         Group(Item('uncertaintyenable', label='Uncertainty'),
-              Item('sacorrectionenable', label='solid angle corr.'),
-              Item('polcorrectionenable', label='polarization corr.'),
-              Item('polcorrectf', label='polarization factor'),
+              Item('sacorrectionenable', label='Solid angle corr.'),
+              Item('polcorrectionenable', label='Polarization corr.'),
+              Item('polcorrectf', label='Polarization factor'),
+              
+              Item('brightpixel', label='Bright pixel mask'),
+              Item('darkpixel', label='Dark pixel mask'),
+              Item('avgmask', label='Average mask'),
+              Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
               
               show_border=True,
               # label='Corrections'
@@ -188,7 +193,6 @@ class SrXconfig(ConfigBaseTraits):
               Item('ydimension', label='y dimension'),
               Item('xpixelsize', label='x pixel size'),
               Item('ypixelsize', label='x pixel size'),
-              Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
 
               show_border=True,
               # label='Detector parameters'
@@ -204,7 +208,7 @@ class SrXconfig(ConfigBaseTraits):
                 Group(
                 Group(Item('geometry_visible', label='Geometry parameters'),
                       geometry_group,),
-                Group(Item('correction_visible', label='corrections'),
+                Group(Item('correction_visible', label='Corrections and masks'),
                       correction_group,),
                 Group(Item('detector_visible', label='Detector parameters'),
                       detector_group,),
