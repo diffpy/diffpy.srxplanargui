@@ -64,6 +64,11 @@ for i in _optdatalist:
                 'n':'?',
                 'co':False,
                 'd':False, }
+    if i[0] == 'polcorrectf':
+        i[1] = {'sec':'Others', 'args':'n', 'config':'n', 'header':'n',
+                 's':'polarf',
+                 'h':'polarization correction factor',
+                 'd':0.99, }
 
 class SrXconfig(ConfigBaseTraits):
     '''
