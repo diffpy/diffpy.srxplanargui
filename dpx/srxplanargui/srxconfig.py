@@ -175,8 +175,8 @@ class SrXconfig(ConfigBaseTraits):
               Item('polcorrectionenable', label='Polarization corr.'),
               Item('polcorrectf', label='Polarization factor'),
               
-              Item('brightpixel', label='Bright pixel mask'),
-              Item('darkpixel', label='Dark pixel mask'),
+              Item('brightpixelmask', label='Bright pixel mask'),
+              Item('darkpixelmask', label='Dark pixel mask'),
               Item('avgmask', label='Average mask'),
               Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
               

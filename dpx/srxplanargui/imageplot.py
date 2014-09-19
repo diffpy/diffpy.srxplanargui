@@ -219,14 +219,14 @@ class ImagePlot(HasTraits):
         return
     
     def _loadMaskPar(self):
-        parlist = ['brightpixel', 'darkpixel', 'avgmask', 'brightpixelr',
+        parlist = ['brightpixelmask', 'darkpixelmask', 'avgmask', 'brightpixelr',
                    'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
         for p in parlist:
             setattr(self, p, getattr(self.srxconfig, p))
         return
     
     def _applyMaskPar(self):
-        parlist = ['brightpixel', 'darkpixel', 'avgmask', 'brightpixelr',
+        parlist = ['brightpixelmask', 'darkpixelmask', 'avgmask', 'brightpixelr',
                    'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
         for p in parlist:
             setattr(self.srxconfig, p, getattr(self, p))
