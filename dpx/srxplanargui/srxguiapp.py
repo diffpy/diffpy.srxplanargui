@@ -19,6 +19,9 @@ import numpy as np
 import os
 import sys
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # break if help passed to the args
 sysargv = sys.argv[1:]
 if ('--help' in sysargv) or('-h' in sysargv):
