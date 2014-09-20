@@ -193,7 +193,7 @@ class AddFiles(HasTraits):
         )
 
     selectallbb = Button('Select all')
-    plotbb = Button('Show image')
+    plotbb = Button('Image & Mask')
 
     traits_view = View(
         VGroup(
