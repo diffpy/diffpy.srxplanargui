@@ -67,14 +67,14 @@ class ImagePlot(HasTraits):
     pointmaskradius = Float(3.0)
     maskediting = Bool(False)
     
-    brightpixel = Bool(True)
-    darkpixel = Bool(True)
-    avgmask = Bool(True)
+    brightpixel = Bool(True, desc='Mask the pixels too bright compared to their local enviroment')
+    darkpixel = Bool(True, desc='Mask the pixels too dark compared to their local enviroment')
+    avgmask = Bool(True, desc='Mask the pixels too bright or too dark compared to the average intensity at the similar diffraction angle.')
     brightpixelr = Float(1.2, desc='Pixels with intensity larger than this relative threshold value will be masked')
     brightpixelsize = Int(5, desc='Size of testing area for detecting bright pixels')
     darkpixelr = Float(0.1, desc='Pixels with intensity less than this relative threshold value will be masked')
-    avgmaskhigh = Float(2.0, desc='Comparing to the average intensity of similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked')
-    avgmasklow = Float(0.5, desc='Comparing to the average intensity of similar diffraction angle, \npixels with intensity less than avg_int*low will be masked')
+    avgmaskhigh = Float(2.0, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked')
+    avgmasklow = Float(0.5, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity less than avg_int*low will be masked')
     cropedges = Array(dtype=np.int, desc='The number of pixels masked at each edge (left, right, top, bottom).')
     
     def createPlot(self):
@@ -101,7 +101,7 @@ class ImagePlot(HasTraits):
         self.img_plot = self.plot.img_plot("imagedata",
                                            xbounds=xbounds,
                                            ybounds=ybounds,
-                                           colormap=jet)[0]
+                                           colormap=jet,)[0]
     
         # Tweak some of the plot properties
         self.plot.title = os.path.split(self.imagefile)[1]
@@ -190,8 +190,11 @@ class ImagePlot(HasTraits):
         else:
             dymask = self.mask
         if self.avgmask:
+            cebak = self.srxconfig.cropedges
+            self.srx.updateConfig(cropedges=self.cropedges)
             avgmask = self.srx.genAvgMask(pic, self.avgmaskhigh, self.avgmasklow, dymask)
             dymask = np.logical_or(dymask, avgmask)
+            self.srx.updateConfig(cropedges=cebak)
         else:
             ones = np.ones((self.srxconfig.ydimension, self.srxconfig.xdimension), dtype=bool)
             ce = self.cropedges
@@ -346,6 +349,9 @@ class ImagePlot(HasTraits):
         return
     def _advancedmask_bb_fired(self):
         self.edit_traits('advancedmask_view')
+        if not hasattr(self, 'advhint'):
+            self.advhint = AdvHint()
+            self.advhint.edit_traits('advhint_view')
         return
     def _maskabove_bb_fired(self):
         self.maskabove()
@@ -454,6 +460,7 @@ class ImagePlot(HasTraits):
              handler=SaveLoadMaskHandler(),
              icon=ImageResource('icon.png'),
              )
+        
 
     advancedmask_view = \
         View(
@@ -538,4 +545,29 @@ class MaskPointInspector(ImageInspectorTool):
             ndx = self.component.map_index((event.x, event.y))
             self.imageplot.addPointMask(ndx)
         return
-        
+
+class AdvHint(HasTraits):
+    
+    advhinttext = str(
+'''Notes: Advanced Masks are generated during the integration and refreshed for each image.
+You can preview the masks here or apply the current masks to the static mask permanently. 
+
+Edge mask: mask the pixels around the image edge. (left, right, top, bottom) 
+Dark pixel mask: mask the pixels too dark compared to their local enviroment
+Bright pixel mask: mask the pixels too bright compared to their local enviroment
+Average mask: Mask the pixels too bright or too dark compared to the average intensity 
+    at the similar diffraction angle. Currect calibration information is required.''')
+    
+    advhint_view = \
+        View(
+            Group(
+                Item('advhinttext', style='readonly', show_label=False),
+                show_border=True,
+                ),
+             
+             title='Advanced mask hints',
+             width=640,
+             resizable=False,
+             buttons=[OKButton],
+             icon=ImageResource('icon.png'),
+             )
