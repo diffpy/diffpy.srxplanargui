@@ -19,7 +19,6 @@ import numpy as np
 import os
 import sys
 
-# break if help passed to the args
 from traits.etsconfig.api import ETSConfig
 if ETSConfig.toolkit == '' :
     ETSConfig.toolkit = 'qt4'
@@ -128,7 +127,6 @@ class SrXgui(HasTraits):
         # self.loadConfig(configfile)
         self.splash.close()
         return
-
 
     def saveConfig(self, filename=None):
         '''
