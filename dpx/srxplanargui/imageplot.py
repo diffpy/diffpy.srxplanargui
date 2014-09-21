@@ -432,6 +432,7 @@ class ImagePlot(HasTraits):
                     statusbar=['hinttext'],
                     width=600,
                     height=700,
+                    icon=ImageResource('icon.png'),
                     )
     
     savemaskfile_action = \
