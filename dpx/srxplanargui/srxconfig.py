@@ -112,23 +112,9 @@ class SrXconfig(ConfigBaseTraits):
             self._updateSelf()
         return
 
-    '''def _maskfile_changed(self):
-        addmask = [b for b in self.addmask if (b in ['brightpixel', 'darkpixel'])]
-        if os.path.exists(self.maskfile):
-            self.addmask = addmask + [self.maskfile]
-        else:
-            self.addmask = addmask
-        return'''
-
     def _opendirectory_changed(self):
         if os.path.exists(self.opendirectory):
-            newdir = os.path.join(self.opendirectory, 'chi')
-            if not os.path.exists(newdir):
-                try:
-                    os.mkdir(newdir)
-                except:
-                    newdir = self.opendirectory
-            self.savedirectory = newdir
+            self.savedirectory = self.opendirectory
         else:
             self.opendirectory = os.curdir
             self.savedirectory = os.curdir
