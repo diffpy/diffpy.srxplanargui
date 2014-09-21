@@ -114,7 +114,7 @@ class SrXconfig(ConfigBaseTraits):
 
     def _opendirectory_changed(self):
         if os.path.exists(self.opendirectory):
-            self.savedirectory = self.opendirectory
+            self.savedirectory = os.path.abspath(self.opendirectory)
         else:
             self.opendirectory = os.path.abspath(os.curdir)
             self.savedirectory = os.path.abspath(os.curdir)
