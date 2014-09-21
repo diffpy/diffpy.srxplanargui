@@ -125,8 +125,13 @@ class SrXguiLive(SrXgui):
 
     @on_trait_change('srxconfig.savedirectory')
     def _changedir(self):
-        self.getxgui.getxconfig.inputdir = self.srxconfig.savedirectory
-        self.getxgui.getxconfig.savedir = self.srxconfig.savedirectory
+        newdir = self.srxconfig.savedirectory
+        if os.path.exists(newdir):
+            self.getxgui.getxconfig.inputdir = os.path.abspath(newdir)
+            self.getxgui.getxconfig.savedir = os.path.abspath(newdir)
+        else:
+            self.getxgui.getxconfig.inputdir = os.path.abspath(os.path.curdir)
+            self.getxgui.getxconfig.savedir = os.path.abspath(os.path.curdir)
         return
 
     def processSelected(self, summation=False):
