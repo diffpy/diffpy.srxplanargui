@@ -57,7 +57,13 @@ class SaveLoadMaskHandler(Handler):
         info.object.loadMaskFile()
         info.ui.dispose()
         return
+    
+class AdvMaskHandler(Handler):
 
+    def closed(self, info, is_ok):
+        info.object.refreshImage()
+        return
+    
 class ImagePlot(HasTraits):
     imagefile = File
     srx = Any
@@ -67,15 +73,15 @@ class ImagePlot(HasTraits):
     pointmaskradius = Float(3.0)
     maskediting = Bool(False)
     
-    brightpixel = Bool(True, desc='Mask the pixels too bright compared to their local enviroment')
-    darkpixel = Bool(True, desc='Mask the pixels too dark compared to their local enviroment')
-    avgmask = Bool(True, desc='Mask the pixels too bright or too dark compared to the average intensity at the similar diffraction angle.')
-    brightpixelr = Float(1.2, desc='Pixels with intensity larger than this relative threshold value will be masked')
+    brightpixel = Bool(True, desc='Mask the pixels too bright compared to their local environment')
+    darkpixel = Bool(True, desc='Mask the pixels too dark compared to their local environment')
+    avgmask = Bool(True, desc='Mask the pixels too bright or too dark compared to the average intensity at the similar diffraction angle')
+    brightpixelr = Float(1.2, desc='Pixels with intensity large than this relative threshold (times the local environment) value will be masked')
     brightpixelsize = Int(5, desc='Size of testing area for detecting bright pixels')
-    darkpixelr = Float(0.1, desc='Pixels with intensity less than this relative threshold value will be masked')
+    darkpixelr = Float(0.1, desc='Pixels with intensity less than this relative threshold (times the local environment) value will be masked')
     avgmaskhigh = Float(2.0, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked')
     avgmasklow = Float(0.5, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity less than avg_int*low will be masked')
-    cropedges = Array(dtype=np.int, desc='The number of pixels masked at each edge (left, right, top, bottom).')
+    cropedges = Array(dtype=np.int, desc='The number of pixels masked at each edge (left, right, top, bottom)')
     
     def createPlot(self):
         # image = np.log(self.srx.loadimage.loadImage(self.imagefile))
@@ -504,6 +510,7 @@ class ImagePlot(HasTraits):
              
              title='Advanced mask',
              width=320,
+             handler=AdvMaskHandler(),
              resizable=True,
              buttons=[OKButton, CancelButton],
              icon=ImageResource('icon.png'),
@@ -554,8 +561,8 @@ class AdvHint(HasTraits):
 You can preview the masks here or apply the current masks to the static mask permanently. 
 
 Edge mask: mask the pixels around the image edge. (left, right, top, bottom) 
-Dark pixel mask: mask the pixels too dark compared to their local enviroment
-Bright pixel mask: mask the pixels too bright compared to their local enviroment
+Dark pixel mask: mask the pixels too dark compared to their local environment
+Bright pixel mask: mask the pixels too bright compared to their local environment
 Average mask: Mask the pixels too bright or too dark compared to the average intensity 
     at the similar diffraction angle. Currect calibration information is required.''')
     
