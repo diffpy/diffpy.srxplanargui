@@ -43,6 +43,10 @@ class HelpHandler(Handler):
     def _qsprevious(self, info):
         info.object.qsindex -= 1
         return
+    
+    def _cpReftext(self, info):
+        info.object.cpReftext()
+        return
 
 
 class SrXguiHelp(HasTraits):
@@ -62,9 +66,9 @@ class SrXguiHelp(HasTraits):
     # quick start
     #######################
 
-    imgs = [ImageResource('%02d.png' % i) for i in range(1, 14)]
+    imgs = [ImageResource('%02d.png' % i) for i in range(1, 23)]
 
-    qslen = Int(12)
+    qslen = Int(len(imgs) - 1)
 
     next_action = \
         Action(name='Next',
@@ -75,6 +79,11 @@ class SrXguiHelp(HasTraits):
         Action(name='Previous',
                action='_qsprevious',
                enabled_when='object.qsindex>0'
+               )
+    cpreference_action = \
+        Action(name='Copy to clipboard',
+               action='_cpReftext',
+               visible_when='object.qsindex==object.qslen-1'
                )
 
     def _qsnext(self):
@@ -96,7 +105,28 @@ class SrXguiHelp(HasTraits):
              width=hwidth,
              height=hheight,
              resizable=True,
-             buttons=[previous_action, next_action, OKButton],
+             buttons=[cpreference_action, previous_action, next_action, OKButton],
              handler=HelpHandler(),
              icon=ImageResource('icon.png'),
              )
+        
+    #######################
+    # reference
+    #######################
+
+    reftext = '''
+xPDFsuite (main GUI) :X. Yang, P. Juhas, C. L. Farrow and Simon J. L. Billinge xPDFsuite: an end-to-end software solution for high throughput pair distribution function transformation, visualization and analysis, arXiv 1402.3163 (2014)
+
+SrXplanar (2D image integration):X. Yang, P. Juhas, S.J.L. Billinge, On the estimation of statistical uncertainties on powder diffraction and small-angle scattering data from two-dimensional X-ray detectors, J. Appl. Cryst. (2014). 47, 1273-1283
+'''
+    
+    def cpReftext(self):
+        cpToClipboard(self.reftext)
+        return
+
+def cpToClipboard(s):
+    if ETSConfig.toolkit == 'qt4':
+        from pyface.qt import QtGui, QtCore
+        cb = QtGui.QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(s, mode=cb.Clipboard)
