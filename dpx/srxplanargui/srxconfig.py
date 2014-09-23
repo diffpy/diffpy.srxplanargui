@@ -53,7 +53,17 @@ _optdatalist.append(
                  'l':'toolkit',
                  'h':'toolkit of PDFgetEgui program, could be wx or qt4',
                  'c':['wx', 'qt4'],
-                 'd':'qt4', }],
+                 'd':'qt4', }]
+                    )
+_optdatalist.append(
+    ['xpixelsizetem', {'sec':'Beamline',
+                    'h':'detector pixel size in x axis, in A^-1',
+                    'd':0.02, }]
+                    )
+_optdatalist.append(
+    ['ypixelsizetem', {'sec':'Beamline',
+                    'h':'detector pixel size in y axis, in A^-1',
+                    'd':0.02, }]
                     )
 
 for i in _optdatalist:
@@ -64,11 +74,21 @@ for i in _optdatalist:
                 'n':'?',
                 'co':False,
                 'd':False, }
-    if i[0] == 'polcorrectf':
+    elif i[0] == 'polcorrectf':
         i[1] = {'sec':'Others', 'args':'n', 'config':'n', 'header':'n',
                  's':'polarf',
                  'h':'polarization correction factor',
                  'd':0.99, }
+    elif i[0] == 'xpixelsize':
+        i[1] = {'sec':'Beamline', 'args':'n', 'config':'n', 'header':'n',
+                's':'xp',
+                'h':'detector pixel size in x axis, in mm',
+                'd':0.2, }
+    elif i[0] == 'ypixelsize':
+        i[1] = {'sec':'Beamline', 'args':'n', 'config':'n', 'header':'n',
+                's':'yp',
+                'h':'detector pixel size in y axis, in mm',
+                'd':0.2, }
 
 class SrXconfig(ConfigBaseTraits):
     '''
@@ -141,21 +161,12 @@ class SrXconfig(ConfigBaseTraits):
     
     configmode = Enum(['TEM', 'normal'])
     
-    xpixelsizetem = Property(depends_on='xpixelsize, distance, wavelength')
-    def _get_xpixelsizetem(self):
-        return self.xpixelsize / self.distance / self.wavelength
-    def _set_xpixelsizetem(self, size):
-        size = float(size)
-        self.updateConfig(xpixelsize=size * self.wavelength * self.distance)
+    @on_trait_change('distance, wavelength, xpixelsizetem, ypixelsizetem')
+    def _refreshPSsize(self, obj, name, new):
+        self.updateConfig(xpixelsize=self.xpixelsizetem * self.wavelength * self.distance,
+                          ypixelsize=self.ypixelsizetem * self.wavelength * self.distance)
         return
-    ypixelsizetem = Property(depends_on='ypixelsize, distance, wavelength')
-    def _get_ypixelsizetem(self):
-        return self.ypixelsize / self.distance / self.wavelength
-    def _set_ypixelsizetem(self, size):
-        size = float(size)
-        self.updateConfig(ypixelsize=size * self.wavelength * self.distance)
-        return
-
+    
     directory_group = \
         Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),
               Item('savedirectory', label='Output dir.', help='directory of saved files'),
