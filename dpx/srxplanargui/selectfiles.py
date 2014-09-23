@@ -165,8 +165,8 @@ class AddFiles(HasTraits):
             imagefile = None
         if imagefile != None:
             if os.path.exists(imagefile):
-                imageplot = ImagePlot(imagefile=imagefile, srx=self.srx)
-                imageplot.createPlot()
+                imageplot = ImagePlot(imagefile=imagefile, srx=self.srx, srxconfig=self.srxconfig)
+                # imageplot.createPlot()
                 imageplot.edit_traits()
         return
 
@@ -193,7 +193,7 @@ class AddFiles(HasTraits):
         )
 
     selectallbb = Button('Select all')
-    plotbb = Button('Show image')
+    plotbb = Button('Image and Mask')
 
     traits_view = View(
         VGroup(

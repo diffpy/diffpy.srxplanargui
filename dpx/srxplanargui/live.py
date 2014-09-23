@@ -125,12 +125,13 @@ class SrXguiLive(SrXgui):
 
     @on_trait_change('srxconfig.savedirectory')
     def _changedir(self):
-        if self.srxconfig.savedirectory.endswith('chi'):
-            newdir = self.srxconfig.savedirectory[:-3] + 'pdf'
+        newdir = self.srxconfig.savedirectory
+        if os.path.exists(newdir):
+            self.getxgui.getxconfig.inputdir = os.path.abspath(newdir)
+            self.getxgui.getxconfig.savedir = os.path.abspath(newdir)
         else:
-            newdir = os.path.join(self.srxconfig.savedirectory, 'pdf')
-        self.getxgui.getxconfig.inputdir = self.srxconfig.savedirectory
-        self.getxgui.getxconfig.savedir = newdir
+            self.getxgui.getxconfig.inputdir = os.path.abspath(os.path.curdir)
+            self.getxgui.getxconfig.savedir = os.path.abspath(os.path.curdir)
         return
 
     def processSelected(self, summation=False):

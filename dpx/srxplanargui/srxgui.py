@@ -19,7 +19,6 @@ import numpy as np
 import os
 import sys
 
-# break if help passed to the args
 from traits.etsconfig.api import ETSConfig
 if ETSConfig.toolkit == '' :
     ETSConfig.toolkit = 'qt4'
@@ -129,7 +128,6 @@ class SrXgui(HasTraits):
         self.splash.close()
         return
 
-
     def saveConfig(self, filename=None):
         '''
         save config
@@ -155,7 +153,7 @@ class SrXgui(HasTraits):
         if self.addfiles.selected:
             self.srx.updateConfig()
             filelist = [f.fullname for f in self.addfiles.selected]
-            self.srx.prepareCalculation(filelist)
+            self.srx.prepareCalculation(filelist, automask=False)
             self.srx.integrateFilelist(filelist, summation=summation)
         return
     

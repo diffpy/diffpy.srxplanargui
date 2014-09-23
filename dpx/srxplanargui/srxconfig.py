@@ -96,9 +96,7 @@ class SrXconfig(ConfigBaseTraits):
         fget=lambda self: self.tthmax if self.integrationspace == 'twotheta' else self.qmax)
     tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax',
         fget=lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
-
-    maskfile = File()
-
+    
     def _preUpdateSelf(self, **kwargs):
         '''
         additional process called in self._updateSelf, this method is called
@@ -110,8 +108,9 @@ class SrXconfig(ConfigBaseTraits):
         :param kwargs: optional kwargs
         '''
         self.tthmaxd, self.qmax = checkMax(self)
-        if len(self.addmask) > 0:
-            self.maskfile = self.addmask[0]
+        '''addmask = [b for b in self.addmask if not (b in ['brightpixel', 'darkpixel'])]
+        if len(addmask) > 0:
+            self.maskfile = addmask[0]'''
         return
 
     def _fit2dconfig_changed(self):
@@ -127,30 +126,17 @@ class SrXconfig(ConfigBaseTraits):
             self._updateSelf()
         return
 
-    def _maskfile_changed(self):
-        if os.path.exists(self.maskfile):
-            self.addmask = [self.maskfile]
-        else:
-            self.addmask = []
-        return
-
     def _opendirectory_changed(self):
         if os.path.exists(self.opendirectory):
-            newdir = os.path.join(self.opendirectory, 'chi')
-            if not os.path.exists(newdir):
-                try:
-                    os.mkdir(newdir)
-                except:
-                    newdir = self.opendirectory
-            self.savedirectory = newdir
+            self.savedirectory = os.path.abspath(self.opendirectory)
         else:
-            self.opendirectory = os.curdir
-            self.savedirectory = os.curdir
+            self.opendirectory = os.path.abspath(os.curdir)
+            self.savedirectory = os.path.abspath(os.curdir)
         return
     
     def _savedirectory_changed(self):
         if not os.path.exists(self.savedirectory):
-            self.savedirectory = os.curdir
+            self.savedirectory = os.path.abspath(os.curdir)
         return
     
     configmode = Enum(['TEM', 'normal'])
@@ -207,6 +193,11 @@ class SrXconfig(ConfigBaseTraits):
               # Item('polcorrectionenable', label='polarization corr.'),
               # Item('polcorrectf', label='polarization factor'),
               
+              Item('brightpixelmask', label='Bright pixel mask'),
+              Item('darkpixelmask', label='Dark pixel mask'),
+              Item('avgmask', label='Average mask'),
+              Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
+              
               show_border=True,
               # label='Corrections'
               visible_when='correction_visible'
@@ -218,11 +209,8 @@ class SrXconfig(ConfigBaseTraits):
               Item('flipvertical', label='Flip vertically'),
               Item('xdimension', label='x dimension'),
               Item('ydimension', label='y dimension'),
-              Item('xpixelsize', label='x pixel size (mm)', visible_when='configmode == "normal"'),
-              Item('ypixelsize', label='x pixel size (mm)', visible_when='configmode == "normal"'),
               Item('xpixelsizetem', label='x pixel size (A^-1)', tooltip='x pixel size, in A^-1', visible_when='configmode == "TEM"'),
               Item('ypixelsizetem', label='y pixel size (A^-1)', tooltip='y pixel size, in A^-1', visible_when='configmode == "TEM"'),
-              Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
 
               show_border=True,
               # label='Detector parameters'
@@ -238,7 +226,7 @@ class SrXconfig(ConfigBaseTraits):
                 # Item('configmode'),
                 Group(Item('geometry_visible', label='Geometry parameters'),
                       geometry_group,),
-                Group(Item('correction_visible', label='corrections'),
+                Group(Item('correction_visible', label='Corrections and masks'),
                       correction_group,),
                 Group(Item('detector_visible', label='Detector parameters'),
                       detector_group,),

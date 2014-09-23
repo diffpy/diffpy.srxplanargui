@@ -192,6 +192,8 @@ class Calibration(HasTraits):
         self.ybeamcenter = y  # - y - 0.5
         self.tiltd = tiltd
         self.rotationd = rotationd  # + 180
+        self.srxconfig.flipvertical = False
+        self.srxconfig.fliphorizontal = False
         return
     
     def selfCalibration(self, image=None):
