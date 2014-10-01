@@ -146,10 +146,7 @@ class Calibration(HasTraits):
             
             calicmd = [self.pythonbin, self.caliscript]
             calicmd.extend(['-w', str(self.wavelength)])
-            if sys.platform == 'win32':
-                calicmd.extend(['-c', str(dspacefile)])
-            else:
-                calicmd.extend(['-S', str(dspacefile)])
+            calicmd.extend(['-c', str(dspacefile)])
             calicmd.extend(['-p', str(ps[0]) + ',' + str(ps[1])])
             calicmd.extend([str(image)])
             
@@ -175,7 +172,7 @@ class Calibration(HasTraits):
             lines = f.readlines()
             f.close()
         else:
-            raise ValueError('pyFAI result file not exsit')
+            raise ValueError('pyFAI results file does not exist.')
         for line in lines:
             if re.search('# Distance Sample-beamCenter', line):
                 distance = findFloat(line)[0]
