@@ -2,8 +2,8 @@
 
 # Installation script for dpx.pdfgetxgui
 
-"""dpx.srxplanargui - a software for 2D powder diffraction image integration 
-    and error propagation 
+"""dpx.srxplanargui - a software for 2D powder diffraction image integration
+    and error propagation
 
 Packages:   dpx.srxplanargui
 Scripts:    srxgui
@@ -78,7 +78,7 @@ setup_args = dict(
             'console_scripts' : ['srxgui = dpx.srxplanargui.srxguiapp:main',
                                  ],
         },
-        
+
         author='Simon J.L. Billinge',
         author_email='sb2896@columbia.edu',
         description='PDFgetXgui, a software for PDF transformation and visualization',

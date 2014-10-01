@@ -49,7 +49,7 @@ class SaveLoadMaskHandler(Handler):
         info.object.saveMaskFile()
         info.ui.dispose()
         return
-    
+
     def _load(self, info):
         '''
         load mask
@@ -57,13 +57,13 @@ class SaveLoadMaskHandler(Handler):
         info.object.loadMaskFile()
         info.ui.dispose()
         return
-    
+
 class AdvMaskHandler(Handler):
 
     def closed(self, info, is_ok):
         info.object.refreshImage()
         return
-    
+
 class ImagePlot(HasTraits):
     imagefile = File
     srx = Any
@@ -72,7 +72,7 @@ class ImagePlot(HasTraits):
     maskfile = File
     pointmaskradius = Float(3.0)
     maskediting = Bool(False)
-    
+
     brightpixel = Bool(True, desc='Mask the pixels too bright compared to their local environment')
     darkpixel = Bool(True, desc='Mask the pixels too dark compared to their local environment')
     avgmask = Bool(True, desc='Mask the pixels too bright or too dark compared to the average intensity at the similar diffraction angle')
@@ -82,7 +82,7 @@ class ImagePlot(HasTraits):
     avgmaskhigh = Float(2.0, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked')
     avgmasklow = Float(0.5, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity less than avg_int*low will be masked')
     cropedges = Array(dtype=np.int, desc='The number of pixels masked at each edge (left, right, top, bottom)')
-    
+
     def createPlot(self):
         # image = np.log(self.srx.loadimage.loadImage(self.imagefile))
         image = self.srx.loadimage.loadImage(self.imagefile)
@@ -91,48 +91,48 @@ class ImagePlot(HasTraits):
         self.imagemax = image.max()
         self.mask = self.srx.mask.staticMask()
         image = self.imageorg * np.logical_not(self.mask) + self.mask * self.imagemax
-        
+
         y = np.arange(image.shape[0]).reshape((image.shape[0], 1)) * np.ones((1, image.shape[1]))
         x = np.arange(image.shape[1]).reshape((1, image.shape[1])) * np.ones((image.shape[0], 1))
-        
+
         self.pts = np.array(np.vstack([x.ravel(), y.ravel()]).T)
-        
+
         xbounds = (0, image.shape[1])
         ybounds = (0, image.shape[0])
-    
+
         self.pd = ArrayPlotData()
         self.pd.set_data("imagedata", image)
-    
+
         self.plot = Plot(self.pd)
         self.img_plot = self.plot.img_plot("imagedata",
                                            xbounds=xbounds,
                                            ybounds=ybounds,
                                            colormap=jet,)[0]
-    
+
         # Tweak some of the plot properties
         self.plot.title = os.path.split(self.imagefile)[1]
         self.plot.aspect_ratio = 1.0
         self.plot.padding = 50
-    
+
         # Attach some tools to the plot
         self._appendTools()
         return
-    
+
     def saveMaskFile(self):
         np.save(self.maskfile, self.mask)
         self.srxconfig.maskfile = self.maskfile
         return
-    
+
     def loadMaskFile(self):
         if self.srxconfig.maskfile == self.maskfile:
             self.reloadMask()
         else:
             self.srxconfig.maskfile = self.maskfile
-        return 
-    
+        return
+
     def mergeMask(self, points, remove=None):
         '''
-        :param points: an Mx2 array of x,y point pairs (floating point) that define the 
+        :param points: an Mx2 array of x,y point pairs (floating point) that define the
             boundaries of a polygon.
         :param remove: True for remove the new mask from the existing mask
         '''
@@ -147,7 +147,7 @@ class ImagePlot(HasTraits):
                 self.mask = np.logical_or(self.mask, mask)
             self.refreshImage()
         return
-    
+
     def addPointMask(self, ndx, remove=None):
         '''
         :param ndx: (x,y) float
@@ -163,27 +163,27 @@ class ImagePlot(HasTraits):
             self.mask = np.logical_or(self.mask, mask)
         self.refreshImage()
         return
-    
+
     def clearMask(self):
         self.mask = self.mask * 0
         self.refreshImage()
         return
-    
+
     maskaboveint = Int(10e10)
     maskbelowint = Int(1)
-    
+
     def maskabove(self):
         mask = self.imageorg > self.maskaboveint
         self.mask = np.logical_or(self.mask, mask)
         self.refreshImage()
         return
-    
+
     def maskbelow(self):
         mask = self.imageorg < self.maskbelowint
         self.mask = np.logical_or(self.mask, mask)
         self.refreshImage()
         return
-    
+
     def genAdvMask(self):
         pic = self.imageorg
         if self.darkpixel or self.brightpixel:
@@ -192,7 +192,7 @@ class ImagePlot(HasTraits):
                 rv += self.srx.mask.darkPixelMask(pic)
             if self.brightpixel:
                 rv += self.srx.mask.brightPixelMask(pic)
-            dymask = np.logical_or((rv > 0), self.mask)    
+            dymask = np.logical_or((rv > 0), self.mask)
         else:
             dymask = self.mask
         if self.avgmask:
@@ -207,16 +207,16 @@ class ImagePlot(HasTraits):
             ones[ce[2]:-ce[3], ce[0]:-ce[1]] = dymask[ce[2]:-ce[3], ce[0]:-ce[1]]
             dymask = ones
         return dymask
-    
+
     def previewAdvMask(self):
         dymask = self.genAdvMask()
         self.refreshImage(dymask)
         return
-    
+
     def applyAdvMask(self):
         self._applyMaskPar()
         return
-    
+
     def applyAdvMaskP(self):
         dymask = self.genAdvMask()
         self.mask = dymask
@@ -226,46 +226,46 @@ class ImagePlot(HasTraits):
         self.avgmask = False
         self._applyMaskPar()
         return
-    
+
     def _loadMaskPar(self):
         parlist = ['brightpixelmask', 'darkpixelmask', 'avgmask', 'brightpixelr',
                    'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
         for p in parlist:
             setattr(self, p, getattr(self.srxconfig, p))
         return
-    
+
     def _applyMaskPar(self):
         parlist = ['brightpixelmask', 'darkpixelmask', 'avgmask', 'brightpixelr',
                    'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
         for p in parlist:
             setattr(self.srxconfig, p, getattr(self, p))
         return
-    
+
     def _appendTools(self):
         '''
         append xy position, zoom, pan tools to plot
-        
+
         :param plot: the plot object to append on
         '''
         plot = self.plot
         img_plot = self.img_plot
-        
+
         # tools
         self.pan = PanTool(plot)
         self.zoom = ZoomTool(component=plot, tool_mode="box", always_on=False)
         self.lstool = MasklineDrawer(self.plot, imageplot=self)
         self.xyseltool = MaskPointInspector(img_plot, imageplot=self)
         # self.lstool.imageplot = self
-        
+
         img_plot.tools.append(self.xyseltool)
         overlay = ImageInspectorOverlay(component=img_plot, image_inspector=self.xyseltool,
                                         bgcolor="white", border_visible=True)
         img_plot.overlays.append(overlay)
-        
+
         plot.tools.append(self.pan)
         plot.overlays.append(self.zoom)
         return
-    
+
     def _enableMaskEditing(self):
         '''
         enable mask tool and disable pan tool
@@ -274,10 +274,10 @@ class ImagePlot(HasTraits):
         for i in range(self.plot.tools.count(self.pan)):
             self.plot.tools.remove(self.pan)
         self.plot.overlays.append(self.lstool)
-        self.titlebak = self.plot.title 
+        self.titlebak = self.plot.title
         self.plot.title = 'Click: add a vertex; <Ctrl>+Click: remove a vertex; \n          <Enter>: finish the selection'
         return
-    
+
     def _disableMaskEditing(self):
         '''
         disable mask tool and enable pan tool
@@ -287,21 +287,21 @@ class ImagePlot(HasTraits):
         self.plot.title = self.titlebak
         self.maskediting = False
         return
-    
+
     def _enablePointMaskEditing(self):
         self.maskediting = True
         for i in range(self.plot.tools.count(self.pan)):
             self.plot.tools.remove(self.pan)
-        self.titlebak = self.plot.title 
+        self.titlebak = self.plot.title
         self.plot.title = 'Click: add a point; <Enter>: exit the point selection'
         return
-    
+
     def _disablePointMaskEditing(self):
         self.plot.tools.append(self.pan)
         self.plot.title = self.titlebak
         self.maskediting = False
         return
-    
+
     def refreshImage(self, mask=None):
         '''
         recalculate the image using self.mask and refresh display
@@ -311,7 +311,7 @@ class ImagePlot(HasTraits):
         self.pd.set_data("imagedata", image)
         self.plot.invalidate_draw()
         return
-    
+
     def reloadMask(self):
         '''
         reload the mask from file and refresh display
@@ -319,7 +319,7 @@ class ImagePlot(HasTraits):
         self.mask = self.srx.mask.staticMask()
         self.refreshImage()
         return
-    
+
     def _add_notifications(self):
         self.on_trait_change(self.reloadMask, 'srxconfig.maskfile')
         return
@@ -327,7 +327,7 @@ class ImagePlot(HasTraits):
     def _del_notifications(self):
         self.on_trait_change(self.reloadMask, 'srxconfig.maskfile', remove=True)
         return
-    
+
     addpolygon_bb = Button('Add polygon mask')
     removepolygon_bb = Button('Remove polygon mask')
     addpoint_bb = Button('Add point mask')
@@ -337,7 +337,7 @@ class ImagePlot(HasTraits):
     maskbelow_bb = Button('Mask intensity below')
     loadmaskfile_bb = Button('Load mask')
     savemaskfile_bb = Button('Save mask')
-    
+
     def _addpolygon_bb_fired(self):
         self.removepolygonmask = False
         self._enableMaskEditing()
@@ -372,11 +372,11 @@ class ImagePlot(HasTraits):
         self.maskfile = os.path.splitext(self.maskfile)[0] + '.npy'
         self.edit_traits('savemaskfile_view')
         return
-    
+
     previewadvmask_bb = Button('Preview', desc='preview the dynamic mask for current image')
     applyadvmask_bb = Button('Apply', desc='apply the parameters and the dynamic mask will be generated during integration')
     applyadvmaskp_bb = Button('Apply permanently', desc='merge the current dynamic mask to the static mask')
-    
+
     def _previewadvmask_bb_fired(self):
         self.previewAdvMask()
         return
@@ -386,7 +386,7 @@ class ImagePlot(HasTraits):
     def _applyadvmaskp_bb_fired(self):
         self.applyAdvMaskP()
         return
-            
+
 
     def __init__(self, **kwargs):
         '''
@@ -397,7 +397,7 @@ class ImagePlot(HasTraits):
         self._loadMaskPar()
         self._add_notifications()
         return
-        
+
     hinttext = Str('Zoom: <z>;  Reset: <Esc>; Pan: <drag/drop>; Toggle XY coordinates: <P>')
     traits_view = View(
                     Group(
@@ -440,7 +440,7 @@ class ImagePlot(HasTraits):
                     height=700,
                     icon=ImageResource('icon.png'),
                     )
-    
+
     savemaskfile_action = \
         Action(name='OK ',
                action='_save')
@@ -457,7 +457,7 @@ class ImagePlot(HasTraits):
              handler=SaveLoadMaskHandler(),
              icon=ImageResource('icon.png'),
              )
-        
+
     loadmaskfile_view = \
         View(Item('maskfile'),
              buttons=[loadmaskfile_action, CancelButton],
@@ -467,7 +467,7 @@ class ImagePlot(HasTraits):
              handler=SaveLoadMaskHandler(),
              icon=ImageResource('icon.png'),
              )
-        
+
 
     advancedmask_view = \
         View(
@@ -503,11 +503,11 @@ class ImagePlot(HasTraits):
                     Item('applyadvmask_bb'),
                     Item('applyadvmaskp_bb'),
                     spring,
-                    
+
                     show_labels=False,
                     ),
                 ),
-             
+
              title='Advanced mask',
              width=320,
              handler=AdvMaskHandler(),
@@ -515,30 +515,30 @@ class ImagePlot(HasTraits):
              buttons=[OKButton, CancelButton],
              icon=ImageResource('icon.png'),
              )
-    
+
 class MasklineDrawer(LineSegmentTool):
     """
     """
-    
+
     imageplot = Any
-    
+
     def _finalize_selection(self):
         self.imageplot._disableMaskEditing()
         self.imageplot.mergeMask(self.points)
         return
-    
+
     def __init__(self, *args, **kwargs):
         LineSegmentTool.__init__(self, *args, **kwargs)
         self.line.line_color = "red"
         self.line.vertex_color = "white"
         return
-    
+
 class MaskPointInspector(ImageInspectorTool):
-    
+
     exitmask_key = KeySpec('Enter')
     imageplot = Any
     enablemaskselect = Bool(False)
-    
+
     def normal_key_pressed(self, event):
         if self.inspector_key.match(event):
             self.visible = not self.visible
@@ -547,7 +547,7 @@ class MaskPointInspector(ImageInspectorTool):
             self.enablemaskselect = False
             self.imageplot._disablePointMaskEditing()
         return
-            
+
     def normal_left_down(self, event):
         if self.enablemaskselect:
             ndx = self.component.map_index((event.x, event.y))
@@ -555,24 +555,24 @@ class MaskPointInspector(ImageInspectorTool):
         return
 
 class AdvHint(HasTraits):
-    
+
     advhinttext = str(
 '''Notes: Advanced Masks are generated during the integration and refreshed for each image.
-You can preview the masks here or apply the current masks to the static mask permanently. 
+You can preview the masks here or apply the current masks to the static mask permanently.
 
-Edge mask: mask the pixels around the image edge. (left, right, top, bottom) 
+Edge mask: mask the pixels around the image edge. (left, right, top, bottom)
 Dark pixel mask: mask the pixels too dark compared to their local environment
 Bright pixel mask: mask the pixels too bright compared to their local environment
-Average mask: Mask the pixels too bright or too dark compared to the average intensity 
+Average mask: Mask the pixels too bright or too dark compared to the average intensity
     at the similar diffraction angle. Currect calibration information is required.''')
-    
+
     advhint_view = \
         View(
             Group(
                 Item('advhinttext', style='readonly', show_label=False),
                 show_border=True,
                 ),
-             
+
              title='Advanced mask hints',
              width=640,
              resizable=False,
