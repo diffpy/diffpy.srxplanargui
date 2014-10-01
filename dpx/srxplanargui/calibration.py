@@ -27,7 +27,7 @@ elif ETSConfig.toolkit == 'wx':
             ETSConfig.toolkit = 'qt4'
     except:
         ETSConfig.toolkit = 'qt4'
-    
+
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -72,7 +72,7 @@ class Calibration(HasTraits):
     pyFAIdir = Directory
     caliscript = File
     missingpyFAI = Bool(False)
-    
+
     xpixelsize = DelegatesTo('srxconfig')
     ypixelsize = DelegatesTo('srxconfig')
     wavelength = DelegatesTo('srxconfig')
@@ -83,13 +83,13 @@ class Calibration(HasTraits):
     distance = DelegatesTo('srxconfig')
     rotationd = DelegatesTo('srxconfig')
     tiltd = DelegatesTo('srxconfig')
-    
+
     def __init__(self, *args, **kwargs):
         super(Calibration, self).__init__(*args, **kwargs)
         self.locatePyFAI()
         self.missingpyFAI = missingpyFAI
         return
-    
+
     def locatePyFAI(self):
         pythonbin = sys.executable
         if sys.platform == 'win32':
@@ -101,7 +101,7 @@ class Calibration(HasTraits):
         self.pythonbin = pythonbin
         self.pyFAIdir = pyFAIdir
         return
-    
+
     @on_trait_change('pyFAIdir')
     def _pyFAIdirChanged(self):
         if sys.platform == 'win32':
@@ -116,7 +116,7 @@ class Calibration(HasTraits):
         self.caliscript = caliscript
         self.intescript = intescript
         return
-        
+
     def callPyFAICalibration(self, image=None, dspacefile=None):
         if image == None:
             image = self.image
@@ -126,33 +126,33 @@ class Calibration(HasTraits):
             dspacefile = self.dspacefile
         else:
             self.dspacefile = dspacefile
-        
+
         flag = False
         if os.path.exists(image) and os.path.isfile(image):
             if os.path.exists(dspacefile) and os.path.isfile(dspacefile):
                 flag = True
-        
+
         if flag:
             image = os.path.abspath(image)
             dspacefile = os.path.abspath(dspacefile)
-            
+
             # remove .npt and .azim
             for f in [os.path.splitext(image)[0] + '.npt',
                       os.path.splitext(image)[0] + '.azim']:
                 if os.path.exists(f):
                     os.remove(f)
-            
+
             ps = [self.xpixelsize * 1000, self.ypixelsize * 1000]
-            
+
             calicmd = [self.pythonbin, self.caliscript]
             calicmd.extend(['-w', str(self.wavelength)])
             calicmd.extend(['-c', str(dspacefile)])
             calicmd.extend(['-p', str(ps[0]) + ',' + str(ps[1])])
             calicmd.extend([str(image)])
-            
+
             import subprocess
             subprocess.call(calicmd)
-            
+
             # integrate image
             if sys.platform == 'win32':
                 ponifile = os.path.splitext(str(image))[0] + '.poni'
@@ -161,11 +161,11 @@ class Calibration(HasTraits):
             self.parsePyFAIoutput(image)
             print 'Calibration finished!'
         return
-    
+
     def parsePyFAIoutput(self, image=None):
         if image == None:
             image = self.image
-        
+
         filename = os.path.splitext(image)[0] + '.xy'
         if os.path.exists(filename):
             f = open(filename, 'r')
@@ -180,7 +180,7 @@ class Calibration(HasTraits):
                 x, y = findFloat(line)
             elif re.search('# Tilt', line):
                 tiltd, rotationd = findFloat(line)
-        
+
         self.distance = distance
         self.xbeamcenter = x  # - 0.5
         self.ybeamcenter = y  # - y - 0.5
@@ -189,19 +189,19 @@ class Calibration(HasTraits):
         self.srxconfig.flipvertical = False
         self.srxconfig.fliphorizontal = False
         return
-    
+
     def selfCalibration(self, image=None):
         # self.addfiles.selected[0].fullname
         if image == None:
             image = self.image
-        
+
         if os.path.exists(image) and os.path.isfile(image):
             for mode, showresults in zip(['x', 'y', 'x', 'y'], [False, False, False, True]):
                 selfCalibrate(self.srx, image, mode=mode, cropedges=self.slice, showresults=showresults, xywidth=self.xywidth)
         return
-    
+
     slice = Enum(['auto', 'x', 'y', 'box'])
-    
+
     calibrationmode = Enum(['self', 'calibrant'])
     def calibration(self, image=None, dspacefile=None):
         if self.calibrationmode == 'calibrant':
@@ -211,7 +211,7 @@ class Calibration(HasTraits):
         else:
             raise ValueError('calibration mode error')
         return
-    
+
     xywidth = Int(6)
     qmincali = Float(0.5)
     qmaxcali = Float(10.0)
@@ -221,14 +221,14 @@ class Calibration(HasTraits):
         self.qmincali = min(1.25, qmax / 10)
         self.qmaxcali = qmax / 2
         return
-    
+
     inst1 = Str('Please install pyFAI and FabIO to use the calibration function (refer to help).')
     inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
     main_View = \
         View(
             Item('calibrationmode', style='custom', label='Calibration mode'),
             Item('image', label='Image file'),
-            
+
             Group(
                 Item('inst1', style='readonly'),
                 Item('inst2', style='readonly'),
@@ -305,7 +305,7 @@ class Calibration(HasTraits):
                 label='Others',
                 visible_when='calibrationmode=="self"',
                 ),
-             
+
             title='Calibration',
             width=600,
             height=450,
@@ -314,11 +314,11 @@ class Calibration(HasTraits):
             handler=CalibrationHandler(),
             icon=ImageResource('icon.png'),
             )
-        
+
 def findFloat(line):
     temp = re.findall('[-+]?\d*\.\d+|[-+]?\d+', line)
     return map(float, temp)
-    
+
 if __name__ == '__main__':
     srxconfig = SrXconfig()
     cali = Calibration(srxconfig=srxconfig)
