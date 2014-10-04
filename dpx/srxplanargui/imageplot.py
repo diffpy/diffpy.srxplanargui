@@ -88,20 +88,26 @@ class ImagePlot(HasTraits):
         image = self.srx.loadimage.loadImage(self.imagefile)
         self.maskfile = self.srxconfig.maskfile
         self.imageorg = image
+        self.imageorglog = np.log(image)
+        self.imageorglog[self.imageorglog < 0] = 0
+        
+        
         self.imagemax = image.max()
         self.mask = self.srx.mask.staticMask()
-        image = self.imageorg * np.logical_not(self.mask) + self.mask * self.imagemax
+        
+        if self.mask.size != image.size:
+            self.maskfile = ''
+            self.srxconfig.maskfile = ''
+            self.mask = self.srx.mask.staticMask()
         
         y = np.arange(image.shape[0]).reshape((image.shape[0], 1)) * np.ones((1, image.shape[1]))
         x = np.arange(image.shape[1]).reshape((1, image.shape[1])) * np.ones((image.shape[0], 1))
-        
         self.pts = np.array(np.vstack([x.ravel(), y.ravel()]).T)
-        
         xbounds = (0, image.shape[1])
         ybounds = (0, image.shape[0])
-    
+        
         self.pd = ArrayPlotData()
-        self.pd.set_data("imagedata", image)
+        self.refreshImage(mask=self.mask, draw=False)
     
         self.plot = Plot(self.pd)
         self.img_plot = self.plot.img_plot("imagedata",
@@ -195,6 +201,7 @@ class ImagePlot(HasTraits):
             dymask = np.logical_or((rv > 0), self.mask)    
         else:
             dymask = self.mask
+            
         if self.avgmask:
             cebak = self.srxconfig.cropedges
             self.srx.updateConfig(cropedges=self.cropedges)
@@ -302,14 +309,17 @@ class ImagePlot(HasTraits):
         self.maskediting = False
         return
     
-    def refreshImage(self, mask=None):
+    def refreshImage(self, mask=None, draw=True):
         '''
-        recalculate the image using self.mask and refresh display
+        recalculate the image using self.mask or mask and refresh display
         '''
         mask = self.mask if mask == None else mask
-        image = self.imageorg * np.logical_not(mask) + mask * self.imagemax
+        image = self.applyScale()
+        image = image * np.logical_not(mask) + mask * image.max()
+        
         self.pd.set_data("imagedata", image)
-        self.plot.invalidate_draw()
+        if draw:
+            self.plot.invalidate_draw()
         return
     
     def reloadMask(self):
@@ -318,6 +328,46 @@ class ImagePlot(HasTraits):
         '''
         self.mask = self.srx.mask.staticMask()
         self.refreshImage()
+        return
+    
+    scalemode = Enum('linear', ['linear', 'log'], desc='Scale the image')
+    scalepowder = Float(0.5, desc='gamma value to control the contrast')
+    
+    def applyScale(self, image=None):
+        '''
+        apply the scale to increase/decrease contrast
+        '''
+        if self.scalemode == 'linear':
+            image = image if image != None else self.imageorg
+        elif self.scalemode == 'log':
+            if image == None:
+                image = self.imageorglog
+            else:
+                image = np.log(image)
+                image[image < 0] = 0
+        else:
+            image = image
+        
+        image = image ** self.scalepowder
+        return image
+    
+    splb = Float(0.0)
+    spub = Float(1.0) 
+    def _scalemode_changed(self):
+        if self.scalemode == 'linear':
+            self.scalepowder = 0.5
+            self.splb = 0.0
+            self.spub = 1.0
+        elif self.scalemode == 'log':
+            self.scalepowder = 1.0
+            self.splb = 0.0
+            self.spub = 4.0
+        self.refreshImage()
+        return
+    
+    def _scalepowder_changed(self, old, new):
+        if np.round(old, 1) != np.round(new, 1):
+            self.refreshImage()
         return
     
     def _add_notifications(self):
@@ -403,6 +453,16 @@ class ImagePlot(HasTraits):
                     Group(
                         Item('plot', editor=ComponentEditor(size=(550, 550)),
                              show_label=False),
+                        HGroup(
+                            spring,
+                            Item('scalemode', label='Scale mode'),
+                            Item('scalepowder', label='Contrast',
+                                 editor=RangeEditor(auto_set=False, low_name='splb', high_name='spub', format='%.1f')),
+                            spring,
+                            
+                            # show_border=True,
+                            # label='Display'
+                            ),
                         VGroup(
                             HGroup(
                                 Item('addpolygon_bb', enabled_when='not maskediting'),
