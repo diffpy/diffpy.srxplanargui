@@ -34,7 +34,7 @@ elif ETSConfig.toolkit == 'wx':
             ETSConfig.toolkit = 'qt4'
     except:
         ETSConfig.toolkit = 'qt4'
-    
+
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -107,7 +107,7 @@ class SrXguiLive(SrXgui):
         if not os.path.exists(configfile):
             configfile = self.detectConfigfile('default')
         self.configfile = configfile
-        
+
         if not kwargs.has_key('srxconfig'):
             self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
 
@@ -116,7 +116,7 @@ class SrXguiLive(SrXgui):
         self.addfiles.srx = self.srx
         self.help = SrXguiHelp()
         self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
-        
+
         self.liveplot = None
         self.last10data = []
 
@@ -184,7 +184,7 @@ class SrXguiLive(SrXgui):
     def addNewImagesToGetXgui(self, filelist):
         '''
         add new images to getxgui, if images are already there, refresh them
-        
+
         :param filelist: list of full path of new images
         '''
         self.addfiles.refreshdatalist = True
@@ -218,7 +218,7 @@ class SrXguiLive(SrXgui):
         Action(name='Load Config',
                action='_loadconfigView',
                enabled_when='not capturing')
-    
+
     traits_view = \
         View(
             HGroup(
@@ -238,7 +238,7 @@ class SrXguiLive(SrXgui):
                            show_labels=False,
                            ),
                     ),
-                   
+
                    layout='split',
                    springy=True,
                    dock='tab',
