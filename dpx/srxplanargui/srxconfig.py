@@ -203,9 +203,6 @@ class SrXconfig(ConfigBaseTraits):
               Item('sacorrectionenable', label='solid angle corr.'),
               # Item('polcorrectionenable', label='polarization corr.'),
               # Item('polcorrectf', label='polarization factor'),
-              Item('sacorrectionenable', label='Solid angle corr.'),
-              Item('polcorrectionenable', label='Polarization corr.'),
-              Item('polcorrectf', label='Polarization factor'),
 
               Item('brightpixelmask', label='Bright pixel mask'),
               Item('darkpixelmask', label='Dark pixel mask'),
