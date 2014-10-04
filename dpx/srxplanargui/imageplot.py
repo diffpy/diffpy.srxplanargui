@@ -90,7 +90,8 @@ class ImagePlot(HasTraits):
         self.imageorg = image
         self.imageorglog = np.log(image)
         self.imageorglog[self.imageorglog < 0] = 0
-        self.imagemax = image.max()
+        self.imageorgmax = image.max()
+        self.imageorglogmax = self.imageorglog.max()
         self.mask = self.srx.mask.staticMask()
 
         if self.mask.size != image.size:
@@ -335,17 +336,25 @@ class ImagePlot(HasTraits):
         apply the scale to increase/decrease contrast
         '''
         if self.scalemode == 'linear':
-            image = image if image != None else self.imageorg
+            if image == None:
+                image = self.imageorg
+                intmax = self.imageorgmax
+            else:
+                image = image
+                intmax = image.max()
         elif self.scalemode == 'log':
             if image == None:
                 image = self.imageorglog
+                intmax = self.imageorglogmax
             else:
                 image = np.log(image)
                 image[image < 0] = 0
+                intmax = image.max()
         else:
             image = image
-        
-        image = image ** self.scalepowder
+            intmax = image.max()
+            
+        image = intmax * ((image / intmax) ** self.scalepowder)
         return image
     
     splb = Float(0.0)
@@ -453,7 +462,7 @@ class ImagePlot(HasTraits):
                         HGroup(
                             spring,
                             Item('scalemode', label='Scale mode'),
-                            Item('scalepowder', label='Contrast',
+                            Item('scalepowder', label='Gamma',
                                  editor=RangeEditor(auto_set=False, low_name='splb', high_name='spub', format='%.1f')),
                             spring,
                             ),
