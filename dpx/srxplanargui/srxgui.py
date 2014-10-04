@@ -29,7 +29,7 @@ elif ETSConfig.toolkit == 'wx':
             ETSConfig.toolkit = 'qt4'
     except:
         ETSConfig.toolkit = 'qt4'
-    
+
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -62,30 +62,30 @@ class SrXguiHandler(Handler):
     def _saveconfigView(self, info):
         info.object._saveconfigView()
         return
-    
+
     def _loadconfigView(self, info):
         info.object._loadconfigView()
         return
-    
+
     def _helpView(self, info):
         info.object._helpbb_changed()
         return
-    
+
     # for live mode
     def _quickstart(self, info):
         info.object._helpbb_changed()
         return
-    
+
     def _startCapturing(self, info):
         info.object._startCapturing()
         return
-    
+
     def _stopCapturing(self, info):
         info.object._stopCapturing()
         return
-    
+
 class SaveHandler(Handler):
-    
+
     def closed(self, info, is_ok):
         if is_ok:
             info.object.saveConfig(info.object.configfile)
@@ -104,7 +104,7 @@ class SrXgui(HasTraits):
     help = Instance(SrXguiHelp)
     splash = Any
     calibration = Instance(Calibration)
-    
+
     def __init__(self, configfile=None, args=None, **kwargs):
         '''
         init the object, createt the notifications
@@ -114,7 +114,7 @@ class SrXgui(HasTraits):
         if not os.path.exists(configfile):
             configfile = self.detectConfigfile('default')
         self.configfile = configfile
-        
+
         if not kwargs.has_key('srxconfig'):
             self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
 
@@ -135,7 +135,7 @@ class SrXgui(HasTraits):
         if filename == 'default':
             filename = self.detectConfigfile(filename)
         self.srxconfig.writeConfig(filename, mode='full')
-        self.configfile = filename  
+        self.configfile = filename
         return
 
     def loadConfig(self, filename=None):
@@ -156,7 +156,7 @@ class SrXgui(HasTraits):
             self.srx.prepareCalculation(filelist, automask=False)
             self.srx.integrateFilelist(filelist, summation=summation)
         return
-    
+
     def detectConfigfile(self, filename):
         '''
         current directory > home directory, if none, then return the curdir+filename
@@ -165,7 +165,7 @@ class SrXgui(HasTraits):
         if filename == None:
             configfile = os.path.join(os.path.curdir, 'srxconfig.cfg')
         elif filename == 'default':
-            configfile = os.path.join(os.path.expanduser('~'), 'srxconfig.cfg')    
+            configfile = os.path.join(os.path.expanduser('~'), 'srxconfig.cfg')
         else:
             if os.path.abspath(filename):
                 if os.path.exists(filename):
@@ -177,7 +177,7 @@ class SrXgui(HasTraits):
                 configfile = os.path.join(os.path.curdir, filename)
         return configfile
 
-        
+
     ###########################################################
     def _saveconfigView(self):
         self.edit_traits(view='saveconfig_view')
@@ -185,7 +185,7 @@ class SrXgui(HasTraits):
     def _loadconfigView(self):
         self.edit_traits(view='loadconfig_view')
         return
-    
+
     configfile = File()
     saveconfig_action = \
         Action(name='Save Config',
@@ -227,18 +227,18 @@ class SrXgui(HasTraits):
     def _helpbb_changed(self):
         self.help.edit_traits(view='quickstart_view')
         return
-    
+
     def _selfcalibratebb_changed(self):
         image = None
         if self.addfiles.selected != None:
             if len(self.addfiles.selected) == 1:
                 image = self.addfiles.selected[0].fullname
-        
+
         if image != None:
             self.calibration.image = image
         self.calibration.edit_traits(view='main_View')
         return
-    
+
     helpbutton_action = \
         Action(name='Help ',
                action='_helpView')
@@ -247,7 +247,7 @@ class SrXgui(HasTraits):
     integratessbb = Button('Sum and Integrate')
     selfcalibratebb = Button('Calibration')
     helpbb = Button('Help')
-        
+
     traits_view = \
         View(
             HGroup(
@@ -267,7 +267,7 @@ class SrXgui(HasTraits):
                            show_labels=False,
                            ),
                     ),
-                   
+
                    layout='split',
                    springy=True,
                    dock='tab',

@@ -43,7 +43,7 @@ class HelpHandler(Handler):
     def _qsprevious(self, info):
         info.object.qsindex -= 1
         return
-    
+
     def _cpReftext(self, info):
         info.object.cpReftext()
         return
@@ -109,7 +109,7 @@ class SrXguiHelp(HasTraits):
              handler=HelpHandler(),
              icon=ImageResource('icon.png'),
              )
-        
+
     #######################
     # reference
     #######################
@@ -119,7 +119,7 @@ xPDFsuite (main GUI) :X. Yang, P. Juhas, C. L. Farrow and Simon J. L. Billinge x
 
 SrXplanar (2D image integration):X. Yang, P. Juhas, S.J.L. Billinge, On the estimation of statistical uncertainties on powder diffraction and small-angle scattering data from two-dimensional X-ray detectors, J. Appl. Cryst. (2014). 47, 1273-1283
 '''
-    
+
     def cpReftext(self):
         cpToClipboard(self.reftext)
         return

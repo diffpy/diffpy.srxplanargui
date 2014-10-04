@@ -82,15 +82,15 @@ class SrXconfig(ConfigBaseTraits):
         fget=lambda self: self.tthmax if self.integrationspace == 'twotheta' else self.qmax)
     tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax',
         fget=lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
-    
+
     def _preUpdateSelf(self, **kwargs):
         '''
         additional process called in self._updateSelf, this method is called
         before self._copySelftoConfig(), i.e. before copy options value to
         self.config (config file)
-        
+
         check the tthmaxd and qmax, and set tthorqmax, tthorqstep according to integration space
-        
+
         :param kwargs: optional kwargs
         '''
         self.tthmaxd, self.qmax = checkMax(self)
@@ -101,7 +101,7 @@ class SrXconfig(ConfigBaseTraits):
 
     def _fit2dconfig_changed(self):
         '''
-        load parameters from fit2d calibration information. copy/paste the fit2d calibration 
+        load parameters from fit2d calibration information. copy/paste the fit2d calibration
         results to a txt file. this function will load xbeamcenter, ybeamceter... from the file
         '''
         rv = parseFit2D(filename)
@@ -119,12 +119,12 @@ class SrXconfig(ConfigBaseTraits):
             self.opendirectory = os.path.abspath(os.curdir)
             self.savedirectory = os.path.abspath(os.curdir)
         return
-    
+
     def _savedirectory_changed(self):
         if not os.path.exists(self.savedirectory):
             self.savedirectory = os.path.abspath(os.curdir)
         return
-    
+
     directory_group = \
         Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),
               Item('savedirectory', label='Output dir.', help='directory of saved files'),
@@ -136,7 +136,7 @@ class SrXconfig(ConfigBaseTraits):
               show_border=True,
               label='Masks',
               )
-        
+
     geometry_visible = Bool(False)
     geometry_group = \
         Group(Item('integrationspace', label='Integration grid'),
@@ -153,24 +153,24 @@ class SrXconfig(ConfigBaseTraits):
               # label='Geometry parameters',
               visible_when='geometry_visible',
               )
-    
+
     correction_visible = Bool(False)
     correction_group = \
         Group(Item('uncertaintyenable', label='Uncertainty'),
               Item('sacorrectionenable', label='Solid angle corr.'),
               Item('polcorrectionenable', label='Polarization corr.'),
               Item('polcorrectf', label='Polarization factor'),
-              
+
               Item('brightpixelmask', label='Bright pixel mask'),
               Item('darkpixelmask', label='Dark pixel mask'),
               Item('avgmask', label='Average mask'),
               Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
-              
+
               show_border=True,
               # label='Corrections'
               visible_when='correction_visible'
               )
-    
+
     detector_visible = Bool(False)
     detector_group = \
         Group(Item('fliphorizontal', label='Flip horizontally'),
@@ -208,7 +208,7 @@ class SrXconfig(ConfigBaseTraits):
              # handler = handler,
              icon=ImageResource('icon.png'),
              )
-        
+
 
 SrXconfig.initConfigClass()
 

@@ -26,7 +26,7 @@ if ETSConfig.toolkit == 'qt4':
 else:
     from traitsui.wx.table_editor import TableEditor as TableEditorBE
     tableautosize = False
-    
+
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -66,7 +66,7 @@ class AddFilesHandler(Handler):
         except:
             pass
         return
-    
+
     def object_dclick_changed(self, info):
         info.object._plotbb_fired()
         return
@@ -157,7 +157,7 @@ class AddFiles(HasTraits):
         '''
         self.inputdir = self.srxconfig.opendirectory
         return
-    
+
     def _plotbb_fired(self):
         try:
             imagefile = self.selected[0].fullname
