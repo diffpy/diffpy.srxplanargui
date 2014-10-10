@@ -146,7 +146,10 @@ class Calibration(HasTraits):
 
             calicmd = [self.pythonbin, self.caliscript]
             calicmd.extend(['-w', str(self.wavelength)])
-            calicmd.extend(['-c', str(dspacefile)])
+            if pyFAI.version <= '0.9.3':
+                calicmd.extend(['-S', str(dspacefile)])
+            else:
+                calicmd.extend(['-c', str(dspacefile)])
             calicmd.extend(['-p', str(ps[0]) + ',' + str(ps[1])])
             calicmd.extend([str(image)])
 
