@@ -46,12 +46,11 @@ from diffpy.srxplanar.srxplanar import SrXplanar
 from diffpy.srxplanar.selfcalibrate import selfCalibrate
 from diffpy.srxplanar.srxplanarconfig import checkMax
 
-try:
-    import pyFAI
+from dpx.confutils.tools import module_exists_lower
+if module_exists_lower('pyfai'):
     missingpyFAI = False
-except:
+else:
     missingpyFAI = True
-    print "Please download and install pyFAI to do the calibration"
 
 class CalibrationHandler(Handler):
 
