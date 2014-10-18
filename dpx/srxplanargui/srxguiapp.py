@@ -35,6 +35,7 @@ if any([aa == 'wx' for aa in sysargv]):
     import traitsui.wx.constants
     traitsui.wx.constants.WindowColor = wx.Colour(244, 243, 238)
 else:
+    os.environ['QT_API'] = 'pyside'
     ETSConfig.toolkit = 'qt4'
     from pyface.qt import QtGui, QtCore
 
