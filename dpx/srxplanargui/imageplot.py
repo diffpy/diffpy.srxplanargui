@@ -94,9 +94,11 @@ class ImagePlot(HasTraits):
         self.imageorglogmax = self.imageorglog.max()
         self.mask = self.srx.mask.staticMask()
 
-        if self.mask.size != image.size:
+        if self.mask.shape != image.shape:
             self.maskfile = ''
             self.srxconfig.maskfile = ''
+            self.srxconfig.ydimension = image.shape[0]
+            self.srxconfig.xdimension = image.shape[1]
             self.mask = self.srx.mask.staticMask()
 
         y = np.arange(image.shape[0]).reshape((image.shape[0], 1)) * np.ones((1, image.shape[1]))
@@ -113,10 +115,9 @@ class ImagePlot(HasTraits):
                                            xbounds=xbounds,
                                            ybounds=ybounds,
                                            colormap=jet,)[0]
-
         # Tweak some of the plot properties
         self.plot.title = os.path.split(self.imagefile)[1]
-        self.plot.aspect_ratio = 1.0
+        self.plot.aspect_ratio = float(image.shape[1]) / float(image.shape[0])
         self.plot.padding = 50
 
         # Attach some tools to the plot
