@@ -48,6 +48,7 @@ from diffpy.srxplanar.srxplanarconfig import checkMax
 
 from dpx.confutils.tools import module_exists_lower
 if module_exists_lower('pyfai'):
+    import pyFAI
     missingpyFAI = False
 else:
     missingpyFAI = True
@@ -153,6 +154,10 @@ class Calibration(HasTraits):
             calicmd.extend([str(image)])
 
             import subprocess
+            try:
+                os.environ.pop('QT_API')
+            except:
+                pass
             subprocess.call(calicmd)
 
             # integrate image
