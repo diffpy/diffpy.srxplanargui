@@ -153,7 +153,7 @@ class SrXgui(HasTraits):
         if self.addfiles.selected:
             self.srx.updateConfig()
             filelist = [f.fullname for f in self.addfiles.selected]
-            self.srx.prepareCalculation(filelist, automask=False)
+            self.srx.prepareCalculation(filelist)
             self.srx.integrateFilelist(filelist, summation=summation)
         return
 
