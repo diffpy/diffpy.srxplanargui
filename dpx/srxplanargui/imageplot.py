@@ -279,7 +279,7 @@ class ImagePlot(HasTraits):
         '''
         mask = self.mask if mask == None else mask
         image = self.applyScale()
-        image = image * np.logical_not(mask) + mask * image.max()
+        image = image * np.logical_not(mask) + image.max() * mask
         self.pd.set_data("imagedata", image)
         if draw:
             self.plot.invalidate_draw()
@@ -334,11 +334,11 @@ class ImagePlot(HasTraits):
         return
 
     def _add_notifications(self):
-        self.on_trait_change(self.refreshMask, 'srxconfig.maskfile')
+        self.on_trait_change(self.loadMaskFile, 'srxconfig.maskfile')
         return
 
     def _del_notifications(self):
-        self.on_trait_change(self.refreshMask, 'srxconfig.maskfile', remove=True)
+        self.on_trait_change(self.loadMaskFile, 'srxconfig.maskfile', remove=True)
         return
 
     addpolygon_bb = Button('Add polygon mask')
@@ -386,7 +386,10 @@ class ImagePlot(HasTraits):
         self.edit_traits('loadmaskfile_view')
         return
     def _savemaskfile_bb_fired(self):
-        self.maskfile = os.path.splitext(self.maskfile)[0] + '.npy'
+        if self.maskfile == '':
+            self.maskfile = os.path.join(self.srxconfig.savedirectory, 'mask.npy')
+        else:
+            self.maskfile = os.path.splitext(self.maskfile)[0] + '.npy'
         self.edit_traits('savemaskfile_view')
         return
 
