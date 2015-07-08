@@ -243,9 +243,9 @@ class SrXgui(HasTraits):
         Action(name='Help ',
                action='_helpView')
 
-    integratbb = Button('Integrate separately')
+    integratbb = Button('Integrate')
     integratessbb = Button('Sum and Integrate')
-    selfcalibratebb = Button('Calibration')
+    selfcalibratebb = Button('Calibrate')
     helpbb = Button('Help')
 
     traits_view = \
@@ -262,7 +262,7 @@ class SrXgui(HasTraits):
                     HGroup(spring,
                            Item('selfcalibratebb'),
                            Item('integratbb'),
-                           Item('integratessbb'),
+                           # Item('integratessbb'),
                            spring,
                            show_labels=False,
                            ),

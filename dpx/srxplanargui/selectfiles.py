@@ -169,6 +169,10 @@ class AddFiles(HasTraits):
                 # imageplot.createPlot()
                 imageplot.edit_traits()
         return
+    
+    def _refreshbb_fired(self):
+        self.refreshdatalist = True
+        return
 
     #-- Traits UI Views --------------------------------------------------------
     tableeditor = TableEditor(
@@ -193,7 +197,9 @@ class AddFiles(HasTraits):
         )
 
     selectallbb = Button('Select all')
-    plotbb = Button('Image and Mask')
+    refreshbb = Button('Refresh')
+    plotbb = Button('Mask')
+    sumbb = Button('Sum')
 
     traits_view = View(
         VGroup(
@@ -201,13 +207,19 @@ class AddFiles(HasTraits):
                 HGroup(
                     Item('search', id='search', springy=True,
                          editor=TextEditor(auto_set=False)),
-                    Item('filetype', label='Type'),
                     ),
-                Item('datafiles', id='datafiles', editor=tableeditor),
-                Item('summary', editor=TitleEditor()),
                 HGroup(spring,
                        Item('selectallbb', show_label=False),
+                       Item('refreshbb', show_label=False),
+                       spring,
+                       Item('filetype', label='Type'),
+                       ),
+                Item('datafiles', id='datafiles', editor=tableeditor),
+                Item('summary', editor=TitleEditor()),
+                
+                HGroup(spring,
                        Item('plotbb', show_label=False),
+                       Item('sumbb', show_label=False),
                        spring,
                        ),
                 dock='horizontal',
