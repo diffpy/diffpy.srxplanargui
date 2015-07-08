@@ -57,7 +57,7 @@ from dpx.srxplanargui.calibration import Calibration
 
 from dpx.confutils.tools import checkFileVal
 
-class LivingThread(threading.Thread):
+'''class LivingThread(threading.Thread):
 
     def __init__(self, wdir, maingui):
         threading.Thread.__init__(self)
@@ -88,7 +88,7 @@ class LivingThread(threading.Thread):
                 maingui.newImages()
                 self.lastctime = os.path.getctime(wdir)
             time.sleep(0.5)
-        return
+        return'''
 
 
 class SrXguiLive(SrXgui):
@@ -96,9 +96,9 @@ class SrXguiLive(SrXgui):
     getxgui = Any
 
     def __init__(self, configfile=None, args=None, **kwargs):
-        '''
-        init the object, createt the notifications
-        '''
+        
+        # init the object, createt the notifications
+        
         self.splash = SplashScreen(image=ImageResource('01.png'), show_log_messages=False)
         self.splash.open()
 
@@ -117,8 +117,8 @@ class SrXguiLive(SrXgui):
         self.help = SrXguiHelp()
         self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
 
-        self.liveplot = None
-        self.last10data = []
+        '''self.liveplot = None
+        self.last10data = []'''
 
         self.splash.close()
         return
@@ -144,7 +144,7 @@ class SrXguiLive(SrXgui):
             GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
         return
 
-    def _startCapturing(self):
+    '''def _startCapturing(self):
         self.capturing = True
 
         wdir = self.srxconfig.opendirectory
@@ -156,15 +156,15 @@ class SrXguiLive(SrXgui):
         self.livingthread = LivingThread(wdir, self)
         self.livingthread.daemon = True
         self.livingthread.start()
-        return
+        return'''
 
-    def _stopCapturing(self):
+    '''def _stopCapturing(self):
         self.capturing = False
         self.livingthread.capturing = False
         self.livingthread.join()
-        return
+        return'''
 
-    ###LIVE###
+    '''###LIVE###
     def newImages(self):
         newexistfileset = self.srx.loadimage.genFileSet(fullpath=True)
         newfileset = newexistfileset - self.existfileset
@@ -179,7 +179,7 @@ class SrXguiLive(SrXgui):
             newchifilelist = [rv['filename'] for rv in rvlist]
             GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
             self.existfileset = newexistfileset
-        return
+        return'''
 
     def addNewImagesToGetXgui(self, filelist):
         '''
@@ -198,7 +198,7 @@ class SrXguiLive(SrXgui):
             self.liveplot, liveplotpanel = self.getxgui.createNewPlot(newdatacontainers)
         return
 
-    capturing = Bool(False)
+    '''capturing = Bool(False)
     startcapturing_action = \
         Action(name='Start Capturing',
                action='_startCapturing',
@@ -206,7 +206,7 @@ class SrXguiLive(SrXgui):
     stopcapturing_action = \
         Action(name='Stop Capturing',
                action='_stopCapturing',
-               enabled_when='capturing')
+               enabled_when='capturing')'''
     quickstart_action = \
         Action(name='Help ',
                action='_quickstart')
@@ -233,7 +233,7 @@ class SrXguiLive(SrXgui):
                     HGroup(spring,
                            Item('selfcalibratebb', enabled_when='not capturing'),
                            Item('integratbb', enabled_when='not capturing'),
-                           Item('integratessbb', enabled_when='not capturing'),
+                           # Item('integratessbb', enabled_when='not capturing'),
                            spring,
                            show_labels=False,
                            ),
