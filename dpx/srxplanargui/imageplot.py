@@ -191,7 +191,7 @@ class ImagePlot(HasTraits):
     def refreshMask(self, staticmask=None, draw=True):
         self.staticmask = self.srx.mask.staticMask() if staticmask == None else staticmask
         self.dynamicmask = self.srx.mask.dynamicMask(self.imageorg, dymask=self.staticmask)
-        self.dynamicmask = np.logical_or(self.dynamicmask, self.srx.mask.edgeMask()) 
+        self.dynamicmask = np.logical_or(self.dynamicmask, self.srx.mask.edgeMask())
         self.mask = np.logical_or(self.staticmask, self.dynamicmask)
         if draw:
             self.refreshImage()
