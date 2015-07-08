@@ -39,6 +39,7 @@ from traitsui.api import \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, OKCancelButtons
 from traitsui.table_column import ObjectColumn
+from pyface.api import ImageResource
 
 try:
     from diffpy.pdfgetx.functs import sortKeyNumericString
@@ -47,6 +48,7 @@ except:
 from dpx.srxplanargui.datacontainer import DataContainer
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.imageplot import ImagePlot
+from diffpy.srxplanar.loadimage import openImage, saveImage
 
 #-- The Live Search table editor definition ------------------------------------
 
@@ -70,6 +72,14 @@ class AddFilesHandler(Handler):
     def object_dclick_changed(self, info):
         info.object._plotbb_fired()
         return
+
+class SaveImageHandler(Handler):
+
+    def closed(self, info, is_ok):
+        if is_ok:
+            info.object._sumImgs()
+        return
+    
 
 class AddFiles(HasTraits):
 
@@ -173,6 +183,36 @@ class AddFiles(HasTraits):
     def _refreshbb_fired(self):
         self.refreshdatalist = True
         return
+    
+    sumname = Str
+    def _sumbb_fired(self):
+        self.sumname = os.path.splitext(self.selected[0].fullname)[0] + '_sum.tif'
+        self.edit_traits(view='saveimage_view')
+        return
+    
+    def _sumImgs(self):
+        if len(self.selected) > 1:
+            sel = self.selected
+            img = openImage(sel[0].fullname)
+            for im in sel[1:]:
+                img += openImage(im.fullname)
+            img /= len(sel)
+            saveImage(self.sumname, img)
+            self.refreshdatalist = True
+        return
+    
+    saveimage_view = View(
+        Group(
+            Item('sumname', springy=True, label='File name'),
+            ),
+        buttons=[OKButton, CancelButton],
+        title='Save image',
+        width=500,
+        # height    = 400,
+        resizable=True,
+        handler=SaveImageHandler(),
+        icon=ImageResource('icon.png'),
+        )
 
     #-- Traits UI Views --------------------------------------------------------
     tableeditor = TableEditor(
