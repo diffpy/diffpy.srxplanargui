@@ -134,18 +134,15 @@ class SrXguiLive(SrXgui):
                 VGroup(
                     Group(Item('srxconfig', editor=InstanceEditor(view='main_view'),
                                style='custom', label='Basic', show_label=False),
-                          # layout='tabbed',
                           springy=True,
                           ),
                     HGroup(spring,
                            Item('selfcalibratebb', enabled_when='not capturing'),
                            Item('integratbb', enabled_when='not capturing'),
-                           # Item('integratessbb', enabled_when='not capturing'),
                            spring,
                            show_labels=False,
                            ),
                     ),
-
                    layout='split',
                    springy=True,
                    dock='tab',
@@ -162,10 +159,6 @@ class SrXguiLive(SrXgui):
              )
 
 def main():
-    # splash = SplashScreen(image=ImageResource('splash.png'))
-    # splash.open()
-
-    # gui = SrXguiLive(splash=splash)
     gui = SrXguiLive()
     gui.configure_traits(view='traits_view')
     return

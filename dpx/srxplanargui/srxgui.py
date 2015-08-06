@@ -233,13 +233,11 @@ class SrXgui(HasTraits):
                 VGroup(
                     Group(Item('srxconfig', editor=InstanceEditor(view='main_view'),
                                style='custom', label='Basic', show_label=False),
-                          # layout='tabbed',
                           springy=True,
                           ),
                     HGroup(spring,
                            Item('selfcalibratebb'),
                            Item('integratbb'),
-                           # Item('integratessbb'),
                            spring,
                            show_labels=False,
                            ),
