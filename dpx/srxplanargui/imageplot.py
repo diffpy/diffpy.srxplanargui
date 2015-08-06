@@ -515,7 +515,7 @@ class ImagePlot(HasTraits):
                     ),
                 ),
 
-             title='Advanced mask',
+             title='Dynamic mask',
              width=320,
              handler=AdvMaskHandler(),
              resizable=True,

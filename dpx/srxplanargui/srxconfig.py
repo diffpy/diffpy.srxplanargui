@@ -46,7 +46,7 @@ from pyface.api import ImageResource
 from dpx.confutils.configtraits import ConfigBaseTraits
 from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPropertyRW
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
-        _defaultdata, checkMax, parseFit2D
+        _defaultdata, checkMax
 
 _optdatalist.append(
     ['toolkit', {'sec':'Misc', 'config':'n', 'header':'n',
@@ -97,19 +97,6 @@ class SrXconfig(ConfigBaseTraits):
         '''addmask = [b for b in self.addmask if not (b in ['brightpixel', 'darkpixel'])]
         if len(addmask) > 0:
             self.maskfile = addmask[0]'''
-        return
-
-    def _fit2dconfig_changed(self):
-        '''
-        load parameters from fit2d calibration information. copy/paste the fit2d calibration
-        results to a txt file. this function will load xbeamcenter, ybeamceter... from the file
-        '''
-        rv = parseFit2D(filename)
-        if len(rv.values()) > 0:
-            for optname in rv.keys():
-                setattr(self, optname, rv[optname])
-            self.fit2dconfig = ''
-            self._updateSelf()
         return
 
     def _opendirectory_changed(self):
