@@ -18,15 +18,7 @@ import sys
 import re
 
 from traits.etsconfig.api import ETSConfig
-if ETSConfig.toolkit == '' :
-    ETSConfig.toolkit = 'qt4'
-elif ETSConfig.toolkit == 'wx':
-    try:
-        import wx
-        if wx.versions() > 2.8:
-            ETSConfig.toolkit = 'qt4'
-    except:
-        ETSConfig.toolkit = 'qt4'
+ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
