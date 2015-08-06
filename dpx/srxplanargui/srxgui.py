@@ -20,15 +20,7 @@ import os
 import sys
 
 from traits.etsconfig.api import ETSConfig
-if ETSConfig.toolkit == '' :
-    ETSConfig.toolkit = 'qt4'
-elif ETSConfig.toolkit == 'wx':
-    try:
-        import wx
-        if wx.versions() > 2.8:
-            ETSConfig.toolkit = 'qt4'
-    except:
-        ETSConfig.toolkit = 'qt4'
+ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -69,19 +61,6 @@ class SrXguiHandler(Handler):
 
     def _helpView(self, info):
         info.object._helpbb_changed()
-        return
-
-    # for live mode
-    def _quickstart(self, info):
-        info.object._helpbb_changed()
-        return
-
-    def _startCapturing(self, info):
-        info.object._startCapturing()
-        return
-
-    def _stopCapturing(self, info):
-        info.object._stopCapturing()
         return
 
 class SaveHandler(Handler):
@@ -186,6 +165,9 @@ class SrXgui(HasTraits):
         return
 
     configfile = File()
+    helpbutton_action = \
+        Action(name='Help ',
+               action='_helpView')
     saveconfig_action = \
         Action(name='Save Config',
                action='_saveconfigView')
@@ -237,10 +219,6 @@ class SrXgui(HasTraits):
             self.calibration.image = image
         self.calibration.edit_traits(view='main_View')
         return
-
-    helpbutton_action = \
-        Action(name='Help ',
-               action='_helpView')
 
     integratbb = Button('Integrate')
     integratessbb = Button('Sum and Integrate')

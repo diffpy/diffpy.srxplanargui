@@ -23,17 +23,8 @@ from functools import partial
 import threading
 import time
 
-# break if help passed to the args
 from traits.etsconfig.api import ETSConfig
-if ETSConfig.toolkit == '' :
-    ETSConfig.toolkit = 'qt4'
-elif ETSConfig.toolkit == 'wx':
-    try:
-        import wx
-        if wx.versions() > 2.8:
-            ETSConfig.toolkit = 'qt4'
-    except:
-        ETSConfig.toolkit = 'qt4'
+ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -56,40 +47,6 @@ from dpx.srxplanargui.help import SrXguiHelp
 from dpx.srxplanargui.calibration import Calibration
 
 from dpx.confutils.tools import checkFileVal
-
-'''class LivingThread(threading.Thread):
-
-    def __init__(self, wdir, maingui):
-        threading.Thread.__init__(self)
-        self.daemon = True
-
-        self.wdir = wdir
-        self.maingui = maingui
-        self.capturing = True
-        self.lastmtime = os.path.getmtime(wdir)
-        self.lastctime = os.path.getctime(wdir)
-        self.lastatime = os.path.getatime(wdir)
-        return
-
-    def run(self):
-        wdir = self.wdir
-        maingui = self.maingui
-        while self.capturing:
-            if os.path.getatime(wdir) != self.lastatime:
-                # GUI.invoke_later(maingui.newImages)
-                maingui.newImages()
-                self.lastatime = os.path.getatime(wdir)
-            if os.path.getmtime(wdir) != self.lastmtime:
-                # GUI.invoke_later(maingui.newImages)
-                maingui.newImages()
-                self.lastmtime = os.path.getmtime(wdir)
-            if os.path.getctime(wdir) != self.lastctime:
-                # GUI.invoke_later(maingui.newImages)
-                maingui.newImages()
-                self.lastctime = os.path.getctime(wdir)
-            time.sleep(0.5)
-        return'''
-
 
 class SrXguiLive(SrXgui):
 
@@ -116,10 +73,6 @@ class SrXguiLive(SrXgui):
         self.addfiles.srx = self.srx
         self.help = SrXguiHelp()
         self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
-
-        '''self.liveplot = None
-        self.last10data = []'''
-
         self.splash.close()
         return
 
@@ -144,43 +97,6 @@ class SrXguiLive(SrXgui):
             GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
         return
 
-    '''def _startCapturing(self):
-        self.capturing = True
-
-        wdir = self.srxconfig.opendirectory
-        self.liveplot = None
-        self.last10data = []
-        self.srx.updateConfig()
-        self.existfileset = self.srx.loadimage.genFileSet(fullpath=True)
-
-        self.livingthread = LivingThread(wdir, self)
-        self.livingthread.daemon = True
-        self.livingthread.start()
-        return'''
-
-    '''def _stopCapturing(self):
-        self.capturing = False
-        self.livingthread.capturing = False
-        self.livingthread.join()
-        return'''
-
-    '''###LIVE###
-    def newImages(self):
-        newexistfileset = self.srx.loadimage.genFileSet(fullpath=True)
-        newfileset = newexistfileset - self.existfileset
-        newfilelist = sorted(list(newfileset))
-        if len(newfilelist) > 0:
-            for newfile in newfilelist:
-                checkFileVal(newfile)
-            if len(self.last10data) < 5:
-                self.srx.prepareCalculation(newfilelist)
-            rvlist = self.srx.integrateFilelist(newfilelist, summation=False)
-
-            newchifilelist = [rv['filename'] for rv in rvlist]
-            GUI.invoke_later(self.addNewImagesToGetXgui, newchifilelist)
-            self.existfileset = newexistfileset
-        return'''
-
     def addNewImagesToGetXgui(self, filelist):
         '''
         add new images to getxgui, if images are already there, refresh them
@@ -198,18 +114,9 @@ class SrXguiLive(SrXgui):
             self.liveplot, liveplotpanel = self.getxgui.createNewPlot(newdatacontainers)
         return
 
-    '''capturing = Bool(False)
-    startcapturing_action = \
-        Action(name='Start Capturing',
-               action='_startCapturing',
-               enabled_when='not capturing')
-    stopcapturing_action = \
-        Action(name='Stop Capturing',
-               action='_stopCapturing',
-               enabled_when='capturing')'''
-    quickstart_action = \
+    helpbutton_action = \
         Action(name='Help ',
-               action='_quickstart')
+               action='_helpView')
     saveconfig_action = \
         Action(name='Save Config',
                action='_saveconfigView',
@@ -251,9 +158,7 @@ class SrXguiLive(SrXgui):
              kind='live',
              icon=ImageResource('icon.png'),
              handler=SrXguiHandler(),
-             # buttons=[quickstart_action, saveconfig_action, loadconfig_action,
-             #         startcapturing_action, stopcapturing_action, OKButton],
-             buttons=[quickstart_action, saveconfig_action, loadconfig_action, OKButton],
+             buttons=[helpbutton_action, saveconfig_action, loadconfig_action, OKButton],
              )
 
 def main():
