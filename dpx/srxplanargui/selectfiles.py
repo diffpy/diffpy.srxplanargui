@@ -20,13 +20,7 @@ import re
 from collections import OrderedDict
 from traits.etsconfig.api import ETSConfig
 
-if ETSConfig.toolkit == 'qt4':
-    from traitsui.qt4.table_editor import TableEditor as TableEditorBE
-    tableautosize = True
-else:
-    from traitsui.wx.table_editor import TableEditor as TableEditorBE
-    tableautosize = False
-
+from traitsui.qt4.table_editor import TableEditor as TableEditorBE
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -61,8 +55,6 @@ class AddFilesHandler(Handler):
         # FIXME
         try:
             editor = [aa for aa in info.ui._editors if isinstance(aa, TableEditorBE)][0]
-            if ETSConfig.toolkit == 'wx':
-                editor.selected_row_indices = editor.filtered_indices
             info.object.selected = [info.object.datafiles[i] for i in editor.filtered_indices]
             editor.refresh()
         except:
@@ -223,7 +215,7 @@ class AddFiles(HasTraits):
                          editable=False,
                          ),
         ],
-        auto_size=tableautosize,
+        auto_size=True,
         # show_toolbar = True,
         deletable=True,
         # reorderable = True,
