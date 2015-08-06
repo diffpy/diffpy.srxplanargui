@@ -21,6 +21,8 @@ import sys
 
 import warnings
 warnings.filterwarnings("ignore")
+import logging
+logging.disable('CRITICAL')
 
 # break if help passed to the args
 sysargv = sys.argv[1:]
