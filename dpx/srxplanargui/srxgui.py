@@ -146,7 +146,6 @@ class SrXgui(HasTraits):
         if os.path.exists(configfile):
             self.srxconfig.updateConfig(filename=configfile)
             self.configfile = configfile
-            self.srxconfig.maskfile = self.srxconfig.addmask[0]
         return
 
     def processSelected(self, summation=False):
