@@ -104,14 +104,8 @@ class SrXguiLive(SrXgui):
         :param filelist: list of full path of new images
         '''
         self.addfiles.refreshdatalist = True
-
         newdatacontainers = self.getxgui.selectfiles.addFiles(filelist)
-        self.last10data.extend(newdatacontainers)
-        self.last10data = self.last10data[-10:]
-        if (self.liveplot != None) and (self.liveplot in self.getxgui.plots):
-            self.liveplot.datacontainers = self.last10data
-        else:
-            self.liveplot, liveplotpanel = self.getxgui.createNewPlot(newdatacontainers)
+        self.getxgui.createNewPlot(newdatacontainers)
         return
 
     helpbutton_action = \
