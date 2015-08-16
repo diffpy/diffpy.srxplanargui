@@ -20,15 +20,7 @@ from functools import partial
 import argparse
 
 from traits.etsconfig.api import ETSConfig
-if ETSConfig.toolkit == '' :
-    ETSConfig.toolkit = 'qt4'
-elif ETSConfig.toolkit == 'wx':
-    try:
-        import wx
-        if wx.versions() > 2.8:
-            ETSConfig.toolkit = 'qt4'
-    except:
-        ETSConfig.toolkit = 'qt4'
+ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -46,7 +38,7 @@ from pyface.api import ImageResource
 from dpx.confutils.configtraits import ConfigBaseTraits
 from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPropertyRW
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
-        _defaultdata, checkMax, parseFit2D
+        _defaultdata, checkMax
 
 _optdatalist.append(
     ['toolkit', {'sec':'Misc', 'config':'n', 'header':'n',
@@ -133,19 +125,6 @@ class SrXconfig(ConfigBaseTraits):
             self.maskfile = addmask[0]'''
         return
 
-    def _fit2dconfig_changed(self):
-        '''
-        load parameters from fit2d calibration information. copy/paste the fit2d calibration
-        results to a txt file. this function will load xbeamcenter, ybeamceter... from the file
-        '''
-        rv = parseFit2D(filename)
-        if len(rv.values()) > 0:
-            for optname in rv.keys():
-                setattr(self, optname, rv[optname])
-            self.fit2dconfig = ''
-            self._updateSelf()
-        return
-
     def _opendirectory_changed(self):
         if os.path.exists(self.opendirectory):
             self.savedirectory = os.path.abspath(self.opendirectory)
@@ -204,10 +183,10 @@ class SrXconfig(ConfigBaseTraits):
               # Item('polcorrectionenable', label='polarization corr.'),
               # Item('polcorrectf', label='polarization factor'),
 
-              Item('brightpixelmask', label='Bright pixel mask'),
-              Item('darkpixelmask', label='Dark pixel mask'),
-              Item('avgmask', label='Average mask'),
-              Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
+              # Item('brightpixelmask', label='Bright pixel mask'),
+              # Item('darkpixelmask', label='Dark pixel mask'),
+              # Item('avgmask', label='Average mask'),
+              # Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
 
               show_border=True,
               # label='Corrections'
@@ -237,7 +216,7 @@ class SrXconfig(ConfigBaseTraits):
                 # Item('configmode'),
                 Group(Item('geometry_visible', label='Geometry parameters'),
                       geometry_group,),
-                Group(Item('correction_visible', label='Corrections and masks'),
+                Group(Item('correction_visible', label='Corrections'),
                       correction_group,),
                 Group(Item('detector_visible', label='Detector parameters'),
                       detector_group,),

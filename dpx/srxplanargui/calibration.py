@@ -18,15 +18,7 @@ import sys
 import re
 
 from traits.etsconfig.api import ETSConfig
-if ETSConfig.toolkit == '' :
-    ETSConfig.toolkit = 'qt4'
-elif ETSConfig.toolkit == 'wx':
-    try:
-        import wx
-        if wx.versions() > 2.8:
-            ETSConfig.toolkit = 'qt4'
-    except:
-        ETSConfig.toolkit = 'qt4'
+ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -48,6 +40,7 @@ from diffpy.srxplanar.srxplanarconfig import checkMax
 
 from dpx.confutils.tools import module_exists_lower
 if module_exists_lower('pyfai'):
+    import pyFAI
     missingpyFAI = False
 else:
     missingpyFAI = True
@@ -156,6 +149,10 @@ class Calibration(HasTraits):
             calicmd.extend([str(image)])
 
             import subprocess
+            try:
+                os.environ.pop('QT_API')
+            except:
+                pass
             subprocess.call(calicmd)
 
             # integrate image

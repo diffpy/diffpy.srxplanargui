@@ -20,15 +20,7 @@ import os
 import sys
 
 from traits.etsconfig.api import ETSConfig
-if ETSConfig.toolkit == '' :
-    ETSConfig.toolkit = 'qt4'
-elif ETSConfig.toolkit == 'wx':
-    try:
-        import wx
-        if wx.versions() > 2.8:
-            ETSConfig.toolkit = 'qt4'
-    except:
-        ETSConfig.toolkit = 'qt4'
+ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -69,19 +61,6 @@ class SrXguiHandler(Handler):
 
     def _helpView(self, info):
         info.object._helpbb_changed()
-        return
-
-    # for live mode
-    def _quickstart(self, info):
-        info.object._helpbb_changed()
-        return
-
-    def _startCapturing(self, info):
-        info.object._startCapturing()
-        return
-
-    def _stopCapturing(self, info):
-        info.object._stopCapturing()
         return
 
 class SaveHandler(Handler):
@@ -146,14 +125,13 @@ class SrXgui(HasTraits):
         if os.path.exists(configfile):
             self.srxconfig.updateConfig(filename=configfile)
             self.configfile = configfile
-            self.srxconfig.maskfile = self.srxconfig.addmask[0]
         return
 
     def processSelected(self, summation=False):
         if self.addfiles.selected:
             self.srx.updateConfig()
             filelist = [f.fullname for f in self.addfiles.selected]
-            self.srx.prepareCalculation(filelist, automask=False)
+            self.srx.prepareCalculation(filelist)
             self.srx.integrateFilelist(filelist, summation=summation)
         return
 
@@ -187,6 +165,9 @@ class SrXgui(HasTraits):
         return
 
     configfile = File()
+    helpbutton_action = \
+        Action(name='Help ',
+               action='_helpView')
     saveconfig_action = \
         Action(name='Save Config',
                action='_saveconfigView')
@@ -239,13 +220,9 @@ class SrXgui(HasTraits):
         self.calibration.edit_traits(view='main_View')
         return
 
-    helpbutton_action = \
-        Action(name='Help ',
-               action='_helpView')
-
-    integratbb = Button('Integrate separately')
+    integratbb = Button('Integrate')
     integratessbb = Button('Sum and Integrate')
-    selfcalibratebb = Button('Calibration')
+    selfcalibratebb = Button('Calibrate')
     helpbb = Button('Help')
 
     traits_view = \
@@ -256,13 +233,11 @@ class SrXgui(HasTraits):
                 VGroup(
                     Group(Item('srxconfig', editor=InstanceEditor(view='main_view'),
                                style='custom', label='Basic', show_label=False),
-                          # layout='tabbed',
                           springy=True,
                           ),
                     HGroup(spring,
                            Item('selfcalibratebb'),
                            Item('integratbb'),
-                           Item('integratessbb'),
                            spring,
                            show_labels=False,
                            ),

@@ -20,13 +20,7 @@ import re
 from collections import OrderedDict
 from traits.etsconfig.api import ETSConfig
 
-if ETSConfig.toolkit == 'qt4':
-    from traitsui.qt4.table_editor import TableEditor as TableEditorBE
-    tableautosize = True
-else:
-    from traitsui.wx.table_editor import TableEditor as TableEditorBE
-    tableautosize = False
-
+from traitsui.qt4.table_editor import TableEditor as TableEditorBE
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
     HasTraits, Property, Instance, Event, Button, Any, \
@@ -39,6 +33,7 @@ from traitsui.api import \
     ArrayEditor, TitleEditor, TableEditor, HistoryEditor
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, OKCancelButtons
 from traitsui.table_column import ObjectColumn
+from pyface.api import ImageResource
 
 try:
     from diffpy.pdfgetx.functs import sortKeyNumericString
@@ -47,6 +42,7 @@ except:
 from dpx.srxplanargui.datacontainer import DataContainer
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.imageplot import ImagePlot
+from diffpy.srxplanar.loadimage import openImage, saveImage
 
 #-- The Live Search table editor definition ------------------------------------
 
@@ -59,8 +55,6 @@ class AddFilesHandler(Handler):
         # FIXME
         try:
             editor = [aa for aa in info.ui._editors if isinstance(aa, TableEditorBE)][0]
-            if ETSConfig.toolkit == 'wx':
-                editor.selected_row_indices = editor.filtered_indices
             info.object.selected = [info.object.datafiles[i] for i in editor.filtered_indices]
             editor.refresh()
         except:
@@ -70,6 +64,14 @@ class AddFilesHandler(Handler):
     def object_dclick_changed(self, info):
         info.object._plotbb_fired()
         return
+
+class SaveImageHandler(Handler):
+
+    def closed(self, info, is_ok):
+        if is_ok:
+            info.object._sumImgs()
+        return
+    
 
 class AddFiles(HasTraits):
 
@@ -169,6 +171,40 @@ class AddFiles(HasTraits):
                 # imageplot.createPlot()
                 imageplot.edit_traits()
         return
+    
+    def _refreshbb_fired(self):
+        self.refreshdatalist = True
+        return
+    
+    sumname = Str
+    def _sumbb_fired(self):
+        self.sumname = os.path.splitext(self.selected[0].fullname)[0] + '_sum.tif'
+        self.edit_traits(view='saveimage_view')
+        return
+    
+    def _sumImgs(self):
+        if len(self.selected) > 1:
+            sel = self.selected
+            img = openImage(sel[0].fullname)
+            for im in sel[1:]:
+                img += openImage(im.fullname)
+            img /= len(sel)
+            saveImage(self.sumname, img)
+            self.refreshdatalist = True
+        return
+    
+    saveimage_view = View(
+        Group(
+            Item('sumname', springy=True, label='File name'),
+            ),
+        buttons=[OKButton, CancelButton],
+        title='Save image',
+        width=500,
+        # height    = 400,
+        resizable=True,
+        handler=SaveImageHandler(),
+        icon=ImageResource('icon.png'),
+        )
 
     #-- Traits UI Views --------------------------------------------------------
     tableeditor = TableEditor(
@@ -179,7 +215,7 @@ class AddFiles(HasTraits):
                          editable=False,
                          ),
         ],
-        auto_size=tableautosize,
+        auto_size=True,
         # show_toolbar = True,
         deletable=True,
         # reorderable = True,
@@ -193,7 +229,9 @@ class AddFiles(HasTraits):
         )
 
     selectallbb = Button('Select all')
-    plotbb = Button('Image and Mask')
+    refreshbb = Button('Refresh')
+    plotbb = Button('Mask')
+    sumbb = Button('Sum')
 
     traits_view = View(
         VGroup(
@@ -201,13 +239,19 @@ class AddFiles(HasTraits):
                 HGroup(
                     Item('search', id='search', springy=True,
                          editor=TextEditor(auto_set=False)),
-                    Item('filetype', label='Type'),
                     ),
-                Item('datafiles', id='datafiles', editor=tableeditor),
-                Item('summary', editor=TitleEditor()),
                 HGroup(spring,
                        Item('selectallbb', show_label=False),
+                       Item('refreshbb', show_label=False),
+                       spring,
+                       Item('filetype', label='Type'),
+                       ),
+                Item('datafiles', id='datafiles', editor=tableeditor),
+                Item('summary', editor=TitleEditor()),
+                
+                HGroup(spring,
                        Item('plotbb', show_label=False),
+                       Item('sumbb', show_label=False),
                        spring,
                        ),
                 dock='horizontal',

@@ -21,6 +21,8 @@ import sys
 
 import warnings
 warnings.filterwarnings("ignore")
+import logging
+logging.disable('CRITICAL')
 
 # break if help passed to the args
 sysargv = sys.argv[1:]
@@ -29,15 +31,9 @@ if ('--help' in sysargv) or('-h' in sysargv):
     SrXconfig(args=sysargv)
 
 from traits.etsconfig.api import ETSConfig
-if any([aa == 'wx' for aa in sysargv]):
-    ETSConfig.toolkit = 'wx'
-    import wx
-    import traitsui.wx.constants
-    traitsui.wx.constants.WindowColor = wx.Colour(244, 243, 238)
-else:
-    os.environ['QT_API'] = 'pyside'
-    ETSConfig.toolkit = 'qt4'
-    from pyface.qt import QtGui, QtCore
+os.environ['QT_API'] = 'pyside'
+ETSConfig.toolkit = 'qt4'
+from pyface.qt import QtGui, QtCore
 
 from pyface.api import ImageResource, SplashScreen
 # open splash screen

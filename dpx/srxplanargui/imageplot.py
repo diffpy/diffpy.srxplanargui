@@ -59,9 +59,13 @@ class SaveLoadMaskHandler(Handler):
         return
 
 class AdvMaskHandler(Handler):
-
+    
+    def _applyDymask(self, info):
+        info.object.refreshMask(staticmask=info.object.staticmask)
+        return
+    
     def closed(self, info, is_ok):
-        info.object.refreshImage()
+        info.object.refreshMask(staticmask=info.object.staticmask)
         return
 
 class ImagePlot(HasTraits):
@@ -73,15 +77,15 @@ class ImagePlot(HasTraits):
     pointmaskradius = Float(3.0)
     maskediting = Bool(False)
 
-    brightpixel = Bool(True, desc='Mask the pixels too bright compared to their local environment')
-    darkpixel = Bool(True, desc='Mask the pixels too dark compared to their local environment')
-    avgmask = Bool(True, desc='Mask the pixels too bright or too dark compared to the average intensity at the similar diffraction angle')
-    brightpixelr = Float(1.2, desc='Pixels with intensity large than this relative threshold (times the local environment) value will be masked')
-    brightpixelsize = Int(5, desc='Size of testing area for detecting bright pixels')
-    darkpixelr = Float(0.1, desc='Pixels with intensity less than this relative threshold (times the local environment) value will be masked')
-    avgmaskhigh = Float(2.0, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked')
-    avgmasklow = Float(0.5, desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity less than avg_int*low will be masked')
-    cropedges = Array(dtype=np.int, desc='The number of pixels masked at each edge (left, right, top, bottom)')
+    brightpixelmask = DelegatesTo('srxconfig', desc='Mask the pixels too bright compared to their local environment')
+    darkpixelmask = DelegatesTo('srxconfig', desc='Mask the pixels too dark compared to their local environment')
+    avgmask = DelegatesTo('srxconfig', desc='Mask the pixels too bright or too dark compared to the average intensity at the similar diffraction angle')
+    brightpixelr = DelegatesTo('srxconfig', desc='Pixels with intensity large than this relative threshold (times the local environment) value will be masked')
+    brightpixelsize = DelegatesTo('srxconfig', desc='Size of testing area for detecting bright pixels')
+    darkpixelr = DelegatesTo('srxconfig', desc='Pixels with intensity less than this relative threshold (times the local environment) value will be masked')
+    avgmaskhigh = DelegatesTo('srxconfig', desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked')
+    avgmasklow = DelegatesTo('srxconfig', desc='Comparing to the average intensity at similar diffraction angle, \npixels with intensity less than avg_int*low will be masked')
+    cropedges = DelegatesTo('srxconfig', desc='The number of pixels masked at each edge (left, right, top, bottom)')
 
     def createPlot(self):
         # image = np.log(self.srx.loadimage.loadImage(self.imagefile))
@@ -92,14 +96,18 @@ class ImagePlot(HasTraits):
         self.imageorglog[self.imageorglog < 0] = 0
         self.imageorgmax = image.max()
         self.imageorglogmax = self.imageorglog.max()
-        self.mask = self.srx.mask.staticMask()
+        # self.staticmask = self.srx.mask.staticMask()
+        # self.dynamicmask = self.genAdvMask(self.imageorg)
+        # self.mask = np.logical_or(self.staticmask, self.dynamicmask)
+        self.refreshMask(draw=False)
 
         if self.mask.shape != image.shape:
             self.maskfile = ''
             self.srxconfig.maskfile = ''
             self.srxconfig.ydimension = image.shape[0]
             self.srxconfig.xdimension = image.shape[1]
-            self.mask = self.srx.mask.staticMask()
+            # self.mask = self.srx.mask.staticMask()
+            self.refreshMask(draw=False)
 
         y = np.arange(image.shape[0]).reshape((image.shape[0], 1)) * np.ones((1, image.shape[1]))
         x = np.arange(image.shape[1]).reshape((1, image.shape[1])) * np.ones((image.shape[0], 1))
@@ -125,13 +133,13 @@ class ImagePlot(HasTraits):
         return
 
     def saveMaskFile(self):
-        np.save(self.maskfile, self.mask)
+        np.save(self.maskfile, self.staticmask)
         self.srxconfig.maskfile = self.maskfile
         return
 
     def loadMaskFile(self):
         if self.srxconfig.maskfile == self.maskfile:
-            self.reloadMask()
+            self.refreshMask()
         else:
             self.srxconfig.maskfile = self.maskfile
         return
@@ -146,12 +154,12 @@ class ImagePlot(HasTraits):
             remove = self.removepolygonmask
         if len(points) > 2:
             mask = points_in_polygon(self.pts, points)
-            mask = mask.reshape(self.mask.shape)
+            mask = mask.reshape(self.staticmask.shape)
             if remove:
-                self.mask = np.logical_and(self.mask, np.logical_not(mask))
+                self.staticmask = np.logical_and(self.staticmask, np.logical_not(mask))
             else:
-                self.mask = np.logical_or(self.mask, mask)
-            self.refreshImage()
+                self.staticmask = np.logical_or(self.staticmask, mask)
+            self.refreshMask(staticmask=self.staticmask)
         return
 
     def addPointMask(self, ndx, remove=None):
@@ -162,17 +170,31 @@ class ImagePlot(HasTraits):
         r = self.pts - np.array((x, y))
         r = np.sum(r ** 2, axis=1)
         mask = r < ((self.pointmaskradius + 1) ** 2)
-        mask = mask.reshape(self.mask.shape)
+        mask = mask.reshape(self.staticmask.shape)
         if remove:
-            self.mask = np.logical_and(self.mask, np.logical_not(mask))
+            self.staticmask = np.logical_and(self.staticmask, np.logical_not(mask))
         else:
-            self.mask = np.logical_or(self.mask, mask)
-        self.refreshImage()
+            self.staticmask = np.logical_or(self.staticmask, mask)
+        self.refreshMask(self.staticmask)
         return
 
     def clearMask(self):
-        self.mask = self.mask * 0
-        self.refreshImage()
+        self.staticmask = self.staticmask * 0
+        self.refreshMask(self.staticmask)
+        return
+    
+    def invertMask(self):
+        self.staticmask = np.logical_not(self.staticmask)
+        self.refreshMask(self.staticmask)
+        return
+    
+    def refreshMask(self, staticmask=None, draw=True):
+        self.staticmask = self.srx.mask.staticMask() if staticmask == None else staticmask
+        self.dynamicmask = self.srx.mask.dynamicMask(self.imageorg, dymask=self.staticmask)
+        self.dynamicmask = np.logical_or(self.dynamicmask, self.srx.mask.edgeMask())
+        self.mask = np.logical_or(self.staticmask, self.dynamicmask)
+        if draw:
+            self.refreshImage()
         return
 
     maskaboveint = Int(10e10)
@@ -180,72 +202,14 @@ class ImagePlot(HasTraits):
 
     def maskabove(self):
         mask = self.imageorg > self.maskaboveint
-        self.mask = np.logical_or(self.mask, mask)
-        self.refreshImage()
+        self.staticmask = np.logical_or(self.staticmask, mask)
+        self.refreshMask(self.staticmask)
         return
 
     def maskbelow(self):
         mask = self.imageorg < self.maskbelowint
-        self.mask = np.logical_or(self.mask, mask)
-        self.refreshImage()
-        return
-
-    def genAdvMask(self):
-        pic = self.imageorg
-        if self.darkpixel or self.brightpixel:
-            rv = np.zeros((self.srxconfig.ydimension, self.srxconfig.xdimension))
-            if self.darkpixel:
-                rv += self.srx.mask.darkPixelMask(pic)
-            if self.brightpixel:
-                rv += self.srx.mask.brightPixelMask(pic)
-            dymask = np.logical_or((rv > 0), self.mask)
-        else:
-            dymask = self.mask
-            
-        if self.avgmask:
-            cebak = self.srxconfig.cropedges
-            self.srx.updateConfig(cropedges=self.cropedges)
-            avgmask = self.srx.genAvgMask(pic, self.avgmaskhigh, self.avgmasklow, dymask)
-            dymask = np.logical_or(dymask, avgmask)
-            self.srx.updateConfig(cropedges=cebak)
-        else:
-            ones = np.ones((self.srxconfig.ydimension, self.srxconfig.xdimension), dtype=bool)
-            ce = self.cropedges
-            ones[ce[2]:-ce[3], ce[0]:-ce[1]] = dymask[ce[2]:-ce[3], ce[0]:-ce[1]]
-            dymask = ones
-        return dymask
-
-    def previewAdvMask(self):
-        dymask = self.genAdvMask()
-        self.refreshImage(dymask)
-        return
-
-    def applyAdvMask(self):
-        self._applyMaskPar()
-        return
-
-    def applyAdvMaskP(self):
-        dymask = self.genAdvMask()
-        self.mask = dymask
-        self.refreshImage()
-        self.brightpixel = False
-        self.darkpixel = False
-        self.avgmask = False
-        self._applyMaskPar()
-        return
-
-    def _loadMaskPar(self):
-        parlist = ['brightpixelmask', 'darkpixelmask', 'avgmask', 'brightpixelr',
-                   'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
-        for p in parlist:
-            setattr(self, p, getattr(self.srxconfig, p))
-        return
-
-    def _applyMaskPar(self):
-        parlist = ['brightpixelmask', 'darkpixelmask', 'avgmask', 'brightpixelr',
-                   'brightpixelsize', 'darkpixelr', 'avgmaskhigh', 'avgmasklow', 'cropedges']
-        for p in parlist:
-            setattr(self.srxconfig, p, getattr(self, p))
+        self.staticmask = np.logical_or(self.staticmask, mask)
+        self.refreshMask(self.staticmask)
         return
 
     def _appendTools(self):
@@ -315,18 +279,10 @@ class ImagePlot(HasTraits):
         '''
         mask = self.mask if mask == None else mask
         image = self.applyScale()
-        image = image * np.logical_not(mask) + mask * image.max()
+        image = image * np.logical_not(mask) + image.max() * mask
         self.pd.set_data("imagedata", image)
         if draw:
             self.plot.invalidate_draw()
-        return
-
-    def reloadMask(self):
-        '''
-        reload the mask from file and refresh display
-        '''
-        self.mask = self.srx.mask.staticMask()
-        self.refreshImage()
         return
     
     scalemode = Enum('linear', ['linear', 'log'], desc='Scale the image')
@@ -378,18 +334,19 @@ class ImagePlot(HasTraits):
         return
 
     def _add_notifications(self):
-        self.on_trait_change(self.reloadMask, 'srxconfig.maskfile')
+        self.on_trait_change(self.loadMaskFile, 'srxconfig.maskfile')
         return
 
     def _del_notifications(self):
-        self.on_trait_change(self.reloadMask, 'srxconfig.maskfile', remove=True)
+        self.on_trait_change(self.loadMaskFile, 'srxconfig.maskfile', remove=True)
         return
 
     addpolygon_bb = Button('Add polygon mask')
     removepolygon_bb = Button('Remove polygon mask')
     addpoint_bb = Button('Add point mask')
-    clearmask_bb = Button('Clear mask', desc='Clear the mask')
-    advancedmask_bb = Button('Advanced mask', desc='The advanced mask is dynamically generated for each image.')
+    clearmask_bb = Button('Clear mask', desc='Clear mask')
+    invertmask_bb = Button('Invert mask', desc='Invert mask')
+    advancedmask_bb = Button('Dynamic mask', desc='The dynamic mask is dynamically generated for each image.')
     maskabove_bb = Button('Mask intensity above')
     maskbelow_bb = Button('Mask intensity below')
     loadmaskfile_bb = Button('Load mask')
@@ -410,11 +367,14 @@ class ImagePlot(HasTraits):
     def _clearmask_bb_fired(self):
         self.clearMask()
         return
+    def _invertmask_bb_fired(self):
+        self.invertMask()
+        return
     def _advancedmask_bb_fired(self):
         self.edit_traits('advancedmask_view')
-        if not hasattr(self, 'advhint'):
-            self.advhint = AdvHint()
-            self.advhint.edit_traits('advhint_view')
+        # if not hasattr(self, 'advhint'):
+        #    self.advhint = AdvHint()
+        #   self.advhint.edit_traits('advhint_view')
         return
     def _maskabove_bb_fired(self):
         self.maskabove()
@@ -426,24 +386,12 @@ class ImagePlot(HasTraits):
         self.edit_traits('loadmaskfile_view')
         return
     def _savemaskfile_bb_fired(self):
-        self.maskfile = os.path.splitext(self.maskfile)[0] + '.npy'
+        if self.maskfile == '':
+            self.maskfile = os.path.join(self.srxconfig.savedirectory, 'mask.npy')
+        else:
+            self.maskfile = os.path.splitext(self.maskfile)[0] + '.npy'
         self.edit_traits('savemaskfile_view')
         return
-
-    previewadvmask_bb = Button('Preview', desc='preview the dynamic mask for current image')
-    applyadvmask_bb = Button('Apply', desc='apply the parameters and the dynamic mask will be generated during integration')
-    applyadvmaskp_bb = Button('Apply permanently', desc='merge the current dynamic mask to the static mask')
-
-    def _previewadvmask_bb_fired(self):
-        self.previewAdvMask()
-        return
-    def _applyadvmask_bb_fired(self):
-        self.applyAdvMask()
-        return
-    def _applyadvmaskp_bb_fired(self):
-        self.applyAdvMaskP()
-        return
-
 
     def __init__(self, **kwargs):
         '''
@@ -451,7 +399,7 @@ class ImagePlot(HasTraits):
         '''
         HasTraits.__init__(self, **kwargs)
         self.createPlot()
-        self._loadMaskPar()
+        # self._loadMaskPar()
         self._add_notifications()
         return
 
@@ -486,6 +434,7 @@ class ImagePlot(HasTraits):
                                 ),
                             HGroup(
                                 Item('clearmask_bb', enabled_when='not maskediting'),
+                                Item('invertmask_bb', enabled_when='not maskediting'),
                                 Item('advancedmask_bb', enabled_when='not maskediting'),
                                 spring,
                                 Item('loadmaskfile_bb'),
@@ -511,6 +460,9 @@ class ImagePlot(HasTraits):
     loadmaskfile_action = \
         Action(name='OK ',
                action='_load')
+    applydymask_action = \
+        Action(name='Apply ',
+               action='_applyDymask')
 
     savemaskfile_view = \
         View(Item('maskfile'),
@@ -542,15 +494,15 @@ class ImagePlot(HasTraits):
                     show_border=True,
                     ),
                 VGroup(
-                    Item('darkpixel', label='Enable'),
-                    Item('darkpixelr', label='Threshold', enabled_when='darkpixel'),
+                    Item('darkpixelmask', label='Enable'),
+                    Item('darkpixelr', label='Threshold', enabled_when='darkpixelmask'),
                     label='Dark pixel mask',
                     show_border=True,
                     ),
                 VGroup(
-                    Item('brightpixel', label='Enable'),
-                    Item('brightpixelsize', label='Testing size', enabled_when='brightpixel'),
-                    Item('brightpixelr', label='Threshold', enabled_when='brightpixel'),
+                    Item('brightpixelmask', label='Enable'),
+                    Item('brightpixelsize', label='Testing size', enabled_when='brightpixelmask'),
+                    Item('brightpixelr', label='Threshold', enabled_when='brightpixelmask'),
                     label='Bright pixel mask',
                     show_border=True,
                     ),
@@ -561,22 +513,13 @@ class ImagePlot(HasTraits):
                     label='Average mask',
                     show_border=True,
                     ),
-                HGroup(
-                    spring,
-                    Item('previewadvmask_bb'),
-                    Item('applyadvmask_bb'),
-                    Item('applyadvmaskp_bb'),
-                    spring,
-
-                    show_labels=False,
-                    ),
                 ),
 
-             title='Advanced mask',
+             title='Dynamic mask',
              width=320,
              handler=AdvMaskHandler(),
              resizable=True,
-             buttons=[OKButton, CancelButton],
+             buttons=[applydymask_action, OKButton, CancelButton],
              icon=ImageResource('icon.png'),
              )
 
