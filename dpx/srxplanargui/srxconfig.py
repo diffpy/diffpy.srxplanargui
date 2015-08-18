@@ -41,13 +41,6 @@ from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist
         _defaultdata, checkMax
 
 _optdatalist.append(
-    ['toolkit', {'sec':'Misc', 'config':'n', 'header':'n',
-                 'l':'toolkit',
-                 'h':'toolkit of PDFgetEgui program, could be wx or qt4',
-                 'c':['wx', 'qt4'],
-                 'd':'qt4', }]
-                    )
-_optdatalist.append(
     ['xpixelsizetem', {'sec':'Beamline',
                     'h':'detector pixel size in x axis, in A^-1',
                     'd':0.02, }]
@@ -81,6 +74,7 @@ for i in _optdatalist:
                 's':'yp',
                 'h':'detector pixel size in y axis, in mm',
                 'd':0.2, }
+
 
 class SrXconfig(ConfigBaseTraits):
     '''
