@@ -143,6 +143,11 @@ class ImagePlot(HasTraits):
         else:
             self.srxconfig.maskfile = self.maskfile
         return
+    
+    def refreshMaskFile(self):
+        self.maskfile = self.srxconfig.maskfile
+        self.refreshMask()
+        return
 
     def mergeMask(self, points, remove=None):
         '''
@@ -334,11 +339,11 @@ class ImagePlot(HasTraits):
         return
 
     def _add_notifications(self):
-        self.on_trait_change(self.loadMaskFile, 'srxconfig.maskfile')
+        self.on_trait_change(self.refreshMaskFile, 'srxconfig.maskfile')
         return
 
     def _del_notifications(self):
-        self.on_trait_change(self.loadMaskFile, 'srxconfig.maskfile', remove=True)
+        self.on_trait_change(self.refreshMaskFile, 'srxconfig.maskfile', remove=True)
         return
 
     addpolygon_bb = Button('Add polygon mask')

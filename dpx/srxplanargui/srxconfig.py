@@ -40,14 +40,6 @@ from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPro
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
         _defaultdata, checkMax
 
-_optdatalist.append(
-    ['toolkit', {'sec':'Misc', 'config':'n', 'header':'n',
-                 'l':'toolkit',
-                 'h':'toolkit of PDFgetEgui program, could be wx or qt4',
-                 'c':['wx', 'qt4'],
-                 'd':'qt4', }],
-                    )
-
 class SrXconfig(ConfigBaseTraits):
     '''
     config class, based on ConfigBase class in diffpy.confutils
