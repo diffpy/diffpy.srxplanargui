@@ -45,6 +45,16 @@ if module_exists_lower('pyfai'):
 else:
     missingpyFAI = True
 
+# determine option name for calibrant used in pyFAI-calib
+# The current option is "-c", but it was "-S" in 0.9.3.
+pyFAIcalib_opt_calibrant = '-c'
+if not missingpyFAI:
+    from pkg_resources import parse_version
+    if parse_version(pyFAI.version) <= parse_version('0.9.3'):
+        pyFAIcalib_opt_calibrant = '-S'
+    del parse_version
+
+
 class CalibrationHandler(Handler):
 
     def closed(self, info, is_ok):
@@ -138,10 +148,7 @@ class Calibration(HasTraits):
 
             calicmd = [self.pythonbin, self.caliscript]
             calicmd.extend(['-w', str(self.wavelength)])
-            if pyFAI.version <= '0.9.3':
-                calicmd.extend(['-S', str(dspacefile)])
-            else:
-                calicmd.extend(['-c', str(dspacefile)])
+            calicmd.extend([pyFAIcalib_opt_calibrant, str(dspacefile)])
             calicmd.extend(['-p', str(ps[0]) + ',' + str(ps[1])])
             calicmd.extend([str(image)])
 
