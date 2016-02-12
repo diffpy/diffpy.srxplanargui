@@ -44,7 +44,8 @@ from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.imageplot import ImagePlot
 from diffpy.srxplanar.loadimage import openImage, saveImage
 
-#-- The Live Search table editor definition ------------------------------------
+#-- The Live Search table editor definition ------------------------------
+
 
 class AddFilesHandler(Handler):
 
@@ -54,8 +55,10 @@ class AddFilesHandler(Handler):
         '''
         # FIXME
         try:
-            editor = [aa for aa in info.ui._editors if isinstance(aa, TableEditorBE)][0]
-            info.object.selected = [info.object.datafiles[i] for i in editor.filtered_indices]
+            editor = [
+                aa for aa in info.ui._editors if isinstance(aa, TableEditorBE)][0]
+            info.object.selected = [info.object.datafiles[i]
+                                    for i in editor.filtered_indices]
             editor.refresh()
         except:
             pass
@@ -65,13 +68,14 @@ class AddFilesHandler(Handler):
         info.object._plotbb_fired()
         return
 
+
 class SaveImageHandler(Handler):
 
     def closed(self, info, is_ok):
         if is_ok:
             info.object._sumImgs()
         return
-    
+
 
 class AddFiles(HasTraits):
 
@@ -80,12 +84,13 @@ class AddFiles(HasTraits):
     # The currenty inputdir directory being searched:
     # inputdir = DelegatesTo('srxconfig')
     inputdir = Directory()  # , entries = 10 )
+
     def _inputdir_default(self):
         return self.srxconfig.opendirectory
     # Should sub directories be included in the search:
     recursive = Bool(False)
     # The file types to include in the search:
-    filetype = Enum('tif', 'all')
+    filetype = Enum('tif', 'npy', 'all')
     # The current search string:
     search = Str
     # Is the search case sensitive?
@@ -101,10 +106,11 @@ class AddFiles(HasTraits):
     summary = Property  # Str
     # some meta data
     _filetypedict = {'tif': ['.tif', '.tiff', '.tif.bz2'],
+                     'npy': ['.npy'],
                      'all': 'all',
                      }
 
-    #-- Property Implementations -----------------------------------------------
+    #-- Property Implementations ---------------------------------------------
 
     @property_depends_on('search, casesensitive')
     def _get_filter(self):
@@ -113,6 +119,7 @@ class AddFiles(HasTraits):
         return _createFileNameFilter(self.search, self.casesensitive)
 
     refreshdatalist = Event
+
     @property_depends_on('inputdir, recursive, filetype, refreshdatalist')
     def _get_datafiles(self):
         '''
@@ -135,7 +142,7 @@ class AddFiles(HasTraits):
         else:
             rv = [os.path.join(inputdir, filename)
                   for filename in os.listdir(inputdir)
-                  if (os.path.splitext(filename)[1] in filetypes) or (filetypes == 'all') ]
+                  if (os.path.splitext(filename)[1] in filetypes) or (filetypes == 'all')]
 
         rv.sort(key=sortKeyNumericString)
         rvlist = [DataContainer(fullname=fn) for fn in rv]
@@ -147,7 +154,8 @@ class AddFiles(HasTraits):
         get summary of file
         '''
         if self.selected and self.datafiles:
-            rv = '%d files selected in a total of %d files.' % (len(self.selected), len(self.datafiles))
+            rv = '%d files selected in a total of %d files.' % (
+                len(self.selected), len(self.datafiles))
         else:
             rv = '0 files selected in a total of 0 files.'
         return rv
@@ -167,21 +175,24 @@ class AddFiles(HasTraits):
             imagefile = None
         if imagefile != None:
             if os.path.exists(imagefile):
-                imageplot = ImagePlot(imagefile=imagefile, srx=self.srx, srxconfig=self.srxconfig)
+                imageplot = ImagePlot(
+                    imagefile=imagefile, srx=self.srx, srxconfig=self.srxconfig)
                 # imageplot.createPlot()
                 imageplot.edit_traits()
         return
-    
+
     def _refreshbb_fired(self):
         self.refreshdatalist = True
         return
-    
+
     sumname = Str
+
     def _sumbb_fired(self):
-        self.sumname = os.path.splitext(self.selected[0].fullname)[0] + '_sum.tif'
+        self.sumname = os.path.splitext(
+            self.selected[0].fullname)[0] + '_sum.tif'
         self.edit_traits(view='saveimage_view')
         return
-    
+
     def _sumImgs(self):
         if len(self.selected) > 1:
             sel = self.selected
@@ -192,11 +203,11 @@ class AddFiles(HasTraits):
             saveImage(self.sumname, img)
             self.refreshdatalist = True
         return
-    
+
     saveimage_view = View(
         Group(
             Item('sumname', springy=True, label='File name'),
-            ),
+        ),
         buttons=[OKButton, CancelButton],
         title='Save image',
         width=500,
@@ -204,9 +215,9 @@ class AddFiles(HasTraits):
         resizable=True,
         handler=SaveImageHandler(),
         icon=ImageResource('icon.png'),
-        )
+    )
 
-    #-- Traits UI Views --------------------------------------------------------
+    #-- Traits UI Views ------------------------------------------------------
     tableeditor = TableEditor(
         columns=[
             ObjectColumn(name='basename',
@@ -226,7 +237,7 @@ class AddFiles(HasTraits):
         dclick='dclick',
         label_bg_color='(244, 243, 238)',
         cell_bg_color='(234, 233, 228)',
-        )
+    )
 
     selectallbb = Button('Select all')
     refreshbb = Button('Refresh')
@@ -239,7 +250,7 @@ class AddFiles(HasTraits):
                 HGroup(
                     Item('search', id='search', springy=True,
                          editor=TextEditor(auto_set=False)),
-                    ),
+                ),
                 HGroup(spring,
                        Item('selectallbb', show_label=False),
                        Item('refreshbb', show_label=False),
@@ -248,7 +259,7 @@ class AddFiles(HasTraits):
                        ),
                 Item('datafiles', id='datafiles', editor=tableeditor),
                 Item('summary', editor=TitleEditor()),
-                
+
                 HGroup(spring,
                        Item('plotbb', show_label=False),
                        Item('sumbb', show_label=False),
@@ -256,14 +267,15 @@ class AddFiles(HasTraits):
                        ),
                 dock='horizontal',
                 show_labels=False
-                ),
+            ),
         ),
         # title     = 'Add files',
         # width     = 500,
         height=600,
         resizable=True,
         handler=AddFilesHandler(),
-        )
+    )
+
 
 def _createFileNameFilter(pattern, casesensitive):
     '''Build function that returns True for matching files.
