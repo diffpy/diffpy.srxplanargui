@@ -45,6 +45,16 @@ if module_exists_lower('pyfai'):
 else:
     missingpyFAI = True
 
+# determine option name for calibrant used in pyFAI-calib
+# The current option is "-c", but it was "-S" in 0.9.3.
+pyFAIcalib_opt_calibrant = '-c'
+if not missingpyFAI:
+    from pkg_resources import parse_version
+    if parse_version(pyFAI.version) <= parse_version('0.9.3'):
+        pyFAIcalib_opt_calibrant = '-S'
+    del parse_version
+
+
 class CalibrationHandler(Handler):
 
     def closed(self, info, is_ok):
@@ -54,6 +64,7 @@ class CalibrationHandler(Handler):
         if is_ok:
             info.object.calibration()
         return True
+
 
 class Calibration(HasTraits):
     image = File
@@ -78,7 +89,7 @@ class Calibration(HasTraits):
     configmode = DelegatesTo('srxconfig')
     xpixelsizetem = DelegatesTo('srxconfig')
     ypixelsizetem = DelegatesTo('srxconfig')
-    
+
     def __init__(self, *args, **kwargs):
         super(Calibration, self).__init__(*args, **kwargs)
         self.locatePyFAI()
@@ -141,10 +152,7 @@ class Calibration(HasTraits):
 
             calicmd = [self.pythonbin, self.caliscript]
             calicmd.extend(['-w', str(self.wavelength)])
-            if pyFAI.version <= '0.9.3':
-                calicmd.extend(['-S', str(dspacefile)])
-            else:
-                calicmd.extend(['-c', str(dspacefile)])
+            calicmd.extend([pyFAIcalib_opt_calibrant, str(dspacefile)])
             calicmd.extend(['-p', str(ps[0]) + ',' + str(ps[1])])
             calicmd.extend([str(image)])
 
@@ -156,10 +164,10 @@ class Calibration(HasTraits):
             subprocess.call(calicmd)
 
             # integrate image
-            if sys.platform == 'win32':
-                ponifile = os.path.splitext(str(image))[0] + '.poni'
-                intecmd = [self.pythonbin, self.intescript, '-p', ponifile, str(image)]
-                subprocess.call(intecmd)
+            ponifile = os.path.splitext(str(image))[0] + '.poni'
+            intecmd = [
+                self.pythonbin, self.intescript, '-p', ponifile, str(image)]
+            subprocess.call(intecmd)
             self.parsePyFAIoutput(image)
             print 'Calibration finished!'
         return
@@ -199,11 +207,13 @@ class Calibration(HasTraits):
 
         if os.path.exists(image) and os.path.isfile(image):
             for mode, showresults in zip(['x', 'y', 'x', 'y'], [False, False, False, True]):
-                selfCalibrate(self.srx, image, mode=mode, cropedges=self.slice, showresults=showresults, xywidth=self.xywidth)
+                selfCalibrate(self.srx, image, mode=mode, cropedges=self.slice,
+                              showresults=showresults, xywidth=self.xywidth)
         return
-    
+
     slice = Enum(['auto', 'x', 'y', 'box', 'full'])
     calibrationmode = Enum(['self', 'calibrant'])
+
     def calibration(self, image=None, dspacefile=None):
         if self.calibrationmode == 'calibrant':
             self.callPyFAICalibration(image, dspacefile)
@@ -216,6 +226,7 @@ class Calibration(HasTraits):
     xywidth = Int(6)
     qmincali = Float(0.5)
     qmaxcali = Float(10.0)
+
     @on_trait_change('srxconfig.[xpixelsize, ypixelsize, distance, wavelength, xdimension, ydimension]')
     def _qmaxChanged(self):
         tthmax, qmax = checkMax(self.srxconfig)
@@ -223,8 +234,10 @@ class Calibration(HasTraits):
         self.qmaxcali = qmax / 2
         return
 
-    inst1 = Str('Please install pyFAI and FabIO to use the calibration function (refer to help).')
-    inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
+    inst1 = Str(
+        'Please install pyFAI and FabIO to use the calibration function (refer to help).')
+    inst2 = Str(
+        '(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
     main_View = \
         View(
             # Item('calibrationmode', style='custom', label='Calibration mode'),
@@ -236,7 +249,7 @@ class Calibration(HasTraits):
                 visible_when='missingpyFAI and calibrationmode=="calibrant"',
                 show_border=True,
                 show_labels=False,
-                ),
+            ),
             Group(
                 Item('dspacefile', label='D-space file'),
                 Item('pyFAIdir', label='pyFAI dir.'),
@@ -244,73 +257,85 @@ class Calibration(HasTraits):
                 visible_when='calibrationmode=="calibrant"',
                 enabled_when='not missingpyFAI',
                 label='Please specify the d-space file and the location of pyFAI executable'
-                ),
+            ),
             HGroup(
-                Item('xpixelsize', label='Pixel size x (mm)', visible_when='configmode == "normal"'),
-                Item('xpixelsizetem', label='Pixel size x (A^-1)', visible_when='configmode == "TEM"'),
-                Item('ypixelsize', label='Pixel size y (mm)', visible_when='configmode == "normal"'),
-                Item('ypixelsizetem', label='Pixel size y (A^-1)', visible_when='configmode == "TEM"'),
+                Item('xpixelsize', label='Pixel size x (mm)',
+                     visible_when='configmode == "normal"'),
+                Item('xpixelsizetem', label='Pixel size x (A^-1)',
+                     visible_when='configmode == "TEM"'),
+                Item('ypixelsize', label='Pixel size y (mm)',
+                     visible_when='configmode == "normal"'),
+                Item('ypixelsizetem', label='Pixel size y (A^-1)',
+                     visible_when='configmode == "TEM"'),
                 visible_when='calibrationmode=="calibrant"',
                 enabled_when='not missingpyFAI',
                 show_border=True,
                 label='Please specify the size of pixel'
-                   ),
+            ),
             HGroup(
                 Item('wavelength', label='Wavelength (A)'),
                 visible_when='calibrationmode=="calibrant"',
                 enabled_when='not missingpyFAI',
                 show_border=True,
                 label='Please specify the wavelength'
-                   ),
+            ),
             HGroup(
-                Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength(Angstrom)'),
-                Item('distance', label='Distance(mm)', visible_when='configmode == "normal"'),
-                Item('distance', label='Camera Length(mm)', visible_when='configmode == "TEM"'),
+                Item('wavelength', visible_when='integrationspace == "qspace"',
+                     label='Wavelength(Angstrom)'),
+                Item('distance', label='Distance(mm)',
+                     visible_when='configmode == "normal"'),
+                Item('distance', label='Camera Length(mm)',
+                     visible_when='configmode == "TEM"'),
                 label='Please specify the wavelength and distance between sample and detector:',
                 show_border=True,
                 visible_when='calibrationmode=="self"'
-                ),
+            ),
             HGroup(
                 VGroup(
                     Item('xbeamcenter', label='x beamcenter (pixel)'),
                     Item('rotationd', label='Rotation (degree)'),
-                    ),
+                ),
                 VGroup(
                     Item('ybeamcenter', label='y beamcenter (pixel)'),
                     Item('tiltd', label='Tilt rotation (degree)')
-                    ),
+                ),
                 show_border=True,
                 label='Plasee specify the initial value of following parameters:',
                 visible_when='calibrationmode=="self"'
-                ),
-             HGroup(
+            ),
+            HGroup(
                 VGroup(
                     Item('xdimension', label='x dimension (pixel)'),
-                    Item('xpixelsize', label='Pixel size x (mm)', visible_when='configmode == "normal"'),
-                    Item('xpixelsizetem', label='Pixel size x (A^-1)', visible_when='configmode == "TEM"'),
-                    ),
+                    Item('xpixelsize', label='Pixel size x (mm)',
+                         visible_when='configmode == "normal"'),
+                    Item('xpixelsizetem', label='Pixel size x (A^-1)',
+                         visible_when='configmode == "TEM"'),
+                ),
+
                 VGroup(
                     Item('ydimension', label='y dimension (pixel)'),
-                    Item('ypixelsize', label='Pixel size y (mm)', visible_when='configmode == "normal"'),
-                    Item('ypixelsizetem', label='Pixel size y (A^-1)', visible_when='configmode == "TEM"'),
-                    ),
+                    Item('ypixelsize', label='Pixel size y (mm)',
+                         visible_when='configmode == "normal"'),
+                    Item('ypixelsizetem', label='Pixel size y (A^-1)',
+                         visible_when='configmode == "TEM"'),
+                ),
                 show_border=True,
                 label='Plasee specify the dimension of detector and size of pixel:',
                 visible_when='calibrationmode=="self"'
-                ),
-             HGroup(
+            ),
+            HGroup(
                 VGroup(
                     Item('xywidth', label='(x,y) center searching range, +/-'),
                     Item('slice', label='Refining using slab along'),
-                    ),
+                ),
                 VGroup(
                     Item('qmincali', label='Qmin in calibration'),
                     Item('qmaxcali', label='Qmax in calibration')
-                    ),
+                ),
                 show_border=True,
                 label='Others',
                 visible_when='calibrationmode=="self"',
-                ),
+            ),
 
             title='Calibration',
             width=600,
@@ -319,7 +344,8 @@ class Calibration(HasTraits):
             buttons=[OKButton, CancelButton],
             handler=CalibrationHandler(),
             icon=ImageResource('icon.png'),
-            )
+        )
+
 
 def findFloat(line):
     temp = re.findall('[-+]?\d*\.\d+|[-+]?\d+', line)
