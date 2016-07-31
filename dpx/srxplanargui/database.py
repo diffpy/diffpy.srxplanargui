@@ -39,8 +39,6 @@ from pyface.api import ImageResource
 
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.datacontainer import DataContainer
-from diffpy.pdfgetx.functs import loadData
-from diffpy.pdfgetx.pdfgetter import PDFGetter
 
 from traits.api import push_exception_handler
 push_exception_handler(reraise_exceptions=True)
@@ -67,22 +65,23 @@ class DatabaseSearcherHandler(Handler):
         add selected files to workspace and close panel
         '''
         datafiles = info.object.selected
-        info.object.selectfiles_obj.addDatalist(datafiles)
+        info.object.headers = [doc.header for doc in info.object.datafiles]
         info.ui.dispose()
         return
 
     def object_dclick_changed(self, info):
-        info.object._plotbb_fired()
+        datafiles = info.object.selected
+        info.object.headers = [doc.header for doc in info.object.datafiles]
         return
 
 class DatabaseSearcher(HasTraits):
 
     srxconfig = Instance(SrXconfig)
-    pdfgetter = Instance(PDFGetter)
-    selectfiles_obj = Any
 
     # The current list of documents being searched:
-    datafiles = List(DataContainer)
+    datafiles = List
+    # The list of headers being opened
+    headers = List
     # The currently selected documents:
     selected = Any
     dclick = Event
@@ -164,15 +163,21 @@ class DatabaseSearcher(HasTraits):
     open_action = \
         Action(name='Open',
                action='_openFiles')
-    search = Button('Search')
-    def _search_fired(self):
+
+    lastbb = Button('Last Run')
+    def _lastbb_fired(self):
+        self.datafiles = [DocumentContainer(header=DataBroker[-1])]
+        return
+
+    searchbb = Button('Search')
+    def _searchbb_fired(self):
         d = self._daterange()
         e = self._experimenterlist()
         s = self._safN()
         c = self._comp()
         query = _merge_dicts(d, e, s, c)
         rv = DataBroker(**query)
-        rv = [DataContainer(header=h) for h in rv]
+        rv = [DocumentContainer(header=h) for h in rv]
         self.datafiles = rv
         return
 
@@ -185,7 +190,7 @@ class DatabaseSearcher(HasTraits):
                 HGroup(Item('startdate', show_label=False), 
                        Item('enddate', label='< Experiment Date <')
                        ),
-                HGroup(spring, Item('search'), show_labels=False),
+                HGroup(Item('lastbb'), spring, Item('searchbb'), show_labels=False),
                 Item('datafiles', id='datafiles', editor=tableeditor, springy=True),
                 Item('summary', editor=TitleEditor()),
                 dock='horizontal',
@@ -201,165 +206,14 @@ class DatabaseSearcher(HasTraits):
         handler=DatabaseSearcherHandler,
         )
 
-# class DocumentContainer(DataContainer):
-# 
-#     getxconfig = Instance(GetXconfig)
-#     pdfgetter = Instance(PDFGetter)
-#     
-#     formula = Any
-#     datatype = Any
-#     temperature = Any
-#     mode = Any
-#     deletable = Bool(True)
-#     filepath = File
-#     objectid = Property
-# 
-#     def write_to_disk(self, filepath=None):
-#         if filepath:
-#             self.filepath = filepath
-#         self._write(self.filepath)
-#         return
-# 
-#     def _connect(self):
-#         database = self.fullname[:self.fullname.find('?')]
-#         uri = up.parse_uri(database)
-#         c = MongoClient(*uri['nodelist'][0], serverSelectionTimeoutMS=5000)
-#         db = c[uri['database']]
-#         return db[uri['collection']]
-# 
-#     def _write(self, filepath):
-#         collection = self._connect()
-# 
-#         with open(filepath, 'w') as f:
-#             try:
-#                 doc = collection.find_one({'_id':ObjectId(self.objectid)}, 
-#                                           {'file':1})
-#             except Exception as e:
-#                 print(e)
-#                 return
-#             for line in doc.get('file'):
-#                 f.write(line)
-# 
-#         self._load()
-#         return
-# 
-#     def _load(self):
-#         if self.datatype == 'gr':
-#             if os.path.exists(self.filepath):
-#                 self._gr = loadData(self.filepath).transpose()
-#                 self.lockdata = True
-#         elif self.datatype == 'fq':
-#             if os.path.exists(self.filepath):
-#                 self._fq = loadData(self.filepath).transpose()
-#                 self.lockdata = True
-#         elif self.datatype == 'sq':
-#             if os.path.exists(self.filepath):
-#                 self._sq = loadData(self.filepath).transpose()
-#                 self.lockdata = True
-#         return
-# 
-#     def _save(self, typeofdata='gr', filename=None, filenameext=None):
-#         '''
-#         save data to disk
-#         
-#         :param filename: string, filename, only the base name of it will be used,
-#             self.basename will be used if None
-#         :param typeofdata: string, could be 'gr', 'iq', 'sq', 'fq'
-#         :param filenameext: string, suffix of filename
-#         '''
-#         bbname = self.basename if filename == None else filename
-#         if filenameext == None:
-#             filenameext = ''
-#         filename = os.path.splitext(bbname)[0] + filenameext + '.' + typeofdata
-#         filepath = os.path.join(self.getxconfig.savedir, filename)
-# 
-#         # change the header information
-#         self.getxconfig.inputfile = self.basename
-#         self.getxconfig.outputtype = typeofdata
-# 
-#         if self.datatype == typeofdata:
-#             if self.filepath == filepath:
-#                 self.deletable = False
-#             self._write(filepath)
-#             return
-# 
-#         # export data
-#         f = open(filepath, 'w')
-#         f.write(self.getxconfig.getHeader(mode='short'))
-#         f.write('#### start data\n')
-#         f.write(getSL(typeofdata))
-#         data = getattr(self, typeofdata).transpose()
-#         np.savetxt(f, data, fmt='%g')
-#         f.close()
-#         return
-# 
-#     def _publish(self, typeofdata='gr', database=None):
-#         if self.datatype == typeofdata:
-#             collection = self._connect()
-#             doc = collection.find_one({'_id': self.objectid})
-#             publish_to_database(doc, database, self.temperature)
-#             return
-#         return super(DocumentContainer, self)._publish(typeofdata, database)
-# 
-#     def _getForm(self):
-#         collection = self._connect()
-#         return _get_formula(collection, self.objectid)
-# 
-#     def _getType(self):
-#         collection = self._connect()
-#         doc = collection.find_one({'_id': self.objectid}, {'datatype': 1})
-#         return doc.get('datatype')
-# 
-#     def _getTemp(self):
-#         collection = self._connect()
-#         doc = collection.find_one({'_id': self.objectid}, {'temperature': 1})
-#         return doc.get('temperature')
-# 
-#     def _getMode(self):
-#         collection = self._connect()
-#         doc = collection.find_one({'_id': self.objectid}, {'mode': 1})
-#         return doc.get('mode')
-# 
-# 
-#     @property_depends_on('fullname')
-#     def _get_objectid(self):
-#         return ObjectId(self.fullname[self.fullname.find('=')+1:])
-# 
-#     @property_depends_on('filepath')
-#     def _get_basename(self):
-#         return os.path.basename(self.filepath)
-# 
-#     @property_depends_on('filepath, refresh')
-#     def _get_xrd(self):
-#         '''
-#         load the xrd data
-#         '''
-#         if os.path.exists(self.filepath) and (not self.lockdata):
-#             rv = loadData(self.filepath).transpose()
-#         else:
-#             rv = np.arange(200).reshape(2, 100)
-#         return rv
-# 
-#     def __init__(self, **kwargs):
-#         HasTraits.__init__(self, **kwargs)
-#         if self.formula == None:
-#             self.formula = self._getForm()
-#         if self.datatype == None:
-#             self.datatype = self._getType()
-#         if self.temperature == None:
-#             self.temperature = self._getTemp()
-#         if self.mode == None:
-#             self.mode = self._getMode()
-#         savedir = self.getxconfig.savedir if self.getxconfig.savedir else os.getcwd()
-#         self.filepath = os.path.join(savedir, str(self.formula).replace('.', 'p'))
-#         if self.temperature:
-#             self.filepath += '_'
-#             if self.temperature.is_integer():
-#                 self.filepath += '%d' % self.temperature
-#             else:
-#                 self.filepath += str(self.temperature).replace('.', 'p')
-#             self.filepath += 'K'
-#         self.filepath += '.' + str(self.datatype)
+class DocumentContainer(DataContainer):
+
+    header = Dict
+    composition = Property
+
+    @property_depends_on('header')
+    def _get_composition(self):
+        return self.header['start'].get('sa_composition')
 
 def _merge_dicts(*dict_args):
     result = {}

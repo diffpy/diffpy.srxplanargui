@@ -70,6 +70,8 @@ class SrXconfig(ConfigBaseTraits):
     tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax',
         fget=lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
 
+    databasesearcher = Any
+
     def _preUpdateSelf(self, **kwargs):
         '''
         additional process called in self._updateSelf, this method is called
@@ -101,23 +103,25 @@ class SrXconfig(ConfigBaseTraits):
 
     databasebb = Button('Search database')
     def _databasebb_fired(self):
-        from dpx.srxplanargui.database import DatabaseSearcher
-        db = DatabaseSearcher()
-        db.edit_traits()
+        self.databasesearcher.edit_traits()
 
+    directory_visible = Bool(False)
     directory_group = \
         Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),
               Item('savedirectory', label='Output dir.', help='directory of saved files'),
               show_border=True,
-              label='Files',
+              # label='Files',
+              visible_when='directory_visible',
               )
 
     savedb = Str
+    database_visible = Bool(True)
     database_group = \
         Group(Item('databasebb', show_label=False),
               Item('savedb', label='Push to'),
               show_border=True,
-              label='Database',
+              # label='Database',
+              visible_when='database_visible',
               )
 
     mask_group = \
@@ -177,7 +181,11 @@ class SrXconfig(ConfigBaseTraits):
     main_view = \
         View(
             Group(
-                Group(directory_group, database_group, layout='tabbed'),
+                # Group(directory_group, database_group, layout='tabbed'),
+                Group(Item('directory_visible', label='Files'),
+                      directory_group,),
+                Group(Item('database_visible', label='Database'),
+                      database_group,),
                 mask_group,
                 Group(
                 Group(Item('geometry_visible', label='Geometry parameters'),

@@ -80,6 +80,7 @@ class SaveImageHandler(Handler):
 class AddFiles(HasTraits):
 
     srxconfig = Instance(SrXconfig)
+    databasesearcher = Any
 
     # The currenty inputdir directory being searched:
     # inputdir = DelegatesTo('srxconfig')
@@ -120,32 +121,42 @@ class AddFiles(HasTraits):
 
     refreshdatalist = Event
 
-    @property_depends_on('inputdir, recursive, filetype, refreshdatalist')
+    @property_depends_on('inputdir, recursive, filetype, databasesearcher, refreshdatalist')
     def _get_datafiles(self):
         '''
         create a datacontainer list, all files under inputdir is filtered using filetype
         '''
-        inputdir = self.inputdir
-        if inputdir == '':
-            inputdir = os.getcwd()
-        if not os.path.exists(inputdir):
-            self.srxconfig.opendirectory = os.getcwd()
-            inputdir = os.getcwd()
+        rvlist = []
 
-        filetypes = self._filetypedict[self.filetype]
-        if self.recursive:
-            rv = []
-            for dirpath, dirnames, filenames in os.walk(inputdir):
-                for filename in filenames:
-                    if (os.path.splitext(filename)[1] in filetypes)or (filetypes == 'all'):
-                        rv.append(os.path.join(dirpath, filename))
-        else:
-            rv = [os.path.join(inputdir, filename)
-                  for filename in os.listdir(inputdir)
-                  if (os.path.splitext(filename)[1] in filetypes) or (filetypes == 'all')]
+        if self.srxconfig.directory_visible:
+            inputdir = self.inputdir
+            if inputdir == '':
+                inputdir = os.getcwd()
+            if not os.path.exists(inputdir):
+                self.srxconfig.opendirectory = os.getcwd()
+                inputdir = os.getcwd()
+                
+            filetypes = self._filetypedict[self.filetype]
+            if self.recursive:
+                rv = []
+                for dirpath, dirnames, filenames in os.walk(inputdir):
+                    for filename in filenames:
+                        if (os.path.splitext(filename)[1] in filetypes)or (filetypes == 'all'):
+                            rv.append(os.path.join(dirpath, filename))
+            else:
+                rv = [os.path.join(inputdir, filename)
+                      for filename in os.listdir(inputdir)
+                      if (os.path.splitext(filename)[1] in filetypes) or (filetypes == 'all')]
 
-        rv.sort(key=sortKeyNumericString)
-        rvlist = [DataContainer(fullname=fn) for fn in rv]
+            rv.sort(key=sortKeyNumericString)
+            rvlist.extend([DataContainer(fullname=fn) for fn in rv])
+
+        if self.srxconfig.database_visible:
+            for header in self.databasesearcher.headers:
+                images = get_images(header, header.get('detector')[0])
+                rvlist.extend([DocumentContainer(header=header, image=image)
+                               for image in images]) 
+
         return rvlist
 
     @property_depends_on('datafiles, search, casesensitive, selected')
