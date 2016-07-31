@@ -234,12 +234,6 @@ class Calibration(HasTraits):
 
     inst1 = Str('Please install pyFAI and FabIO to use the calibration function (refer to help).')
     inst2 = Str('(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
-=======
-    inst1 = Str(
-        'Please install pyFAI and FabIO to use the calibration function (refer to help).')
-    inst2 = Str(
-        '(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)')
->>>>>>> 70620f70cdf7c47a8a70f24bddd5a8e5ce58c07e
     main_View = \
         View(
             Item('calibrationmode', style='custom', label='Calibration mode'),

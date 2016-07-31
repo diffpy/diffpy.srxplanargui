@@ -40,6 +40,9 @@ from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPro
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
         _defaultdata, checkMax
 
+from traits.api import push_exception_handler
+push_exception_handler(reraise_exceptions=True)
+
 class SrXconfig(ConfigBaseTraits):
     '''
     config class, based on ConfigBase class in diffpy.confutils
@@ -96,12 +99,27 @@ class SrXconfig(ConfigBaseTraits):
             self.savedirectory = os.path.abspath(os.curdir)
         return
 
+    databasebb = Button('Search database')
+    def _databasebb_fired(self):
+        from dpx.srxplanargui.database import DatabaseSearcher
+        db = DatabaseSearcher()
+        db.edit_traits()
+
     directory_group = \
         Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),
               Item('savedirectory', label='Output dir.', help='directory of saved files'),
               show_border=True,
               label='Files',
               )
+
+    savedb = Str
+    database_group = \
+        Group(Item('databasebb', show_label=False),
+              Item('savedb', label='Push to'),
+              show_border=True,
+              label='Database',
+              )
+
     mask_group = \
         Group(Item('maskfile', label='Mask file'),
               show_border=True,
@@ -156,11 +174,10 @@ class SrXconfig(ConfigBaseTraits):
               visible_when='detector_visible'
               ),
 
-
     main_view = \
         View(
             Group(
-                directory_group,
+                Group(directory_group, database_group, layout='tabbed'),
                 mask_group,
                 Group(
                 Group(Item('geometry_visible', label='Geometry parameters'),
