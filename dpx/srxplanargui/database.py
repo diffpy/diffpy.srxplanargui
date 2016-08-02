@@ -174,9 +174,9 @@ class DatabaseSearcher(HasTraits):
     def _searchbb_fired(self):
         d = self._daterange()
         e = self._experimenterlist()
-        s = self._safN()
+        # s = self._safN()
         c = self._comp()
-        query = _merge_dicts(d, e, s, c)
+        query = _merge_dicts(d, e, c)
         rv = DataBroker(**query)
         rv = [DocumentContainer(header=h) for h in rv]
         self.datafiles = rv
@@ -186,7 +186,8 @@ class DatabaseSearcher(HasTraits):
         Group(
             Group(
                 HGroup(Item('composition'), 
-                       Item('safN', label='SAF Number')),
+                       # Item('safN', label='SAF Number')
+                       ),
                 HGroup(Item('experimenters')),
                 HGroup(Item('startdate', show_label=False), 
                        Item('enddate', label='< Experiment Date <')
