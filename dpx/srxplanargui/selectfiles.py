@@ -17,6 +17,7 @@ import sys
 import fnmatch
 import functools
 import re
+from tempfile import NamedTemporaryFile
 from collections import OrderedDict
 from traits.etsconfig.api import ETSConfig
 
@@ -43,6 +44,9 @@ from dpx.srxplanargui.datacontainer import DataContainer
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.imageplot import ImagePlot
 from diffpy.srxplanar.loadimage import openImage, saveImage
+
+from traits.api import push_exception_handler
+push_exception_handler(reraise_exceptions=True)
 
 #-- The Live Search table editor definition ------------------------------
 
@@ -80,7 +84,6 @@ class SaveImageHandler(Handler):
 class AddFiles(HasTraits):
 
     srxconfig = Instance(SrXconfig)
-    databasesearcher = Any
 
     # The currenty inputdir directory being searched:
     # inputdir = DelegatesTo('srxconfig')
@@ -121,7 +124,8 @@ class AddFiles(HasTraits):
 
     refreshdatalist = Event
 
-    @property_depends_on('inputdir, recursive, filetype, databasesearcher, refreshdatalist')
+    @property_depends_on('''inputdir, recursive, filetype, 
+            srxconfig.directory_visible, database_visible, refreshdatalist''')
     def _get_datafiles(self):
         '''
         create a datacontainer list, all files under inputdir is filtered using filetype
@@ -152,10 +156,16 @@ class AddFiles(HasTraits):
             rvlist.extend([DataContainer(fullname=fn) for fn in rv])
 
         if self.srxconfig.database_visible:
-            for header in self.databasesearcher.headers:
+            for header in self.srxconfig.databasesearcher.headers:
                 images = get_images(header, header.get('detector')[0])
-                rvlist.extend([DocumentContainer(header=header, image=image)
-                               for image in images]) 
+                rv = []
+                for image in images:
+                    outfile = NamedTemporaryFile()
+                    np.save(outfile, image)
+                    outfile.seek(0)
+                    rv.append(outfile)
+                rvlist.extend([DocumentContainer(header=header, fullname=fn)
+                               for fn in rv]) 
 
         return rvlist
 

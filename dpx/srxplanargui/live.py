@@ -40,6 +40,7 @@ from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCanc
 from pyface.api import ImageResource, GUI, SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
+from dpx.srxplanargui.database import DatabaseSearcher, publish
 from dpx.srxplanargui.srxconfig import SrXconfig
 from dpx.srxplanargui.srxgui import SrXgui, SrXguiHandler, SaveHandler, LoadHandler
 from diffpy.srxplanar.srxplanar import SrXplanar
@@ -68,6 +69,8 @@ class SrXguiLive(SrXgui):
         if not kwargs.has_key('srxconfig'):
             self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
 
+        self.databasesearcher = DatabaseSearcher()
+        self.srxconfig.databasesearcher = self.databasesearcher
         self.addfiles = AddFiles(srxconfig=self.srxconfig)
         self.srx = SrXplanar(self.srxconfig)
         self.addfiles.srx = self.srx

@@ -17,10 +17,11 @@ import sys
 import re
 import numpy as np
 
-from pymongo import MongoClient
+from pymongo import MongoClient, uri_parser as up
 from databroker import DataBroker
 from bson.objectid import ObjectId
 from fractions import Fraction
+from StringIO import StringIO
 from datetime import datetime
 
 from traits.api import \
@@ -215,19 +216,41 @@ class DocumentContainer(DataContainer):
     def _get_composition(self):
         return self.header['start'].get('sa_composition')
 
+    @property_depends_on('composition')
+    def _get_basename(self):
+        return self.composition + '.npy'
+
 def _merge_dicts(*dict_args):
     result = {}
     for d in dict_args:
         result.update(d)
     return result
 
-def publish_to_database(doc, database, temperature=0):
-    if doc.get('temperature') == None:
-        doc['temperature'] = temperature
+def _parse_header(header):
+    rv = {}
+    for line in header.splitlines():
+        try:
+            key, value = line.split(' = ')
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+            rv[key] = value if value else None
+        except ValueError:
+            pass
+    return rv
+
+def publish(chi, database, header):
     uri = up.parse_uri('mongodb://' + database)
     c = MongoClient(*uri['nodelist'][0], serverSelectionTimeoutMS=5000)
     db = c[uri['database']]
     collection = db[uri['collection']]
+    if isinstance(header, basestring):
+        header = _parse_header(header)
+    image = StringIO()
+    np.savetxt(image, chi.transpose(), fmt='%g')
+    doc = _merge_dicts(header, {'file': image.getvalue()})
     if collection.find(doc).limit(1).count(True) == 0:
         collection.insert_one(doc)
+    c.close()
     return

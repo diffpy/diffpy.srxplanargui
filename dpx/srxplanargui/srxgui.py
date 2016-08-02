@@ -36,11 +36,14 @@ from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCanc
 from pyface.api import ImageResource, SplashScreen
 
 from dpx.srxplanargui.selectfiles import AddFiles
-from dpx.srxplanargui.database import DatabaseSearcher
+from dpx.srxplanargui.database import DatabaseSearcher, publish
 from dpx.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
 from dpx.srxplanargui.help import SrXguiHelp
 from dpx.srxplanargui.calibration import Calibration
+
+from traits.api import push_exception_handler
+push_exception_handler(reraise_exceptions=True)
 
 class SrXguiHandler(Handler):
 
@@ -100,11 +103,10 @@ class SrXgui(HasTraits):
             self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
 
         self.databasesearcher = DatabaseSearcher()
-        self.addfiles = AddFiles(srxconfig=self.srxconfig, 
-                                 databasesearcher=self.databasesearcher)
+        self.srxconfig.databasesearcher = self.databasesearcher
+        self.addfiles = AddFiles(srxconfig=self.srxconfig) 
         self.srx = SrXplanar(self.srxconfig)
         self.addfiles.srx = self.srx
-        self.srxconfig.databasesearcher = self.databasesearcher
         self.help = SrXguiHelp()
         self.calibration = Calibration(srx=self.srx, srxconfig=self.srxconfig)
 
@@ -136,9 +138,67 @@ class SrXgui(HasTraits):
         if self.addfiles.selected:
             self.srx.updateConfig()
             filelist = [f.fullname for f in self.addfiles.selected]
+            if len(filelist) == 1:
+                try:
+                    header = self.addfiles.selected[0].header
+                except: 
+                    header = self.srxconfig.getHeader(mode='short')
+            else:
+                header = self.srxconfig.getHeader(mode='short')
             self.srx.prepareCalculation(filelist)
-            self.srx.integrateFilelist(filelist, summation=summation)
+            if self.srxconfig.directory_visible:
+                rv = self.srx.integrateFilelist(filelist, summation=summation)
+            else:
+                rv = self.srx.integrateFilelist(filelist, summation=summation, savefile=False)
+
+            if self.srxconfig.database_visible:
+                for r in rv:
+                    publish(r['chi'], self.srxconfig.savedb, header)
         return
+
+    def integrateFilelist(self, filelist, summation=None, filename=None, savefile=True, flip=None, correction=None, extramask=None):
+        '''
+        process all file in filelist, integrate them separately or together
+        
+        :param filelist: list of string, files to be integrated (full path)
+        :param summation: bool or None, sum all files together or not, if None,
+            use self.config.summation
+        :param filename: file name of output file
+        :param savefile: boolean, if True, save file to disk, if False, do not save file to disk
+        :param flip: flip the image/2d array,
+            if None: flip on the string/list of string, not flip on the 2d array
+            Flip behavior is controlled in self.config
+        :param correction: apply correction to the returned 2d array
+            if None: correct on the string/list of string, not correct on the 2d array
+        :param extramask: 2d array, extra mask applied in integration 
+        
+        :return: list of dict, in each dict, rv['chi'] is a 2d array of integrated intensity, shape is (2, len of intensity) 
+            or (3, len of intensity) as [tth or q, intensity, (uncertainty)]. rv['filename'] is the 
+            name of file to save to disk
+        '''
+        summation = self.config.summation if summation == None else summation
+
+        if (summation)and(len(filelist) > 1):
+            image = self._getPic(filelist, flip, correction)
+            if filename == None:
+                if isinstance(filelist[-1], str):
+                    filename = os.path.splitext(filelist[-1])[0] + '_sum.chi'
+                else:
+                    filename = 'Sum_xrd.chi'
+            rv = [self.integrate(image, savename=filename, savefile=savefile, extramask=extramask)]
+
+        else:
+            i = 0
+            rv = []
+            for imagefile in filelist:
+                if filename == None:
+                    rvv = self.integrate(imagefile, savefile=savefile, flip=flip, correction=correction, extramask=extramask)
+                else:
+                    rvv = self.integrate(imagefile, savename=filename + '%03d' % i, savefile=savefile,
+                                         flip=flip, correction=correction, extramask=extramask)
+                rv.append(rvv)
+
+        return rv
 
     def detectConfigfile(self, filename):
         '''
