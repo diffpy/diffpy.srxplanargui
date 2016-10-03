@@ -109,21 +109,21 @@ class SrXconfig(ConfigBaseTraits):
               )
 
     geometry_visible = Bool(False)
-    geometry_group = \
-        Group(Item('integrationspace', label='Integration grid'),
-              Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength',),
-              Item('xbeamcenter', label='X beamcenter'),
-              Item('ybeamcenter', label='Y beamcenter'),
-              Item('distance', label='Distance'),
-              Item('rotationd', label='Rotation'),
-              Item('tiltd', label='Tilt rotation'),
-              Item('tthstepd', label='Integration step', visible_when='integrationspace == "twotheta"'),
-              Item('qstep', label='Integration step', visible_when='integrationspace == "qspace"'),
-
-              show_border=True,
-              # label='Geometry parameters',
-              visible_when='geometry_visible',
-              )
+    #geometry_group = \
+        #Group(Item('integrationspace', label='Integration grid'),
+        #      Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength',),
+        #      Item('xbeamcenter', label='X beamcenter'),
+        #      Item('ybeamcenter', label='Y beamcenter'),
+        #      Item('distance', label='Distance'),
+        #      Item('rotationd', label='Rotation'),
+        #      Item('tiltd', label='Tilt rotation'),
+        #      Item('tthstepd', label='Integration step', visible_when='integrationspace == "twotheta"'),
+        #      Item('qstep', label='Integration step', visible_when='integrationspace == "qspace"'),
+        #
+        #      show_border=True,
+        #      # label='Geometry parameters',
+        #      visible_when='geometry_visible',
+        #      )
 
     correction_visible = Bool(False)
     correction_group = \
@@ -161,17 +161,16 @@ class SrXconfig(ConfigBaseTraits):
         View(
             Group(
                 directory_group,
-                mask_group,
-                Group(
-                Group(Item('geometry_visible', label='Geometry parameters'),
-                      geometry_group,),
-                Group(Item('correction_visible', label='Corrections'),
-                      correction_group,),
-                Group(Item('detector_visible', label='Detector parameters'),
-                      detector_group,),
+                #mask_group,
+                #Group(
+                #Group(Item('geometry_visible', label='Geometry parameters'),
+                #      geometry_group,),
+                #Group(Item('correction_visible', label='Corrections'),
+                #      correction_group,),
+                #Group(Item('detector_visible', label='Detector parameters'),
+                #      detector_group,),
                 # label = 'Basic'
                 show_border=True,
-                ),
                 ),
 
              resizable=True,

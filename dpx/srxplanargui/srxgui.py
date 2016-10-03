@@ -164,37 +164,37 @@ class SrXgui(HasTraits):
         self.edit_traits(view='loadconfig_view')
         return
 
-    configfile = File()
-    helpbutton_action = \
-        Action(name='Help ',
-               action='_helpView')
-    saveconfig_action = \
-        Action(name='Save Config',
-               action='_saveconfigView')
-    loadconfig_action = \
-        Action(name='Load Config',
-               action='_loadconfigView')
-
-    saveconfig_view = \
-            View(Item('configfile'),
-
-                 resizable=True,
-                 title='Save config',
-                 width=500,
-                 buttons=[OKButton, CancelButton],
-                 handler=SaveHandler(),
-                 icon=ImageResource('icon.png'),
-                 )
-    loadconfig_view = \
-            View(Item('configfile'),
-
-                 resizable=True,
-                 title='Load config',
-                 width=500,
-                 buttons=[OKButton, CancelButton],
-                 handler=LoadHandler(),
-                 icon=ImageResource('icon.png'),
-                 )
+    #configfile = File()
+    #helpbutton_action = \
+    #    Action(name='Help ',
+    #           action='_helpView')
+    #saveconfig_action = \
+    #    Action(name='Save Config',
+    #           action='_saveconfigView')
+    #loadconfig_action = \
+    #    Action(name='Load Config',
+    #           action='_loadconfigView')
+    #
+    #saveconfig_view = \
+    #        View(Item('configfile'),
+    #
+    #             resizable=True,
+    #             title='Save config',
+    #             width=500,
+    #             buttons=[OKButton, CancelButton],
+    #             handler=SaveHandler(),
+    #             icon=ImageResource('icon.png'),
+    #             )
+    #loadconfig_view = \
+    #        View(Item('configfile'),
+    #
+    #            resizable=True,
+    #             title='Load config',
+    #             width=500,
+    #             buttons=[OKButton, CancelButton],
+    #             handler=LoadHandler(),
+    #             icon=ImageResource('icon.png'),
+    #             )
     #############################################################
 
     def _integratbb_changed(self):
@@ -235,12 +235,12 @@ class SrXgui(HasTraits):
                                style='custom', label='Basic', show_label=False),
                           springy=True,
                           ),
-                    HGroup(spring,
-                           Item('selfcalibratebb'),
-                           Item('integratbb'),
-                           spring,
-                           show_labels=False,
-                           ),
+                    #HGroup(spring,
+                    #       Item('selfcalibratebb'),
+                    #       Item('integratbb'),
+                    #       spring,
+                    #       show_labels=False,
+                    #       ),
                     ),
 
                    layout='split',

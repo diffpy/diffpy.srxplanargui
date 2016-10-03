@@ -111,14 +111,14 @@ class SrXguiLive(SrXgui):
     helpbutton_action = \
         Action(name='Help ',
                action='_helpView')
-    saveconfig_action = \
-        Action(name='Save Config',
-               action='_saveconfigView',
-               enabled_when='not capturing')
-    loadconfig_action = \
-        Action(name='Load Config',
-               action='_loadconfigView',
-               enabled_when='not capturing')
+    #saveconfig_action = \
+    #    Action(name='Save Config',
+    #           action='_saveconfigView',
+    #           enabled_when='not capturing')
+    #loadconfig_action = \
+    #    Action(name='Load Config',
+    #           action='_loadconfigView',
+    #           enabled_when='not capturing')
 
     traits_view = \
         View(
@@ -130,12 +130,12 @@ class SrXguiLive(SrXgui):
                                style='custom', label='Basic', show_label=False),
                           springy=True,
                           ),
-                    HGroup(spring,
-                           Item('selfcalibratebb', enabled_when='not capturing'),
-                           Item('integratbb', enabled_when='not capturing'),
-                           spring,
-                           show_labels=False,
-                           ),
+                    #HGroup(spring,
+                    #       Item('selfcalibratebb', enabled_when='not capturing'),
+                    #       Item('integratbb', enabled_when='not capturing'),
+                    #       spring,
+                    #       show_labels=False,
+                    #       ),
                     ),
                    layout='split',
                    springy=True,
@@ -149,7 +149,8 @@ class SrXguiLive(SrXgui):
              kind='live',
              icon=ImageResource('icon.png'),
              handler=SrXguiHandler(),
-             buttons=[helpbutton_action, saveconfig_action, loadconfig_action, OKButton],
+             #buttons=[helpbutton_action, saveconfig_action, loadconfig_action, OKButton],
+             buttons=[helpbutton_action, OKButton],
              )
 
 def main():
