@@ -162,16 +162,16 @@ class SrXconfig(ConfigBaseTraits):
             Group(
                 directory_group,
                 mask_group,
-                Group(
-                Group(Item('geometry_visible', label='Geometry parameters'),
-                      geometry_group,),
-                Group(Item('correction_visible', label='Corrections'),
-                      correction_group,),
-                Group(Item('detector_visible', label='Detector parameters'),
-                      detector_group,),
-                # label = 'Basic'
+                #Group(
+                #Group(Item('geometry_visible', label='Geometry parameters'),
+                #      geometry_group,),
+                #Group(Item('correction_visible', label='Corrections'),
+                #      correction_group,),
+                #Group(Item('detector_visible', label='Detector parameters'),
+                #      detector_group,),
+                label = 'Basic',
                 show_border=True,
-                ),
+                #),
                 ),
 
              resizable=True,
