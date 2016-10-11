@@ -346,16 +346,16 @@ class ImagePlot(HasTraits):
         self.on_trait_change(self.refreshMaskFile, 'srxconfig.maskfile', remove=True)
         return
 
-    addpolygon_bb = Button('Add polygon mask')
-    removepolygon_bb = Button('Remove polygon mask')
-    addpoint_bb = Button('Add point mask')
+    #addpolygon_bb = Button('Add polygon mask')
+    #removepolygon_bb = Button('Remove polygon mask')
+    #addpoint_bb = Button('Add point mask')
     clearmask_bb = Button('Clear mask', desc='Clear mask')
     invertmask_bb = Button('Invert mask', desc='Invert mask')
-    advancedmask_bb = Button('Dynamic mask', desc='The dynamic mask is dynamically generated for each image.')
-    maskabove_bb = Button('Mask intensity above')
-    maskbelow_bb = Button('Mask intensity below')
-    loadmaskfile_bb = Button('Load mask')
-    savemaskfile_bb = Button('Save mask')
+    #advancedmask_bb = Button('Dynamic mask', desc='The dynamic mask is dynamically generated for each image.')
+    #maskabove_bb = Button('Mask intensity above')
+    #maskbelow_bb = Button('Mask intensity below')
+    #loadmaskfile_bb = Button('Load mask')
+    #savemaskfile_bb = Button('Save mask')
 
     def _addpolygon_bb_fired(self):
         self.removepolygonmask = False
@@ -421,30 +421,30 @@ class ImagePlot(HasTraits):
                             spring,
                             ),
                         VGroup(
-                            HGroup(
-                                Item('addpolygon_bb', enabled_when='not maskediting'),
-                                Item('removepolygon_bb', enabled_when='not maskediting'),
-                                spring,
-                                Item('maskabove_bb', enabled_when='not maskediting'),
-                                Item('maskaboveint', enabled_when='not maskediting'),
-                                show_labels=False,
-                                ),
-                            HGroup(
-                                Item('addpoint_bb', enabled_when='not maskediting'),
-                                Item('pointmaskradius', label='Size:', show_label=True),
-                                spring,
-                                Item('maskbelow_bb', enabled_when='not maskediting'),
-                                Item('maskbelowint', enabled_when='not maskediting'),
-                                show_labels=False,
-                                ),
+                            #HGroup(
+                            #    Item('addpolygon_bb', enabled_when='not maskediting'),
+                            #    Item('removepolygon_bb', enabled_when='not maskediting'),
+                            #    spring,
+                            #    Item('maskabove_bb', enabled_when='not maskediting'),
+                            #    Item('maskaboveint', enabled_when='not maskediting'),
+                            #    show_labels=False,
+                            #    ),
+                            #HGroup(
+                            #    Item('addpoint_bb', enabled_when='not maskediting'),
+                            #    Item('pointmaskradius', label='Size:', show_label=True),
+                            #    spring,
+                            #    Item('maskbelow_bb', enabled_when='not maskediting'),
+                            #    Item('maskbelowint', enabled_when='not maskediting'),
+                            #    show_labels=False,
+                            #    ),
                             HGroup(
                                 Item('clearmask_bb', enabled_when='not maskediting'),
                                 Item('invertmask_bb', enabled_when='not maskediting'),
-                                Item('advancedmask_bb', enabled_when='not maskediting'),
+                            #    Item('advancedmask_bb', enabled_when='not maskediting'),
                                 spring,
-                                Item('loadmaskfile_bb'),
-                                Item('savemaskfile_bb'),
-                                show_labels=False,
+                            #    Item('loadmaskfile_bb'),
+                            #    Item('savemaskfile_bb'),
+                            #    show_labels=False,
                                 ),
                             show_labels=False,
                             show_border=True,
@@ -490,43 +490,43 @@ class ImagePlot(HasTraits):
              )
 
 
-    advancedmask_view = \
-        View(
-            Group(
-                VGroup(
-                    Item('cropedges', label='Mask edges', editor=ArrayEditor(width=-50)),
-                    label='Edge mask',
-                    show_border=True,
-                    ),
-                VGroup(
-                    Item('darkpixelmask', label='Enable'),
-                    Item('darkpixelr', label='Threshold', enabled_when='darkpixelmask'),
-                    label='Dark pixel mask',
-                    show_border=True,
-                    ),
-                VGroup(
-                    Item('brightpixelmask', label='Enable'),
-                    Item('brightpixelsize', label='Testing size', enabled_when='brightpixelmask'),
-                    Item('brightpixelr', label='Threshold', enabled_when='brightpixelmask'),
-                    label='Bright pixel mask',
-                    show_border=True,
-                    ),
-                VGroup(
-                    Item('avgmask', label='Enable'),
-                    Item('avgmaskhigh', label='High', enabled_when='avgmask'),
-                    Item('avgmasklow', label='Low', enabled_when='avgmask'),
-                    label='Average mask',
-                    show_border=True,
-                    ),
-                ),
-
-             title='Dynamic mask',
-             width=320,
-             handler=AdvMaskHandler(),
-             resizable=True,
-             buttons=[applydymask_action, OKButton, CancelButton],
-             icon=ImageResource('icon.png'),
-             )
+    #advancedmask_view = \
+    #    View(
+    #        Group(
+    #            VGroup(
+    #                Item('cropedges', label='Mask edges', editor=ArrayEditor(width=-50)),
+    #                label='Edge mask',
+    #                show_border=True,
+    #                ),
+    #            VGroup(
+    #                Item('darkpixelmask', label='Enable'),
+    #                Item('darkpixelr', label='Threshold', enabled_when='darkpixelmask'),
+    #                label='Dark pixel mask',
+    #                show_border=True,
+    #                ),
+    #            VGroup(
+    #                Item('brightpixelmask', label='Enable'),
+    #                Item('brightpixelsize', label='Testing size', enabled_when='brightpixelmask'),
+    #                Item('brightpixelr', label='Threshold', enabled_when='brightpixelmask'),
+    #                label='Bright pixel mask',
+    #                show_border=True,
+    #                ),
+    #            VGroup(
+    #                Item('avgmask', label='Enable'),
+    #                Item('avgmaskhigh', label='High', enabled_when='avgmask'),
+    #                Item('avgmasklow', label='Low', enabled_when='avgmask'),
+    #                label='Average mask',
+    #                show_border=True,
+    #                ),
+    #            ),
+    #
+    #         title='Dynamic mask',
+    #         width=320,
+    #         handler=AdvMaskHandler(),
+    #         resizable=True,
+    #         buttons=[applydymask_action, OKButton, CancelButton],
+    #         icon=ImageResource('icon.png'),
+    #         )
 
 class MasklineDrawer(LineSegmentTool):
     """
