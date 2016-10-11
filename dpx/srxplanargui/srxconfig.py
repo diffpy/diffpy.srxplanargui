@@ -84,17 +84,23 @@ class SrXconfig(ConfigBaseTraits):
         return
 
     def _opendirectory_changed(self):
+        """
         if os.path.exists(self.opendirectory):
             self.savedirectory = os.path.abspath(self.opendirectory)
         else:
             self.opendirectory = os.path.abspath(os.curdir)
             self.savedirectory = os.path.abspath(os.curdir)
         return
+        """
+        pass
 
     def _savedirectory_changed(self):
+        """
         if not os.path.exists(self.savedirectory):
             self.savedirectory = os.path.abspath(os.curdir)
         return
+        """
+        pass
 
     directory_group = \
         Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),

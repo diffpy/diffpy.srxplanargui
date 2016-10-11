@@ -113,7 +113,7 @@ class SrXgui(HasTraits):
         '''
         if filename == 'default':
             filename = self.detectConfigfile(filename)
-        self.srxconfig.writeConfig(filename, mode='full')
+        #self.srxconfig.writeConfig(filename, mode='full')
         self.configfile = filename
         return
 
