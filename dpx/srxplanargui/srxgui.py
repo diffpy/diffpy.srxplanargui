@@ -232,10 +232,11 @@ class SrXgui(HasTraits):
                 Item('addfiles', editor=InstanceEditor(view='traits_view'),
                      style='custom', label='Files', width=0.4),
                 VGroup(
-                    Group(Item('srxconfig', editor=InstanceEditor(view='main_view'),
-                               style='custom', label='Basic', show_label=False),
-                          springy=True,
-                          ),
+                    Item('srxconfig',
+                         editor=InstanceEditor(view='main_view'),
+                         style='custom', label='Basic',
+                         show_label=False
+                         )
                 #    HGroup(spring,
                 #           Item('selfcalibratebb'),
                 #           Item('integratbb'),
@@ -243,7 +244,6 @@ class SrXgui(HasTraits):
                 #           show_labels=False,
                 #           ),
                     ),
-
                    layout='split',
                    springy=True,
                    dock='tab',

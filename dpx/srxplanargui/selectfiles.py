@@ -241,7 +241,7 @@ class AddFiles(HasTraits):
 
     selectallbb = Button('Select all')
     refreshbb = Button('Refresh')
-    plotbb = Button('Mask')
+    #plotbb = Button('Mask')
     sumbb = Button('Sum')
 
     traits_view = View(
@@ -261,7 +261,7 @@ class AddFiles(HasTraits):
                 Item('summary', editor=TitleEditor()),
 
                 HGroup(spring,
-                       Item('plotbb', show_label=False),
+                       #Item('plotbb', show_label=False),
                        Item('sumbb', show_label=False),
                        spring,
                        ),

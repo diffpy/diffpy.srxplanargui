@@ -126,7 +126,7 @@ class ImagePlot(HasTraits):
         # Tweak some of the plot properties
         self.plot.title = os.path.split(self.imagefile)[1]
         self.plot.aspect_ratio = float(image.shape[1]) / float(image.shape[0])
-        self.plot.padding = 50
+        #self.plot.padding = 50
 
         # Attach some tools to the plot
         self._appendTools()
