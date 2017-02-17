@@ -76,6 +76,7 @@ class SrXguiLive(SrXgui):
         self.splash.close()
         return
 
+    """
     @on_trait_change('srxconfig.savedirectory')
     def _changedir(self):
         newdir = self.srxconfig.savedirectory
@@ -86,6 +87,7 @@ class SrXguiLive(SrXgui):
             self.getxgui.getxconfig.inputdir = os.path.abspath(os.path.curdir)
             self.getxgui.getxconfig.savedir = os.path.abspath(os.path.curdir)
         return
+    """
 
     def processSelected(self, summation=False):
         if self.addfiles.selected:
