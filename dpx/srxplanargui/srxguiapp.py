@@ -30,10 +30,10 @@ if ('--help' in sysargv) or('-h' in sysargv):
     from dpx.srxplanargui.srxconfig import SrXconfig
     SrXconfig(args=sysargv)
 
-from traits.etsconfig.api import ETSConfig
-os.environ['QT_API'] = 'pyside'
-ETSConfig.toolkit = 'qt4'
-from pyface.qt import QtGui, QtCore
+#from traits.etsconfig.api import ETSConfig
+#os.environ['QT_API'] = 'pyside'
+#ETSConfig.toolkit = 'qt4'
+#from pyface.qt import QtGui, QtCore
 
 from pyface.api import ImageResource, SplashScreen
 # open splash screen

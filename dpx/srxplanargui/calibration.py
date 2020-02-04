@@ -17,8 +17,8 @@ import os
 import sys
 import re
 
-from traits.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'qt4'
+#from traits.etsconfig.api import ETSConfig
+#ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -166,7 +166,7 @@ class Calibration(HasTraits):
                 self.pythonbin, self.intescript, '-p', ponifile, str(image)]
             subprocess.call(intecmd)
             self.parsePyFAIoutput(image)
-            print 'Calibration finished!'
+            print('Calibration finished!')
         return
 
     def parsePyFAIoutput(self, image=None):
@@ -331,7 +331,7 @@ class Calibration(HasTraits):
 
 def findFloat(line):
     temp = re.findall('[-+]?\d*\.\d+|[-+]?\d+', line)
-    return map(float, temp)
+    return list(map(float, temp))
 
 if __name__ == '__main__':
     srxconfig = SrXconfig()

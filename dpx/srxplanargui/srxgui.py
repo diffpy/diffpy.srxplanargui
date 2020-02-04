@@ -19,8 +19,8 @@ import numpy as np
 import os
 import sys
 
-from traits.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'qt4'
+#from traits.etsconfig.api import ETSConfig
+#ETSConfig.toolkit = 'qt4'
 
 from traits.api import \
     Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
@@ -94,7 +94,7 @@ class SrXgui(HasTraits):
             configfile = self.detectConfigfile('default')
         self.configfile = configfile
 
-        if not kwargs.has_key('srxconfig'):
+        if 'srxconfig' not in kwargs:
             self.srxconfig = SrXconfig(filename=configfile, args=args, **kwargs)
 
         self.addfiles = AddFiles(srxconfig=self.srxconfig)
