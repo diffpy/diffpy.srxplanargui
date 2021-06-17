@@ -9,6 +9,7 @@ REQUIREMENTS
 The dpx.srxplanargui requires Python 2.7 and the following software:
 
 * ``diffpy.srxplanar``
+* ``diffpy.pdfgetx``
 * ``dpx.confutils``
 * ``numpy``
 * ``scipy``
