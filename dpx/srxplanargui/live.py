@@ -46,7 +46,7 @@ from diffpy.srxplanar.srxplanar import SrXplanar
 from dpx.srxplanargui.help import SrXguiHelp
 from dpx.srxplanargui.calibration import Calibration
 
-from dpx.confutils.tools import checkFileVal
+from diffpy.srxconfutils.tools import checkFileVal
 
 class SrXguiLive(SrXgui):
 
