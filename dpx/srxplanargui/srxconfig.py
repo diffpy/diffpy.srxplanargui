@@ -14,7 +14,7 @@
 ##############################################################################
 
 import numpy as np
-import ConfigParser
+import configparser
 import re, os, sys
 from functools import partial
 import argparse
@@ -35,8 +35,8 @@ from traitsui.api import \
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
 from pyface.api import ImageResource
 
-from dpx.confutils.configtraits import ConfigBaseTraits
-from dpx.confutils.tools import _configPropertyRad, _configPropertyR, _configPropertyRW
+from diffpy.srxconfutils.configtraits import ConfigBaseTraits
+from diffpy.srxconfutils.tools import _configPropertyRad, _configPropertyR, _configPropertyRW
 from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
         _defaultdata, checkMax
 

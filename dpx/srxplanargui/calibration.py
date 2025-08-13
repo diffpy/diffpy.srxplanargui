@@ -38,7 +38,7 @@ from diffpy.srxplanar.srxplanar import SrXplanar
 from diffpy.srxplanar.selfcalibrate import selfCalibrate
 from diffpy.srxplanar.srxplanarconfig import checkMax
 
-from dpx.confutils.tools import module_exists_lower
+from diffpy.srxconfutils.tools import module_exists_lower
 if module_exists_lower('pyfai'):
     import pyFAI
     missingpyFAI = False
