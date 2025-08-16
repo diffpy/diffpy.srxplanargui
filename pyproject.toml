@@ -33,7 +33,7 @@ classifiers = [
 ]
 
 [project.scripts]
-srxgui = 'dpx.srxplanargui.srxguiapp:main'
+srxgui = 'diffpy.srxplanargui.srxguiapp:main'
 
 [project.urls]
 Homepage = "https://github.com/diffpy/diffpy.srxplanargui/"
@@ -46,7 +46,7 @@ dev_template = "{tag}"
 dirty_template = "{tag}"
 
 [tool.setuptools.packages.find]
-where = ["dpx"]  # list of folders that contain the packages (["."] by default)
+where = ["src"]  # list of folders that contain the packages (["."] by default)
 include = ["*"]  # package names should match these glob patterns (["*"] by default)
 exclude = []  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)

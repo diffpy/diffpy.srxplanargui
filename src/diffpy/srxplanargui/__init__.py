@@ -14,6 +14,6 @@
 
 
 # obtain version information
-from dpx.srxplanargui.version import __version__
+from diffpy.srxplanargui.version import __version__
 
 # End of file

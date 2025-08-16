@@ -39,9 +39,9 @@ try:
     from diffpy.pdfgetx.functs import sortKeyNumericString
 except:
     from diffpy.pdfgete.functs import sortKeyNumericString
-from dpx.srxplanargui.datacontainer import DataContainer
-from dpx.srxplanargui.srxconfig import SrXconfig
-from dpx.srxplanargui.imageplot import ImagePlot
+from diffpy.srxplanargui.datacontainer import DataContainer
+from diffpy.srxplanargui.srxconfig import SrXconfig
+from diffpy.srxplanargui.imageplot import ImagePlot
 from diffpy.srxplanar.loadimage import openImage, saveImage
 
 #-- The Live Search table editor definition ------------------------------

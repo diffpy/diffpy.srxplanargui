@@ -27,7 +27,7 @@ logging.disable('CRITICAL')
 # break if help passed to the args
 sysargv = sys.argv[1:]
 if ('--help' in sysargv) or('-h' in sysargv):
-    from dpx.srxplanargui.srxconfig import SrXconfig
+    from diffpy.srxplanargui.srxconfig import SrXconfig
     SrXconfig(args=sysargv)
 
 from traits.etsconfig.api import ETSConfig
@@ -41,7 +41,7 @@ splash = SplashScreen(image=ImageResource('01.png'), show_log_messages=False)
 if not any([aa == '-h' or aa == '--help' for aa in sysargv]):
     splash.open()
 
-from dpx.srxplanargui.srxgui import SrXgui
+from diffpy.srxplanargui.srxgui import SrXgui
 
 def main():
     gui = SrXgui(splash=splash)

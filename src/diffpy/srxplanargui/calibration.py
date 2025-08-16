@@ -33,7 +33,7 @@ from traitsui.api import \
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
 from pyface.api import ImageResource, SplashScreen
 
-from dpx.srxplanargui.srxconfig import SrXconfig
+from diffpy.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
 from diffpy.srxplanar.selfcalibrate import selfCalibrate
 from diffpy.srxplanar.srxplanarconfig import checkMax
