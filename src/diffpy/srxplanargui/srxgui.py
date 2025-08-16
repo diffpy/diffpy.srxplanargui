@@ -35,11 +35,11 @@ from traitsui.api import \
 from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
 from pyface.api import ImageResource, SplashScreen
 
-from dpx.srxplanargui.selectfiles import AddFiles
-from dpx.srxplanargui.srxconfig import SrXconfig
+from diffpy.srxplanargui.selectfiles import AddFiles
+from diffpy.srxplanargui.srxconfig import SrXconfig
 from diffpy.srxplanar.srxplanar import SrXplanar
-from dpx.srxplanargui.help import SrXguiHelp
-from dpx.srxplanargui.calibration import Calibration
+from diffpy.srxplanargui.help import SrXguiHelp
+from diffpy.srxplanargui.calibration import Calibration
 
 class SrXguiHandler(Handler):
 
