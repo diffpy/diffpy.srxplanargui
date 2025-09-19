@@ -12,33 +12,79 @@
 #
 ##############################################################################
 
-import numpy as np
 import os
-import sys
 import re
+import sys
 
+import numpy as np
 from traits.etsconfig.api import ETSConfig
+
 ETSConfig.toolkit = 'qt4'
 
-from traits.api import \
-    Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
-    HasTraits, Property, Instance, Event, Button, Any, \
-    on_trait_change, DelegatesTo, cached_property, property_depends_on
-
-from traitsui.api import \
-    Item, Group, View, Handler, Controller, spring, Action, \
-    HGroup, VGroup, Tabbed, \
-    RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
-    ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, ImageEditor
-from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
+from diffpy.srxconfutils.tools import module_exists_lower
+from diffpy.srxplanar.selfcalibrate import selfCalibrate
+from diffpy.srxplanar.srxplanar import SrXplanar
+from diffpy.srxplanar.srxplanarconfig import checkMax
 from pyface.api import ImageResource, SplashScreen
+from traits.api import (
+    Any,
+    Array,
+    Bool,
+    Button,
+    CFloat,
+    CInt,
+    DelegatesTo,
+    Dict,
+    Directory,
+    Enum,
+    Event,
+    File,
+    Float,
+    HasTraits,
+    Instance,
+    Int,
+    List,
+    Property,
+    Range,
+    Str,
+    cached_property,
+    on_trait_change,
+    property_depends_on,
+)
+from traitsui.api import (
+    Action,
+    ArrayEditor,
+    ButtonEditor,
+    CheckListEditor,
+    Controller,
+    EnumEditor,
+    Group,
+    Handler,
+    HGroup,
+    HistoryEditor,
+    ImageEditor,
+    InstanceEditor,
+    Item,
+    RangeEditor,
+    Tabbed,
+    TableEditor,
+    TextEditor,
+    TitleEditor,
+    VGroup,
+    View,
+    spring,
+)
+from traitsui.menu import (
+    CancelButton,
+    Menu,
+    MenuBar,
+    OKButton,
+    OKCancelButtons,
+    ToolBar,
+)
 
 from dpx.srxplanargui.srxconfig import SrXconfig
-from diffpy.srxplanar.srxplanar import SrXplanar
-from diffpy.srxplanar.selfcalibrate import selfCalibrate
-from diffpy.srxplanar.srxplanarconfig import checkMax
 
-from diffpy.srxconfutils.tools import module_exists_lower
 if module_exists_lower('pyfai'):
     import pyFAI
     missingpyFAI = False
@@ -58,9 +104,7 @@ if not missingpyFAI:
 class CalibrationHandler(Handler):
 
     def closed(self, info, is_ok):
-        '''
-        notify main gui to delete current plot in plots list
-        '''
+        """Notify main gui to delete current plot in plots list."""
         if is_ok:
             info.object.calibration()
         return True
@@ -169,7 +213,7 @@ class Calibration(HasTraits):
                 self.pythonbin, self.intescript, '-p', ponifile, str(image)]
             subprocess.call(intecmd)
             self.parsePyFAIoutput(image)
-            print 'Calibration finished!'
+            print('Calibration finished!')
         return
 
     def parsePyFAIoutput(self, image=None):
