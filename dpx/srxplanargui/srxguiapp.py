@@ -11,42 +11,46 @@
 # See LICENSE.txt for license information.
 #
 ##############################################################################
+"""Provide UI for srxplanar."""
 
-'''provide UI for srxplanar
-'''
-
-import numpy as np
 import os
 import sys
-
 import warnings
-warnings.filterwarnings("ignore")
-import logging
-logging.disable('CRITICAL')
 
-# break if help passed to the args
-sysargv = sys.argv[1:]
-if ('--help' in sysargv) or('-h' in sysargv):
-    from dpx.srxplanargui.srxconfig import SrXconfig
-    SrXconfig(args=sysargv)
-
-from traits.etsconfig.api import ETSConfig
-os.environ['QT_API'] = 'pyside'
-ETSConfig.toolkit = 'qt4'
-from pyface.qt import QtGui, QtCore
-
+import numpy as np
 from pyface.api import ImageResource, SplashScreen
-# open splash screen
-splash = SplashScreen(image=ImageResource('01.png'), show_log_messages=False)
-if not any([aa == '-h' or aa == '--help' for aa in sysargv]):
-    splash.open()
+from pyface.qt import QtCore, QtGui
+from traits.etsconfig.api import ETSConfig
 
 from dpx.srxplanargui.srxgui import SrXgui
 
+warnings.filterwarnings("ignore")
+import logging
+
+logging.disable("CRITICAL")
+
+# break if help passed to the args
+sysargv = sys.argv[1:]
+if ("--help" in sysargv) or ("-h" in sysargv):
+    from dpx.srxplanargui.srxconfig import SrXconfig
+
+    SrXconfig(args=sysargv)
+
+
+os.environ["QT_API"] = "pyside"
+ETSConfig.toolkit = "qt4"
+
+# open splash screen
+splash = SplashScreen(image=ImageResource("01.png"), show_log_messages=False)
+if not any([aa == "-h" or aa == "--help" for aa in sysargv]):
+    splash.open()
+
+
 def main():
     gui = SrXgui(splash=splash)
-    gui.configure_traits(view='traits_view')
+    gui.configure_traits(view="traits_view")
     return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())
