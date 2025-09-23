@@ -11,28 +11,64 @@
 # See LICENSE.txt for license information.
 #
 ##############################################################################
+"""Provide help for SrXgui."""
 
-'''provide help for SrXgui
-'''
-
-import numpy as np
 import os
 import sys
-from traits.etsconfig.api import ETSConfig
-from traits.api import \
-    Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
-    HasTraits, Property, Instance, Event, Button, Any, \
-    on_trait_change, DelegatesTo, cached_property, property_depends_on
 
-from traitsui.api import \
-    Item, Group, View, Handler, Controller, spring, Action, \
-    HGroup, VGroup, Tabbed, \
-    RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
-    ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, \
-    ImageEditor
-from traitsui.menu import ToolBar, OKButton, CancelButton, Menu
-
+import numpy as np
 from pyface.api import ImageResource
+from traits.api import (
+    Any,
+    Array,
+    Bool,
+    Button,
+    CFloat,
+    CInt,
+    DelegatesTo,
+    Dict,
+    Directory,
+    Enum,
+    Event,
+    File,
+    Float,
+    HasTraits,
+    Instance,
+    Int,
+    List,
+    Property,
+    Range,
+    Str,
+    cached_property,
+    on_trait_change,
+    property_depends_on,
+)
+from traits.etsconfig.api import ETSConfig
+from traitsui.api import (
+    Action,
+    ArrayEditor,
+    ButtonEditor,
+    CheckListEditor,
+    Controller,
+    EnumEditor,
+    Group,
+    Handler,
+    HGroup,
+    HistoryEditor,
+    ImageEditor,
+    InstanceEditor,
+    Item,
+    RangeEditor,
+    Tabbed,
+    TableEditor,
+    TextEditor,
+    TitleEditor,
+    VGroup,
+    View,
+    spring,
+)
+from traitsui.menu import CancelButton, Menu, OKButton, ToolBar
+
 
 class HelpHandler(Handler):
 
@@ -51,8 +87,8 @@ class HelpHandler(Handler):
 
 class SrXguiHelp(HasTraits):
 
-    if sys.platform.startswith('win'):
-        if ETSConfig.toolkit == 'qt4':
+    if sys.platform.startswith("win"):
+        if ETSConfig.toolkit == "qt4":
             hheight = 510
             hwidth = 960
         else:
@@ -66,67 +102,69 @@ class SrXguiHelp(HasTraits):
     # quick start
     #######################
 
-    imgs = [ImageResource('%02d.png' % i) for i in range(1, 23)]
+    imgs = [ImageResource("%02d.png" % i) for i in range(1, 23)]
 
     qslen = Int(len(imgs) - 1)
 
-    next_action = \
-        Action(name='Next',
-               action='_qsnext',
-               enabled_when='object.qsindex<object.qslen'
-               )
-    previous_action = \
-        Action(name='Previous',
-               action='_qsprevious',
-               enabled_when='object.qsindex>0'
-               )
-    cpreference_action = \
-        Action(name='Copy to clipboard',
-               action='_cpReftext',
-               visible_when='object.qsindex==object.qslen-1'
-               )
+    next_action = Action(
+        name="Next",
+        action="_qsnext",
+        enabled_when="object.qsindex<object.qslen",
+    )
+    previous_action = Action(
+        name="Previous", action="_qsprevious", enabled_when="object.qsindex>0"
+    )
+    cpreference_action = Action(
+        name="Copy to clipboard",
+        action="_cpReftext",
+        visible_when="object.qsindex==object.qslen-1",
+    )
 
     def _qsnext(self):
         self.qsindex += 1
         return
+
     def _qsprevious(self):
         self.qsindex -= 1
         return
 
     qsimage = Property
-    @property_depends_on('qsindex')
+
+    @property_depends_on("qsindex")
     def _get_qsimage(self):
         return self.imgs[self.qsindex]
 
     qsindex = Int(0)
-    quickstart_view = \
-        View(Item('qsimage', editor=ImageEditor(), width=0.5, show_label=False),
-             title='Quick start',
-             width=hwidth,
-             height=hheight,
-             resizable=True,
-             buttons=[cpreference_action, previous_action, next_action, OKButton],
-             handler=HelpHandler(),
-             icon=ImageResource('icon.png'),
-             )
+    quickstart_view = View(
+        Item("qsimage", editor=ImageEditor(), width=0.5, show_label=False),
+        title="Quick start",
+        width=hwidth,
+        height=hheight,
+        resizable=True,
+        buttons=[cpreference_action, previous_action, next_action, OKButton],
+        handler=HelpHandler(),
+        icon=ImageResource("icon.png"),
+    )
 
     #######################
     # reference
     #######################
 
-    reftext = '''
+    reftext = """
 xPDFsuite (main GUI) :X. Yang, P. Juhas, C. L. Farrow and Simon J. L. Billinge xPDFsuite: an end-to-end software solution for high throughput pair distribution function transformation, visualization and analysis, arXiv 1402.3163 (2014)
 
 SrXplanar (2D image integration):X. Yang, P. Juhas, S.J.L. Billinge, On the estimation of statistical uncertainties on powder diffraction and small-angle scattering data from two-dimensional X-ray detectors, J. Appl. Cryst. (2014). 47, 1273-1283
-'''
+"""
 
     def cpReftext(self):
         cpToClipboard(self.reftext)
         return
 
+
 def cpToClipboard(s):
-    if ETSConfig.toolkit == 'qt4':
-        from pyface.qt import QtGui, QtCore
+    if ETSConfig.toolkit == "qt4":
+        from pyface.qt import QtCore, QtGui
+
         cb = QtGui.QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(s, mode=cb.Clipboard)

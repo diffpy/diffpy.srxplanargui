@@ -12,53 +12,90 @@
 #
 ##############################################################################
 
-import os
-import sys
 import fnmatch
 import functools
+import os
 import re
+import sys
 from collections import OrderedDict
-from traits.etsconfig.api import ETSConfig
 
-from traitsui.qt4.table_editor import TableEditor as TableEditorBE
-from traits.api import \
-    Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
-    HasTraits, Property, Instance, Event, Button, Any, \
-    on_trait_change, DelegatesTo, cached_property, property_depends_on
-
-from traitsui.api import \
-    Item, Group, View, Handler, spring, Action, \
-    HGroup, VGroup, Tabbed, \
-    RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
-    ArrayEditor, TitleEditor, TableEditor, HistoryEditor
-from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, OKCancelButtons
-from traitsui.table_column import ObjectColumn
 from pyface.api import ImageResource
+from traits.api import (
+    Any,
+    Array,
+    Bool,
+    Button,
+    CFloat,
+    CInt,
+    DelegatesTo,
+    Dict,
+    Directory,
+    Enum,
+    Event,
+    File,
+    Float,
+    HasTraits,
+    Instance,
+    Int,
+    List,
+    Property,
+    Range,
+    Str,
+    cached_property,
+    on_trait_change,
+    property_depends_on,
+)
+from traits.etsconfig.api import ETSConfig
+from traitsui.api import (
+    Action,
+    ArrayEditor,
+    ButtonEditor,
+    CheckListEditor,
+    EnumEditor,
+    Group,
+    Handler,
+    HGroup,
+    HistoryEditor,
+    Item,
+    RangeEditor,
+    Tabbed,
+    TableEditor,
+    TextEditor,
+    TitleEditor,
+    VGroup,
+    View,
+    spring,
+)
+from traitsui.menu import CancelButton, Menu, OKButton, OKCancelButtons, ToolBar
+from traitsui.qt4.table_editor import TableEditor as TableEditorBE
+from traitsui.table_column import ObjectColumn
 
 try:
     from diffpy.pdfgetx.functs import sortKeyNumericString
 except:
     from diffpy.pdfgete.functs import sortKeyNumericString
-from dpx.srxplanargui.datacontainer import DataContainer
-from dpx.srxplanargui.srxconfig import SrXconfig
-from dpx.srxplanargui.imageplot import ImagePlot
+
 from diffpy.srxplanar.loadimage import openImage, saveImage
 
-#-- The Live Search table editor definition ------------------------------
+from dpx.srxplanargui.datacontainer import DataContainer
+from dpx.srxplanargui.imageplot import ImagePlot
+from dpx.srxplanargui.srxconfig import SrXconfig
+
+# -- The Live Search table editor definition ------------------------------
 
 
 class AddFilesHandler(Handler):
 
     def object_selectallbb_changed(self, info):
-        '''
-        select all files
-        '''
+        """Select all files."""
         # FIXME
         try:
             editor = [
-                aa for aa in info.ui._editors if isinstance(aa, TableEditorBE)][0]
-            info.object.selected = [info.object.datafiles[i]
-                                    for i in editor.filtered_indices]
+                aa for aa in info.ui._editors if isinstance(aa, TableEditorBE)
+            ][0]
+            info.object.selected = [
+                info.object.datafiles[i] for i in editor.filtered_indices
+            ]
             editor.refresh()
         except:
             pass
@@ -87,10 +124,11 @@ class AddFiles(HasTraits):
 
     def _inputdir_default(self):
         return self.srxconfig.opendirectory
+
     # Should sub directories be included in the search:
     recursive = Bool(False)
     # The file types to include in the search:
-    filetype = Enum('tif', 'npy', 'all')
+    filetype = Enum("tif", "npy", "all")
     # The current search string:
     search = Str
     # Is the search case sensitive?
@@ -105,28 +143,27 @@ class AddFiles(HasTraits):
     # Summary of current number of files:
     summary = Property  # Str
     # some meta data
-    _filetypedict = {'tif': ['.tif', '.tiff', '.tif.bz2'],
-                     'npy': ['.npy'],
-                     'all': 'all',
-                     }
+    _filetypedict = {
+        "tif": [".tif", ".tiff", ".tif.bz2"],
+        "npy": [".npy"],
+        "all": "all",
+    }
 
-    #-- Property Implementations ---------------------------------------------
+    # -- Property Implementations ---------------------------------------------
 
-    @property_depends_on('search, casesensitive')
+    @property_depends_on("search, casesensitive")
     def _get_filter(self):
-        '''get filename filter
-        '''
+        """Get filename filter."""
         return _createFileNameFilter(self.search, self.casesensitive)
 
     refreshdatalist = Event
 
-    @property_depends_on('inputdir, recursive, filetype, refreshdatalist')
+    @property_depends_on("inputdir, recursive, filetype, refreshdatalist")
     def _get_datafiles(self):
-        '''
-        create a datacontainer list, all files under inputdir is filtered using filetype
-        '''
+        """Create a datacontainer list, all files under inputdir is
+        filtered using filetype."""
         inputdir = self.inputdir
-        if inputdir == '':
+        if inputdir == "":
             inputdir = os.getcwd()
         if not os.path.exists(inputdir):
             self.srxconfig.opendirectory = os.getcwd()
@@ -137,34 +174,37 @@ class AddFiles(HasTraits):
             rv = []
             for dirpath, dirnames, filenames in os.walk(inputdir):
                 for filename in filenames:
-                    if (os.path.splitext(filename)[1] in filetypes)or (filetypes == 'all'):
+                    if (os.path.splitext(filename)[1] in filetypes) or (
+                        filetypes == "all"
+                    ):
                         rv.append(os.path.join(dirpath, filename))
         else:
-            rv = [os.path.join(inputdir, filename)
-                  for filename in os.listdir(inputdir)
-                  if (os.path.splitext(filename)[1] in filetypes) or (filetypes == 'all')]
+            rv = [
+                os.path.join(inputdir, filename)
+                for filename in os.listdir(inputdir)
+                if (os.path.splitext(filename)[1] in filetypes)
+                or (filetypes == "all")
+            ]
 
         rv.sort(key=sortKeyNumericString)
         rvlist = [DataContainer(fullname=fn) for fn in rv]
         return rvlist
 
-    @property_depends_on('datafiles, search, casesensitive, selected')
+    @property_depends_on("datafiles, search, casesensitive, selected")
     def _get_summary(self):
-        '''
-        get summary of file
-        '''
+        """Get summary of file."""
         if self.selected and self.datafiles:
-            rv = '%d files selected in a total of %d files.' % (
-                len(self.selected), len(self.datafiles))
+            rv = "%d files selected in a total of %d files." % (
+                len(self.selected),
+                len(self.datafiles),
+            )
         else:
-            rv = '0 files selected in a total of 0 files.'
+            rv = "0 files selected in a total of 0 files."
         return rv
 
-    @on_trait_change('srxconfig.opendirectory')
+    @on_trait_change("srxconfig.opendirectory")
     def _changeInputdir(self):
-        '''
-        change inputdir of getxconfig
-        '''
+        """Change inputdir of getxconfig."""
         self.inputdir = self.srxconfig.opendirectory
         return
 
@@ -176,7 +216,8 @@ class AddFiles(HasTraits):
         if imagefile != None:
             if os.path.exists(imagefile):
                 imageplot = ImagePlot(
-                    imagefile=imagefile, srx=self.srx, srxconfig=self.srxconfig)
+                    imagefile=imagefile, srx=self.srx, srxconfig=self.srxconfig
+                )
                 # imageplot.createPlot()
                 imageplot.edit_traits()
         return
@@ -188,9 +229,10 @@ class AddFiles(HasTraits):
     sumname = Str
 
     def _sumbb_fired(self):
-        self.sumname = os.path.splitext(
-            self.selected[0].fullname)[0] + '_sum.tif'
-        self.edit_traits(view='saveimage_view')
+        self.sumname = (
+            os.path.splitext(self.selected[0].fullname)[0] + "_sum.tif"
+        )
+        self.edit_traits(view="saveimage_view")
         return
 
     def _sumImgs(self):
@@ -206,67 +248,73 @@ class AddFiles(HasTraits):
 
     saveimage_view = View(
         Group(
-            Item('sumname', springy=True, label='File name'),
+            Item("sumname", springy=True, label="File name"),
         ),
         buttons=[OKButton, CancelButton],
-        title='Save image',
+        title="Save image",
         width=500,
         # height    = 400,
         resizable=True,
         handler=SaveImageHandler(),
-        icon=ImageResource('icon.png'),
+        icon=ImageResource("icon.png"),
     )
 
-    #-- Traits UI Views ------------------------------------------------------
+    # -- Traits UI Views ------------------------------------------------------
     tableeditor = TableEditor(
         columns=[
-            ObjectColumn(name='basename',
-                         label='Name',
-                         # width=0.70,
-                         editable=False,
-                         ),
+            ObjectColumn(
+                name="basename",
+                label="Name",
+                # width=0.70,
+                editable=False,
+            ),
         ],
         auto_size=True,
         # show_toolbar = True,
         deletable=True,
         # reorderable = True,
         edit_on_first_click=False,
-        filter_name='filter',
-        selection_mode='rows',
-        selected='selected',
-        dclick='dclick',
-        label_bg_color='(244, 243, 238)',
-        cell_bg_color='(234, 233, 228)',
+        filter_name="filter",
+        selection_mode="rows",
+        selected="selected",
+        dclick="dclick",
+        label_bg_color="(244, 243, 238)",
+        cell_bg_color="(234, 233, 228)",
     )
 
-    selectallbb = Button('Select all')
-    refreshbb = Button('Refresh')
-    plotbb = Button('Mask')
-    sumbb = Button('Sum')
+    selectallbb = Button("Select all")
+    refreshbb = Button("Refresh")
+    plotbb = Button("Mask")
+    sumbb = Button("Sum")
 
     traits_view = View(
         VGroup(
             VGroup(
                 HGroup(
-                    Item('search', id='search', springy=True,
-                         editor=TextEditor(auto_set=False)),
+                    Item(
+                        "search",
+                        id="search",
+                        springy=True,
+                        editor=TextEditor(auto_set=False),
+                    ),
                 ),
-                HGroup(spring,
-                       Item('selectallbb', show_label=False),
-                       Item('refreshbb', show_label=False),
-                       spring,
-                       Item('filetype', label='Type'),
-                       ),
-                Item('datafiles', id='datafiles', editor=tableeditor),
-                Item('summary', editor=TitleEditor()),
-
-                HGroup(spring,
-                       Item('plotbb', show_label=False),
-                       Item('sumbb', show_label=False),
-                       spring,
-                       ),
-                dock='horizontal',
-                show_labels=False
+                HGroup(
+                    spring,
+                    Item("selectallbb", show_label=False),
+                    Item("refreshbb", show_label=False),
+                    spring,
+                    Item("filetype", label="Type"),
+                ),
+                Item("datafiles", id="datafiles", editor=tableeditor),
+                Item("summary", editor=TitleEditor()),
+                HGroup(
+                    spring,
+                    Item("plotbb", show_label=False),
+                    Item("sumbb", show_label=False),
+                    spring,
+                ),
+                dock="horizontal",
+                show_labels=False,
             ),
         ),
         # title     = 'Add files',
@@ -278,13 +326,13 @@ class AddFiles(HasTraits):
 
 
 def _createFileNameFilter(pattern, casesensitive):
-    '''Build function that returns True for matching files.
+    """Build function that returns True for matching files.
 
     pattern  -- string pattern to be matched
     casesensitive -- flag for case-sensitive file matching
 
     Return callable object.
-    '''
+    """
     try:
         from diffpy.pdfgetx.multipattern import MultiPattern
     except:
@@ -303,6 +351,6 @@ def _createFileNameFilter(pattern, casesensitive):
 
 
 # Run the demo (if invoked from the command line):
-if __name__ == '__main__':
+if __name__ == "__main__":
     addfiles = AddFiles()
     addfiles.configure_traits()

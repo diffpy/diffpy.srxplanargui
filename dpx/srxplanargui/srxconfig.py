@@ -13,73 +13,157 @@
 #
 ##############################################################################
 
-import numpy as np
-import configparser
-import re, os, sys
-from functools import partial
 import argparse
+import configparser
+import os
+import re
+import sys
+from functools import partial
 
+import numpy as np
 from traits.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'qt4'
 
-from traits.api import \
-    Dict, List, Enum, Bool, File, Float, Int, Array, Str, Range, Directory, CFloat, CInt, \
-    HasTraits, Property, Instance, Event, Button, Any, \
-    on_trait_change, DelegatesTo, cached_property, property_depends_on
-
-from traitsui.api import \
-    Item, Group, View, Handler, Controller, spring, Action, \
-    HGroup, VGroup, Tabbed, \
-    RangeEditor, CheckListEditor, TextEditor, EnumEditor, ButtonEditor, \
-    ArrayEditor, TitleEditor, TableEditor, HistoryEditor, InstanceEditor, BooleanEditor
-from traitsui.menu import ToolBar, OKButton, CancelButton, Menu, MenuBar, OKCancelButtons
-from pyface.api import ImageResource
+ETSConfig.toolkit = "qt4"
 
 from diffpy.srxconfutils.configtraits import ConfigBaseTraits
-from diffpy.srxconfutils.tools import _configPropertyRad, _configPropertyR, _configPropertyRW
-from diffpy.srxplanar.srxplanarconfig import _description, _epilog, _optdatalist, \
-        _defaultdata, checkMax
+from diffpy.srxconfutils.tools import (
+    _configPropertyR,
+    _configPropertyRad,
+    _configPropertyRW,
+)
+from diffpy.srxplanar.srxplanarconfig import (
+    _defaultdata,
+    _description,
+    _epilog,
+    _optdatalist,
+    checkMax,
+)
+from pyface.api import ImageResource
+from traits.api import (
+    Any,
+    Array,
+    Bool,
+    Button,
+    CFloat,
+    CInt,
+    DelegatesTo,
+    Dict,
+    Directory,
+    Enum,
+    Event,
+    File,
+    Float,
+    HasTraits,
+    Instance,
+    Int,
+    List,
+    Property,
+    Range,
+    Str,
+    cached_property,
+    on_trait_change,
+    property_depends_on,
+)
+from traitsui.api import (
+    Action,
+    ArrayEditor,
+    BooleanEditor,
+    ButtonEditor,
+    CheckListEditor,
+    Controller,
+    EnumEditor,
+    Group,
+    Handler,
+    HGroup,
+    HistoryEditor,
+    InstanceEditor,
+    Item,
+    RangeEditor,
+    Tabbed,
+    TableEditor,
+    TextEditor,
+    TitleEditor,
+    VGroup,
+    View,
+    spring,
+)
+from traitsui.menu import (
+    CancelButton,
+    Menu,
+    MenuBar,
+    OKButton,
+    OKCancelButtons,
+    ToolBar,
+)
 
 _optdatalist.append(
-    ['xpixelsizetem', {'sec':'Beamline',
-                    'h':'detector pixel size in x axis, in A^-1',
-                    'd':0.02, }]
-                    )
+    [
+        "xpixelsizetem",
+        {
+            "sec": "Beamline",
+            "h": "detector pixel size in x axis, in A^-1",
+            "d": 0.02,
+        },
+    ]
+)
 _optdatalist.append(
-    ['ypixelsizetem', {'sec':'Beamline',
-                    'h':'detector pixel size in y axis, in A^-1',
-                    'd':0.02, }]
-                    )
+    [
+        "ypixelsizetem",
+        {
+            "sec": "Beamline",
+            "h": "detector pixel size in y axis, in A^-1",
+            "d": 0.02,
+        },
+    ]
+)
 
 for i in _optdatalist:
-    if i[0] == 'polcorrectionenable':
-        i[1] = {'sec':'Others', 'args':'n', 'config':'n', 'header':'n',
-                's':'polarcorr',
-                'h':'enable polarization correction',
-                'n':'?',
-                'co':False,
-                'd':False, }
-    elif i[0] == 'polcorrectf':
-        i[1] = {'sec':'Others', 'args':'n', 'config':'n', 'header':'n',
-                 's':'polarf',
-                 'h':'polarization correction factor',
-                 'd':0.99, }
-    elif i[0] == 'xpixelsize':
-        i[1] = {'sec':'Beamline', 'args':'n', 'config':'n', 'header':'n',
-                's':'xp',
-                'h':'detector pixel size in x axis, in mm',
-                'd':0.2, }
-    elif i[0] == 'ypixelsize':
-        i[1] = {'sec':'Beamline', 'args':'n', 'config':'n', 'header':'n',
-                's':'yp',
-                'h':'detector pixel size in y axis, in mm',
-                'd':0.2, }
+    if i[0] == "polcorrectionenable":
+        i[1] = {
+            "sec": "Others",
+            "args": "n",
+            "config": "n",
+            "header": "n",
+            "s": "polarcorr",
+            "h": "enable polarization correction",
+            "n": "?",
+            "co": False,
+            "d": False,
+        }
+    elif i[0] == "polcorrectf":
+        i[1] = {
+            "sec": "Others",
+            "args": "n",
+            "config": "n",
+            "header": "n",
+            "s": "polarf",
+            "h": "polarization correction factor",
+            "d": 0.99,
+        }
+    elif i[0] == "xpixelsize":
+        i[1] = {
+            "sec": "Beamline",
+            "args": "n",
+            "config": "n",
+            "header": "n",
+            "s": "xp",
+            "h": "detector pixel size in x axis, in mm",
+            "d": 0.2,
+        }
+    elif i[0] == "ypixelsize":
+        i[1] = {
+            "sec": "Beamline",
+            "args": "n",
+            "config": "n",
+            "header": "n",
+            "s": "yp",
+            "h": "detector pixel size in y axis, in mm",
+            "d": 0.2,
+        }
 
 
 class SrXconfig(ConfigBaseTraits):
-    '''
-    config class, based on ConfigBase class in diffpy.confutils
-    '''
+    """Config class, based on ConfigBase class in diffpy.confutils."""
 
     # Text to display before the argument help
     _description = _description
@@ -89,34 +173,50 @@ class SrXconfig(ConfigBaseTraits):
 
     _optdatalist = _optdatalist
 
-    _defaultdata = {'configfile': [],
-                    'headertitle': 'SrXgui configration'
-                    }
+    _defaultdata = {"configfile": [], "headertitle": "SrXgui configration"}
 
-    rotation = Property(depends_on='rotationd', fget=lambda self: np.radians(self.rotationd))
-    tilt = Property(depends_on='tiltd', fget=lambda self: np.radians(self.tiltd))
-    tthstep = Property(depends_on='tthstepd', fget=lambda self: np.radians(self.tthstepd))
-    tthmax = Property(depends_on='tthmaxd', fget=lambda self: np.radians(self.tthmaxd))
+    rotation = Property(
+        depends_on="rotationd", fget=lambda self: np.radians(self.rotationd)
+    )
+    tilt = Property(
+        depends_on="tiltd", fget=lambda self: np.radians(self.tiltd)
+    )
+    tthstep = Property(
+        depends_on="tthstepd", fget=lambda self: np.radians(self.tthstepd)
+    )
+    tthmax = Property(
+        depends_on="tthmaxd", fget=lambda self: np.radians(self.tthmaxd)
+    )
 
-    tthorqmax = Property(depends_on='integrationspace, tthmaxd, qmax',
-        fget=lambda self: self.tthmax if self.integrationspace == 'twotheta' else self.qmax)
-    tthorqstep = Property(depends_on='integrationspace, tthmaxd, qmax',
-        fget=lambda self: self.tthstep if self.integrationspace == 'twotheta' else self.qstep)
+    tthorqmax = Property(
+        depends_on="integrationspace, tthmaxd, qmax",
+        fget=lambda self: (
+            self.tthmax if self.integrationspace == "twotheta" else self.qmax
+        ),
+    )
+    tthorqstep = Property(
+        depends_on="integrationspace, tthmaxd, qmax",
+        fget=lambda self: (
+            self.tthstep if self.integrationspace == "twotheta" else self.qstep
+        ),
+    )
 
     def _preUpdateSelf(self, **kwargs):
-        '''
-        additional process called in self._updateSelf, this method is called
-        before self._copySelftoConfig(), i.e. before copy options value to
-        self.config (config file)
+        """Additional process called in self._updateSelf, this method is
+        called before self._copySelftoConfig(), i.e. before copy options
+        value to self.config (config file)
 
-        check the tthmaxd and qmax, and set tthorqmax, tthorqstep according to integration space
+        check the tthmaxd and qmax, and set tthorqmax, tthorqstep
+        according to integration space
 
         :param kwargs: optional kwargs
-        '''
+        """
         self.tthmaxd, self.qmax = checkMax(self)
-        '''addmask = [b for b in self.addmask if not (b in ['brightpixel', 'darkpixel'])]
-        if len(addmask) > 0:
-            self.maskfile = addmask[0]'''
+        """Addmask = [b for b in self.addmask if not (b in
+        ['brightpixel', 'darkpixel'])] if len(addmask) > 0:
+
+        self.maskfile = addmask[0]
+        """
         return
 
     def _opendirectory_changed(self):
@@ -132,103 +232,141 @@ class SrXconfig(ConfigBaseTraits):
             self.savedirectory = os.path.abspath(os.curdir)
         return
 
-    configmode = Enum(['TEM', 'normal'])
-    
-    @on_trait_change('distance, wavelength, xpixelsizetem, ypixelsizetem')
+    configmode = Enum(["TEM", "normal"])
+
+    @on_trait_change("distance, wavelength, xpixelsizetem, ypixelsizetem")
     def _refreshPSsize(self, obj, name, new):
-        self.updateConfig(xpixelsize=self.xpixelsizetem * self.wavelength * self.distance,
-                          ypixelsize=self.ypixelsizetem * self.wavelength * self.distance)
+        self.updateConfig(
+            xpixelsize=self.xpixelsizetem * self.wavelength * self.distance,
+            ypixelsize=self.ypixelsizetem * self.wavelength * self.distance,
+        )
         return
 
-    directory_group = \
-        Group(Item('opendirectory', label='Input dir.', help='directory of 2D images'),
-              Item('savedirectory', label='Output dir.', help='directory of saved files'),
-              show_border=True,
-              label='Files',
-              )
-    mask_group = \
-        Group(Item('maskfile', label='Mask file'),
-              show_border=True,
-              label='Masks',
-              )
+    directory_group = Group(
+        Item(
+            "opendirectory", label="Input dir.", help="directory of 2D images"
+        ),
+        Item(
+            "savedirectory",
+            label="Output dir.",
+            help="directory of saved files",
+        ),
+        show_border=True,
+        label="Files",
+    )
+    mask_group = Group(
+        Item("maskfile", label="Mask file"),
+        show_border=True,
+        label="Masks",
+    )
 
     geometry_visible = Bool(False)
-    geometry_group = \
-        Group(Item('integrationspace', label='Integration grid'),
-              Item('wavelength', visible_when='integrationspace == "qspace"', label='Wavelength',),
-              Item('xbeamcenter', label='X beamcenter'),
-              Item('ybeamcenter', label='Y beamcenter'),
-              Item('distance', label='Camera length', visible_when='configmode == "TEM"'),
-              Item('distance', label='Distance', visible_when='configmode == "normal"'),
-              Item('rotationd', label='Rotation'),
-              Item('tiltd', label='Tilt rotation'),
-              Item('tthstepd', label='Integration step', visible_when='integrationspace == "twotheta"'),
-              Item('qstep', label='Integration step', visible_when='integrationspace == "qspace"'),
-
-              show_border=True,
-              # label='Geometry parameters',
-              visible_when='geometry_visible',
-              )
+    geometry_group = Group(
+        Item("integrationspace", label="Integration grid"),
+        Item(
+            "wavelength",
+            visible_when='integrationspace == "qspace"',
+            label="Wavelength",
+        ),
+        Item("xbeamcenter", label="X beamcenter"),
+        Item("ybeamcenter", label="Y beamcenter"),
+        Item(
+            "distance",
+            label="Camera length",
+            visible_when='configmode == "TEM"',
+        ),
+        Item(
+            "distance", label="Distance", visible_when='configmode == "normal"'
+        ),
+        Item("rotationd", label="Rotation"),
+        Item("tiltd", label="Tilt rotation"),
+        Item(
+            "tthstepd",
+            label="Integration step",
+            visible_when='integrationspace == "twotheta"',
+        ),
+        Item(
+            "qstep",
+            label="Integration step",
+            visible_when='integrationspace == "qspace"',
+        ),
+        show_border=True,
+        # label='Geometry parameters',
+        visible_when="geometry_visible",
+    )
 
     correction_visible = Bool(False)
-    correction_group = \
-        Group(Item('uncertaintyenable', label='Uncertainty'),
-              Item('sacorrectionenable', label='solid angle corr.'),
-              # Item('polcorrectionenable', label='polarization corr.'),
-              # Item('polcorrectf', label='polarization factor'),
-
-              # Item('brightpixelmask', label='Bright pixel mask'),
-              # Item('darkpixelmask', label='Dark pixel mask'),
-              # Item('avgmask', label='Average mask'),
-              # Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
-
-              show_border=True,
-              # label='Corrections'
-              visible_when='correction_visible'
-              )
+    correction_group = Group(
+        Item("uncertaintyenable", label="Uncertainty"),
+        Item("sacorrectionenable", label="solid angle corr."),
+        # Item('polcorrectionenable', label='polarization corr.'),
+        # Item('polcorrectf', label='polarization factor'),
+        # Item('brightpixelmask', label='Bright pixel mask'),
+        # Item('darkpixelmask', label='Dark pixel mask'),
+        # Item('avgmask', label='Average mask'),
+        # Item('cropedges', label='Crop edges', editor=ArrayEditor(width=-50)),
+        show_border=True,
+        # label='Corrections'
+        visible_when="correction_visible",
+    )
 
     detector_visible = Bool(False)
-    detector_group = \
-        Group(Item('fliphorizontal', label='Flip horizontally'),
-              Item('flipvertical', label='Flip vertically'),
-              Item('xdimension', label='x dimension'),
-              Item('ydimension', label='y dimension'),
-              Item('xpixelsizetem', label='x pixel size (A^-1)', tooltip='x pixel size, in A^-1', visible_when='configmode == "TEM"'),
-              Item('ypixelsizetem', label='y pixel size (A^-1)', tooltip='y pixel size, in A^-1', visible_when='configmode == "TEM"'),
+    detector_group = (
+        Group(
+            Item("fliphorizontal", label="Flip horizontally"),
+            Item("flipvertical", label="Flip vertically"),
+            Item("xdimension", label="x dimension"),
+            Item("ydimension", label="y dimension"),
+            Item(
+                "xpixelsizetem",
+                label="x pixel size (A^-1)",
+                tooltip="x pixel size, in A^-1",
+                visible_when='configmode == "TEM"',
+            ),
+            Item(
+                "ypixelsizetem",
+                label="y pixel size (A^-1)",
+                tooltip="y pixel size, in A^-1",
+                visible_when='configmode == "TEM"',
+            ),
+            show_border=True,
+            # label='Detector parameters'
+            visible_when="detector_visible",
+        ),
+    )
 
-              show_border=True,
-              # label='Detector parameters'
-              visible_when='detector_visible'
-              ),
-
-    main_view = \
-        View(
+    main_view = View(
+        Group(
+            directory_group,
+            mask_group,
             Group(
-                directory_group,
-                mask_group,
-                Group(
                 # Item('configmode'),
-                Group(Item('geometry_visible', label='Geometry parameters'),
-                      geometry_group,),
-                Group(Item('correction_visible', label='Corrections'),
-                      correction_group,),
-                Group(Item('detector_visible', label='Detector parameters'),
-                      detector_group,),
+                Group(
+                    Item("geometry_visible", label="Geometry parameters"),
+                    geometry_group,
+                ),
+                Group(
+                    Item("correction_visible", label="Corrections"),
+                    correction_group,
+                ),
+                Group(
+                    Item("detector_visible", label="Detector parameters"),
+                    detector_group,
+                ),
                 # label = 'Basic'
                 show_border=True,
-                ),
-                ),
-
-             resizable=True,
-             scrollable=True,
-             # handler = handler,
-             icon=ImageResource('icon.png'),
-             )
+            ),
+        ),
+        resizable=True,
+        scrollable=True,
+        # handler = handler,
+        icon=ImageResource("icon.png"),
+    )
 
 
 SrXconfig.initConfigClass()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     a = SrXconfig()
     # a.updateConfig()
-    a.configure_traits(view='main_view')
+    a.configure_traits(view="main_view")
