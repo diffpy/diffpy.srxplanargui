@@ -13,61 +13,13 @@
 ##############################################################################
 """Provide help for SrXgui."""
 
-import os
 import sys
 
-import numpy as np
 from pyface.api import ImageResource
-from traits.api import (
-    Any,
-    Array,
-    Bool,
-    Button,
-    CFloat,
-    CInt,
-    DelegatesTo,
-    Dict,
-    Directory,
-    Enum,
-    Event,
-    File,
-    Float,
-    HasTraits,
-    Instance,
-    Int,
-    List,
-    Property,
-    Range,
-    Str,
-    cached_property,
-    on_trait_change,
-    property_depends_on,
-)
+from traits.api import HasTraits, Int, Property, property_depends_on
 from traits.etsconfig.api import ETSConfig
-from traitsui.api import (
-    Action,
-    ArrayEditor,
-    ButtonEditor,
-    CheckListEditor,
-    Controller,
-    EnumEditor,
-    Group,
-    Handler,
-    HGroup,
-    HistoryEditor,
-    ImageEditor,
-    InstanceEditor,
-    Item,
-    RangeEditor,
-    Tabbed,
-    TableEditor,
-    TextEditor,
-    TitleEditor,
-    VGroup,
-    View,
-    spring,
-)
-from traitsui.menu import CancelButton, Menu, OKButton, ToolBar
+from traitsui.api import Action, Handler, ImageEditor, Item, View
+from traitsui.menu import OKButton
 
 
 class HelpHandler(Handler):
@@ -150,20 +102,28 @@ class SrXguiHelp(HasTraits):
     # reference
     #######################
 
-    reftext = """
-xPDFsuite (main GUI) :X. Yang, P. Juhas, C. L. Farrow and Simon J. L. Billinge xPDFsuite: an end-to-end software solution for high throughput pair distribution function transformation, visualization and analysis, arXiv 1402.3163 (2014)
 
-SrXplanar (2D image integration):X. Yang, P. Juhas, S.J.L. Billinge, On the estimation of statistical uncertainties on powder diffraction and small-angle scattering data from two-dimensional X-ray detectors, J. Appl. Cryst. (2014). 47, 1273-1283
+reftext = """
+xPDFsuite (main GUI) :X. Yang, P. Juhas, C. L. Farrow and Simon J. L. Billinge
+xPDFsuite: an end-to-end software solution
+for high throughput pair distribution function transformation,
+visualization and analysis, arXiv 1402.3163 (2014)
+
+SrXplanar (2D image integration):X. Yang, P. Juhas, S.J.L. Billinge,
+On the estimation of statistical uncertainties on
+powder diffraction and small-angle scattering data from two-dimensional X-ray detectors,
+J. Appl. Cryst. (2014). 47, 1273-1283
 """
 
-    def cpReftext(self):
-        cpToClipboard(self.reftext)
-        return
+
+def cpReftext(self):
+    cpToClipboard(self.reftext)
+    return
 
 
 def cpToClipboard(s):
-    if ETSConfig.toolkit == "qt4":
-        from pyface.qt import QtCore, QtGui
+    if ETSConfig.toolkit == "qt":
+        from pyface.qt import QtGui
 
         cb = QtGui.QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
