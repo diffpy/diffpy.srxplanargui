@@ -42,7 +42,6 @@ from dpx.srxplanargui.srxconfig import SrXconfig
 
 ETSConfig.toolkit = "qt"
 
-
 if module_exists_lower("pyfai"):
     import pyFAI
 
@@ -216,7 +215,7 @@ class Calibration(HasTraits):
 
         if os.path.exists(image) and os.path.isfile(image):
             for mode, showresults in zip(
-                ["x", "y", "x", "y"], [False, False, False, True]
+                    ["x", "y", "x", "y"], [False, False, False, True]
             ):
                 selfCalibrate(
                     self.srx,
@@ -279,7 +278,7 @@ class Calibration(HasTraits):
             visible_when='calibrationmode=="calibrant"',
             enabled_when="not missingpyFAI",
             label="Please specify the d-space file and"
-            + "the location of pyFAI executable",
+                  + "the location of pyFAI executable",
         ),
         HGroup(
             Item(
@@ -331,7 +330,7 @@ class Calibration(HasTraits):
                 visible_when='configmode == "TEM"',
             ),
             label="Please specify the wavelength and"
-            + "distance between sample and detector:",
+                  + "distance between sample and detector:",
             show_border=True,
             visible_when='calibrationmode=="self"',
         ),
@@ -377,7 +376,7 @@ class Calibration(HasTraits):
             ),
             show_border=True,
             label="Plasee specify the dimension of detector"
-            + "and size of pixel:",
+                  + "and size of pixel:",
             visible_when='calibrationmode=="self"',
         ),
         HGroup(
@@ -402,10 +401,11 @@ class Calibration(HasTraits):
         icon=ImageResource("icon.png"),
     )
 
-    def findFloat(line):
-        """Extract all floats from a string and return them as a list."""
-        pattern = r"[-+]?\d*\.\d+|[-+]?\d+"
-        return [float(x) for x in re.findall(pattern, line)]
+
+def findFloat(line):
+    """Extract all floats from a string and return them as a list."""
+    pattern = r"[-+]?\d*\.\d+|[-+]?\d+"
+    return [float(x) for x in re.findall(pattern, line)]
 
 
 if __name__ == "__main__":
