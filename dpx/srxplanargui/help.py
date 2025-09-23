@@ -103,7 +103,7 @@ class SrXguiHelp(HasTraits):
     #######################
 
 
-reftext = """
+    reftext = """
 xPDFsuite (main GUI) :X. Yang, P. Juhas, C. L. Farrow and Simon J. L. Billinge
 xPDFsuite: an end-to-end software solution
 for high throughput pair distribution function transformation,
@@ -115,10 +115,9 @@ powder diffraction and small-angle scattering data from two-dimensional X-ray de
 J. Appl. Cryst. (2014). 47, 1273-1283
 """
 
-
-def cpReftext(self):
-    cpToClipboard(self.reftext)
-    return
+    def cpReftext(self):
+        cpToClipboard(self.reftext)
+        return
 
 
 def cpToClipboard(s):
