@@ -16,74 +16,29 @@
 import os
 import sys
 
-import numpy as np
-from traits.etsconfig.api import ETSConfig
-
-ETSConfig.toolkit = "qt4"
-
 from diffpy.srxplanar.srxplanar import SrXplanar
-from pyface.api import ImageResource, SplashScreen
-from traits.api import (
-    Any,
-    Array,
-    Bool,
-    Button,
-    CFloat,
-    CInt,
-    DelegatesTo,
-    Dict,
-    Directory,
-    Enum,
-    Event,
-    File,
-    Float,
-    HasTraits,
-    Instance,
-    Int,
-    List,
-    Property,
-    Range,
-    Str,
-    cached_property,
-    on_trait_change,
-    property_depends_on,
-)
+from pyface.api import ImageResource
+from traits.api import Any, Button, File, HasTraits, Instance
+from traits.etsconfig.api import ETSConfig
 from traitsui.api import (
     Action,
-    ArrayEditor,
-    ButtonEditor,
-    CheckListEditor,
-    Controller,
-    EnumEditor,
     Group,
     Handler,
     HGroup,
-    HistoryEditor,
-    ImageEditor,
     InstanceEditor,
     Item,
-    RangeEditor,
-    Tabbed,
-    TableEditor,
-    TextEditor,
-    TitleEditor,
     VGroup,
     View,
     spring,
 )
-from traitsui.menu import (
-    CancelButton,
-    Menu,
-    MenuBar,
-    OKButton,
-    OKCancelButtons,
-    ToolBar,
-)
+from traitsui.menu import CancelButton, OKButton
 
 from dpx.srxplanargui.calibration import Calibration
 from dpx.srxplanargui.help import SrXguiHelp
 from dpx.srxplanargui.selectfiles import AddFiles
 from dpx.srxplanargui.srxconfig import SrXconfig
+
+ETSConfig.toolkit = "qt"
 
 
 class SrXguiHandler(Handler):
@@ -180,7 +135,7 @@ class SrXgui(HasTraits):
     def detectConfigfile(self, filename):
         """Current directory > home directory, if none, then return the
         curdir+filename if 'default', then return home+filename."""
-        if filename == None:
+        if filename is None:
             configfile = os.path.join(os.path.curdir, "srxconfig.cfg")
         elif filename == "default":
             configfile = os.path.join(os.path.expanduser("~"), "srxconfig.cfg")
@@ -243,11 +198,11 @@ class SrXgui(HasTraits):
 
     def _selfcalibratebb_changed(self):
         image = None
-        if self.addfiles.selected != None:
+        if self.addfiles.selected is not None:
             if len(self.addfiles.selected) == 1:
                 image = self.addfiles.selected[0].fullname
 
-        if image != None:
+        if image is not None:
             self.calibration.image = image
         self.calibration.edit_traits(view="main_View")
         return
