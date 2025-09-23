@@ -402,11 +402,10 @@ class Calibration(HasTraits):
         icon=ImageResource("icon.png"),
     )
 
-
-def findFloat(line):
-    """Extract all floats from a string and return them as a list."""
-    pattern = r"[-+]?\d*\.\d+|[-+]?\d+"
-    return [float(x) for x in re.findall(pattern, line)]
+    def findFloat(line):
+        """Extract all floats from a string and return them as a list."""
+        pattern = r"[-+]?\d*\.\d+|[-+]?\d+"
+        return [float(x) for x in re.findall(pattern, line)]
 
 
 if __name__ == "__main__":
