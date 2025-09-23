@@ -278,7 +278,7 @@ class Calibration(HasTraits):
             visible_when='calibrationmode=="calibrant"',
             enabled_when="not missingpyFAI",
             label="Please specify the d-space file and"
-                  + "the location of pyFAI executable",
+                  + " the location of pyFAI executable",
         ),
         HGroup(
             Item(
@@ -330,7 +330,7 @@ class Calibration(HasTraits):
                 visible_when='configmode == "TEM"',
             ),
             label="Please specify the wavelength and"
-                  + "distance between sample and detector:",
+                  + " distance between sample and detector:",
             show_border=True,
             visible_when='calibrationmode=="self"',
         ),
@@ -376,7 +376,7 @@ class Calibration(HasTraits):
             ),
             show_border=True,
             label="Plasee specify the dimension of detector"
-                  + "and size of pixel:",
+                  + " and size of pixel:",
             visible_when='calibrationmode=="self"',
         ),
         HGroup(
