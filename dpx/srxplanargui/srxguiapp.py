@@ -13,14 +13,18 @@
 ##############################################################################
 """Provide UI for srxplanar."""
 
+import logging
 import os
 import sys
 import warnings
 
-import numpy as np
+from pyface.api import ImageResource, SplashScreen
+from traits.etsconfig.api import ETSConfig
+
+from dpx.srxplanargui.srxgui import SrXgui
 
 warnings.filterwarnings("ignore")
-import logging
+
 
 logging.disable("CRITICAL")
 
@@ -31,19 +35,15 @@ if ("--help" in sysargv) or ("-h" in sysargv):
 
     SrXconfig(args=sysargv)
 
-from traits.etsconfig.api import ETSConfig
 
 os.environ["QT_API"] = "pyside"
-ETSConfig.toolkit = "qt4"
-from pyface.api import ImageResource, SplashScreen
-from pyface.qt import QtCore, QtGui
+ETSConfig.toolkit = "qt"
+
 
 # open splash screen
 splash = SplashScreen(image=ImageResource("01.png"), show_log_messages=False)
 if not any([aa == "-h" or aa == "--help" for aa in sysargv]):
     splash.open()
-
-from dpx.srxplanargui.srxgui import SrXgui
 
 
 def main():
