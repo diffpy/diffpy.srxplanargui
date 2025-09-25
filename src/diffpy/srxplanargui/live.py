@@ -14,82 +14,31 @@
 """Provide UI for srxplanar."""
 
 import os
-import re
 import sys
-import threading
-import time
-from functools import partial
 
-import numpy as np
-from traits.etsconfig.api import ETSConfig
-
-ETSConfig.toolkit = "qt4"
-
-from diffpy.srxconfutils.tools import checkFileVal
 from diffpy.srxplanar.srxplanar import SrXplanar
 from pyface.api import GUI, ImageResource, SplashScreen
-from traits.api import (
-    Any,
-    Array,
-    Bool,
-    Button,
-    CFloat,
-    CInt,
-    DelegatesTo,
-    Dict,
-    Directory,
-    Enum,
-    Event,
-    File,
-    Float,
-    HasTraits,
-    Instance,
-    Int,
-    List,
-    Property,
-    Range,
-    Str,
-    cached_property,
-    on_trait_change,
-    property_depends_on,
-)
+from traits.api import Any, on_trait_change
+from traits.etsconfig.api import ETSConfig
 from traitsui.api import (
     Action,
-    ArrayEditor,
-    ButtonEditor,
-    CheckListEditor,
-    Controller,
-    EnumEditor,
     Group,
-    Handler,
     HGroup,
-    HistoryEditor,
-    ImageEditor,
     InstanceEditor,
     Item,
-    RangeEditor,
-    Tabbed,
-    TableEditor,
-    TextEditor,
-    TitleEditor,
     VGroup,
     View,
     spring,
 )
-from traitsui.menu import (
-    CancelButton,
-    Menu,
-    MenuBar,
-    OKButton,
-    OKCancelButtons,
-    ToolBar,
-)
+from traitsui.menu import OKButton
 
 from diffpy.srxplanargui.calibration import Calibration
 from diffpy.srxplanargui.help import SrXguiHelp
 from diffpy.srxplanargui.selectfiles import AddFiles
 from diffpy.srxplanargui.srxconfig import SrXconfig
-from diffpy.srxplanargui.srxgui import LoadHandler, SaveHandler, SrXgui, SrXguiHandler
+from diffpy.srxplanargui.srxgui import SrXgui, SrXguiHandler
+
+ETSConfig.toolkit = "qt"
 
 
 class SrXguiLive(SrXgui):
