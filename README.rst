@@ -26,13 +26,13 @@ INSTALLATION
 ------------------------------------------------------------------------
 
 We are going to release conda package for all platform. For general user
-please use the installation file and install software. For developor, 
+please use the installation file and install software. For developor,
 you can install dpx.srxplanargui using
 
     python setup.py install
-    
-Note: the dependency is not specified in the setup.py. You need to install 
-them yourself. You can use Anaconda or other python enviroment.    
+
+Note: the dependency is not specified in the setup.py. You need to install
+them yourself. You can use Anaconda or other python enviroment.
 
 
 CONTACTS
