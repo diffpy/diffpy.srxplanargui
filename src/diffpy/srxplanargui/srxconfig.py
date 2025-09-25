@@ -13,88 +13,24 @@
 #
 ##############################################################################
 
-import argparse
-import configparser
+
 import os
-import re
-import sys
-from functools import partial
 
 import numpy as np
-from traits.etsconfig.api import ETSConfig
-
-ETSConfig.toolkit = "qt4"
-
 from diffpy.srxconfutils.configtraits import ConfigBaseTraits
-from diffpy.srxconfutils.tools import (
-    _configPropertyR,
-    _configPropertyRad,
-    _configPropertyRW,
-)
 from diffpy.srxplanar.srxplanarconfig import (
-    _defaultdata,
     _description,
     _epilog,
     _optdatalist,
     checkMax,
 )
 from pyface.api import ImageResource
-from traits.api import (
-    Any,
-    Array,
-    Bool,
-    Button,
-    CFloat,
-    CInt,
-    DelegatesTo,
-    Dict,
-    Directory,
-    Enum,
-    Event,
-    File,
-    Float,
-    HasTraits,
-    Instance,
-    Int,
-    List,
-    Property,
-    Range,
-    Str,
-    cached_property,
-    on_trait_change,
-    property_depends_on,
-)
-from traitsui.api import (
-    Action,
-    ArrayEditor,
-    BooleanEditor,
-    ButtonEditor,
-    CheckListEditor,
-    Controller,
-    EnumEditor,
-    Group,
-    Handler,
-    HGroup,
-    HistoryEditor,
-    InstanceEditor,
-    Item,
-    RangeEditor,
-    Tabbed,
-    TableEditor,
-    TextEditor,
-    TitleEditor,
-    VGroup,
-    View,
-    spring,
-)
-from traitsui.menu import (
-    CancelButton,
-    Menu,
-    MenuBar,
-    OKButton,
-    OKCancelButtons,
-    ToolBar,
-)
+from traits.api import Bool, Enum, Property, on_trait_change
+from traits.etsconfig.api import ETSConfig
+from traitsui.api import Group, Item, View
+
+ETSConfig.toolkit = "qt"
+
 
 _optdatalist.append(
     [
