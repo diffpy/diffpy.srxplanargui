@@ -378,7 +378,7 @@ class Calibration(HasTraits):
                 ),
             ),
             show_border=True,
-            label="Plasee specify the dimension of detector"
+            label="Please specify the dimension of detector"
             + " and size of pixel:",
             visible_when='calibrationmode=="self"',
         ),
