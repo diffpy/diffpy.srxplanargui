@@ -73,7 +73,7 @@ class AddFilesHandler(Handler):
                 info.object.datafiles[i] for i in editor.filtered_indices
             ]
             editor.refresh()
-        except ImportError:
+        except AttributeError:
             pass
         return
 
