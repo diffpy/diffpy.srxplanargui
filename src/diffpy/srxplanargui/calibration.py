@@ -165,7 +165,7 @@ class Calibration(HasTraits):
 
             try:
                 os.environ.pop("QT_API")
-            except ImportWarning:
+            except KeyError:
                 pass
             subprocess.call(calicmd)
 
@@ -248,7 +248,7 @@ class Calibration(HasTraits):
 
     @on_trait_change(
         "srxconfig.[xpixelsize, ypixelsize, distance,"
-        "wavelength, xdimension, ydimension]"
+        " wavelength, xdimension, ydimension]"
     )
     def _qmaxChanged(self):
         tthmax, qmax = checkMax(self.srxconfig)
@@ -258,11 +258,11 @@ class Calibration(HasTraits):
 
     inst1 = Str(
         "Please install pyFAI and FabIO to use"
-        "the calibration function (refer to help)."
+        " the calibration function (refer to help)."
     )
     inst2 = Str(
         "(http://github.com/kif/pyFAI,"
-        "https://forge.epn-campus.eu/projects/azimuthal/files)"
+        " https://forge.epn-campus.eu/projects/azimuthal/files)"
     )
     main_View = View(
         # Item('calibrationmode', style='custom', label='Calibration mode'),
@@ -406,7 +406,7 @@ class Calibration(HasTraits):
 
 
 def findFloat(line):
-    pattern = r"[-+]?\d*\.\d+|[-+]?\d+"
+    pattern = r"[-+]?(?:\d+\.\d*|\.\d+|\d+)"
     return [float(x) for x in re.findall(pattern, line)]
 
 
