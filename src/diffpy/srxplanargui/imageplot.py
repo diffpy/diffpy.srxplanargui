@@ -487,7 +487,7 @@ class ImagePlot(HasTraits):
 
     hinttext = Str(
         "Zoom: <z>;  Reset: <Esc>;"
-        "Pan: <drag/drop>; Toggle XY coordinates: <P>"
+        " Pan: <drag/drop>; Toggle XY coordinates: <P>"
     )
     traits_view = View(
         Group(
