@@ -117,13 +117,13 @@ class ImagePlot(HasTraits):
     avgmaskhigh = DelegatesTo(
         "srxconfig",
         desc="Comparing to the average intensity at similar diffraction angle,"
-             + "\npixels with intensity larger than"
+             + " \npixels with intensity larger than"
              + " avg_int*high will be masked",
     )
     avgmasklow = DelegatesTo(
         "srxconfig",
         desc="Comparing to the average intensity at similar diffraction angle,"
-             + "\npixels with intensity less than avg_int*low will be masked",
+             + " \npixels with intensity less than avg_int*low will be masked",
     )
     cropedges = DelegatesTo(
         "srxconfig",
@@ -132,8 +132,10 @@ class ImagePlot(HasTraits):
     )
 
     def createPlot(self):
-        # image = np.log(self.srx.loadimage.
-        # loadImage(self.imagefile))
+        # image = np.log(
+        #     self.srx.loadimage.loadImage(self.imagefile)
+        # )
+
         image = self.srx.loadimage.loadImage(self.imagefile)
         self.maskfile = self.srxconfig.maskfile
         self.imageorg = image
