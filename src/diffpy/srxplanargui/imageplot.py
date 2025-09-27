@@ -98,37 +98,38 @@ class ImagePlot(HasTraits):
     )
     avgmask = DelegatesTo(
         "srxconfig",
-        desc="Mask the pixels too bright or too dark compared to"
-             + " the average intensity at the similar diffraction angle",
+        desc=("Mask the pixels too bright or too dark compared to"
+              " the average intensity at the similar diffraction angle"),
     )
     brightpixelr = DelegatesTo(
         "srxconfig",
-        desc="Pixels with intensity large than this relative threshold"
-             + " (times the local environment) value will be masked",
+        desc=("Pixels with intensity large than this relative threshold"
+              " (times the local environment) value will be masked"),
     )
     brightpixelsize = DelegatesTo(
         "srxconfig", desc="Size of testing area for detecting bright pixels"
     )
     darkpixelr = DelegatesTo(
         "srxconfig",
-        desc="Pixels with intensity less than this relative threshold"
-             + " (times the local environment) value will be masked",
+        desc=("Pixels with intensity less than this relative threshold"
+              " (times the local environment) value will be masked"),
     )
     avgmaskhigh = DelegatesTo(
         "srxconfig",
-        desc="Comparing to the average intensity at similar diffraction angle,"
-             + " \npixels with intensity larger than"
-             + " avg_int*high will be masked",
+        desc=("Comparing to the average intensity at "
+              "similar diffraction angle, \npixels with intensity larger than"
+              " avg_int*high will be masked"),
     )
     avgmasklow = DelegatesTo(
         "srxconfig",
-        desc="Comparing to the average intensity at similar diffraction angle,"
-             + " \npixels with intensity less than avg_int*low will be masked",
+        desc=("Comparing to the average intensity at "
+              "similar diffraction angle, \npixels with intensity less than "
+              "avg_int*low will be masked"),
     )
     cropedges = DelegatesTo(
         "srxconfig",
-        desc="The number of pixels masked"
-             + " at each edge (left, right, top, bottom)",
+        desc=("The number of pixels masked"
+              " at each edge (left, right, top, bottom)"),
     )
 
     def createPlot(self):
