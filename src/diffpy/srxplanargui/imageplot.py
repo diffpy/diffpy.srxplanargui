@@ -20,68 +20,37 @@ from chaco.tools.api import LineSegmentTool, PanTool, ZoomTool
 from chaco.tools.image_inspector_tool import ImageInspectorOverlay, ImageInspectorTool
 
 # Chaco imports
-from enable.api import BaseTool, Component, ComponentEditor, KeySpec
-from enable.colors import ColorTrait
+from enable.api import Component, ComponentEditor, KeySpec
 from kiva.agg import points_in_polygon
-from pyface.api import ImageResource, SplashScreen
+from pyface.api import ImageResource
 
 # Enthought library imports
 from traits.api import (
     Any,
-    Array,
     Bool,
     Button,
-    CFloat,
-    CInt,
     DelegatesTo,
-    Dict,
-    Directory,
     Enum,
-    Event,
     File,
     Float,
     HasTraits,
     Instance,
     Int,
-    List,
-    Property,
-    Range,
     Str,
-    cached_property,
-    on_trait_change,
-    property_depends_on,
 )
 from traitsui.api import (
     Action,
     ArrayEditor,
-    ButtonEditor,
-    CheckListEditor,
-    Controller,
-    EnumEditor,
     Group,
     Handler,
     HGroup,
-    HistoryEditor,
-    ImageEditor,
-    InstanceEditor,
     Item,
     RangeEditor,
-    Tabbed,
-    TableEditor,
-    TextEditor,
-    TitleEditor,
     VGroup,
     View,
     spring,
 )
-from traitsui.menu import (
-    CancelButton,
-    Menu,
-    MenuBar,
-    OKButton,
-    OKCancelButtons,
-    ToolBar,
-)
+from traitsui.menu import CancelButton, OKButton
 
 
 class SaveLoadMaskHandler(Handler):
@@ -129,34 +98,45 @@ class ImagePlot(HasTraits):
     )
     avgmask = DelegatesTo(
         "srxconfig",
-        desc="Mask the pixels too bright or too dark compared to the average intensity at the similar diffraction angle",
+        desc=("Mask the pixels too bright or too dark compared to"
+              " the average intensity at the similar diffraction angle"),
     )
     brightpixelr = DelegatesTo(
         "srxconfig",
-        desc="Pixels with intensity large than this relative threshold (times the local environment) value will be masked",
+        desc=("Pixels with intensity large than this relative threshold"
+              " (times the local environment) value will be masked"),
     )
     brightpixelsize = DelegatesTo(
         "srxconfig", desc="Size of testing area for detecting bright pixels"
     )
     darkpixelr = DelegatesTo(
         "srxconfig",
-        desc="Pixels with intensity less than this relative threshold (times the local environment) value will be masked",
+        desc=("Pixels with intensity less than this relative threshold"
+              " (times the local environment) value will be masked"),
     )
     avgmaskhigh = DelegatesTo(
         "srxconfig",
-        desc="Comparing to the average intensity at similar diffraction angle, \npixels with intensity larger than avg_int*high will be masked",
+        desc=("Comparing to the average intensity at "
+              "similar diffraction angle, \npixels with intensity larger than"
+              " avg_int*high will be masked"),
     )
     avgmasklow = DelegatesTo(
         "srxconfig",
-        desc="Comparing to the average intensity at similar diffraction angle, \npixels with intensity less than avg_int*low will be masked",
+        desc=("Comparing to the average intensity at "
+              "similar diffraction angle, \npixels with intensity less than "
+              "avg_int*low will be masked"),
     )
     cropedges = DelegatesTo(
         "srxconfig",
-        desc="The number of pixels masked at each edge (left, right, top, bottom)",
+        desc=("The number of pixels masked"
+              " at each edge (left, right, top, bottom)"),
     )
 
     def createPlot(self):
-        # image = np.log(self.srx.loadimage.loadImage(self.imagefile))
+        # image = np.log(
+        #     self.srx.loadimage.loadImage(self.imagefile)
+        # )
+
         image = self.srx.loadimage.loadImage(self.imagefile)
         self.maskfile = self.srxconfig.maskfile
         self.imageorg = image
@@ -224,12 +204,13 @@ class ImagePlot(HasTraits):
         return
 
     def mergeMask(self, points, remove=None):
+        """Param points -- an Mx2 array of x,y point pairs (floating
+        point) that define the boundaries of a polygon.
+
+        param remove -- True for remove the new mask from the existing
+        mask
         """
-        :param points: an Mx2 array of x,y point pairs (floating point) that define the
-            boundaries of a polygon.
-        :param remove: True for remove the new mask from the existing mask
-        """
-        if remove == None:
+        if remove is None:
             remove = self.removepolygonmask
         if len(points) > 2:
             mask = points_in_polygon(self.pts, points)
@@ -244,12 +225,10 @@ class ImagePlot(HasTraits):
         return
 
     def addPointMask(self, ndx, remove=None):
-        """
-        :param ndx: (x,y) float
-        """
+        """Param ndx -- (x,y) float."""
         x, y = ndx
         r = self.pts - np.array((x, y))
-        r = np.sum(r**2, axis=1)
+        r = np.sum(r ** 2, axis=1)
         mask = r < ((self.pointmaskradius + 1) ** 2)
         mask = mask.reshape(self.staticmask.shape)
         if remove:
@@ -273,7 +252,7 @@ class ImagePlot(HasTraits):
 
     def refreshMask(self, staticmask=None, draw=True):
         self.staticmask = (
-            self.srx.mask.staticMask() if staticmask == None else staticmask
+            self.srx.mask.staticMask() if staticmask is None else staticmask
         )
         self.dynamicmask = self.srx.mask.dynamicMask(
             self.imageorg, dymask=self.staticmask
@@ -336,7 +315,9 @@ class ImagePlot(HasTraits):
             self.plot.tools.remove(self.pan)
         self.plot.overlays.append(self.lstool)
         self.titlebak = self.plot.title
-        self.plot.title = "Click: add a vertex; <Ctrl>+Click: remove a vertex; \n          <Enter>: finish the selection"
+        self.plot.title = ("Click: add a vertex; "
+                           "<Ctrl>+Click: remove a vertex; \n          "
+                           "<Enter>: finish the selection")
         return
 
     def _disableMaskEditing(self):
@@ -366,7 +347,7 @@ class ImagePlot(HasTraits):
     def refreshImage(self, mask=None, draw=True):
         """Recalculate the image using self.mask or mask and refresh
         display."""
-        mask = self.mask if mask == None else mask
+        mask = self.mask if mask is None else mask
         image = self.applyScale()
         image = image * np.logical_not(mask) + image.max() * mask
         self.pd.set_data("imagedata", image)
@@ -380,14 +361,14 @@ class ImagePlot(HasTraits):
     def applyScale(self, image=None):
         """Apply the scale to increase/decrease contrast."""
         if self.scalemode == "linear":
-            if image == None:
+            if image is None:
                 image = self.imageorg
                 intmax = self.imageorgmax
             else:
                 image = image
                 intmax = image.max()
         elif self.scalemode == "log":
-            if image == None:
+            if image is None:
                 image = self.imageorglog
                 intmax = self.imageorglogmax
             else:
@@ -506,7 +487,8 @@ class ImagePlot(HasTraits):
         return
 
     hinttext = Str(
-        "Zoom: <z>;  Reset: <Esc>; Pan: <drag/drop>; Toggle XY coordinates: <P>"
+        "Zoom: <z>;  Reset: <Esc>;"
+        " Pan: <drag/drop>; Toggle XY coordinates: <P>"
     )
     traits_view = View(
         Group(
@@ -665,7 +647,6 @@ class MasklineDrawer(LineSegmentTool):
 
 
 class MaskPointInspector(ImageInspectorTool):
-
     exitmask_key = KeySpec("Enter")
     imageplot = Any
     enablemaskselect = Bool(False)
@@ -687,16 +668,23 @@ class MaskPointInspector(ImageInspectorTool):
 
 
 class AdvHint(HasTraits):
-
     advhinttext = str(
-        """Notes: Advanced Masks are generated during the integration and refreshed for each image.
-You can preview the masks here or apply the current masks to the static mask permanently.
+        """Notes: Advanced Masks are generated during the integration
+        and refreshed for each image.
+        You can preview the masks here or apply the current masks
+        to the static mask permanently.
 
-Edge mask: mask the pixels around the image edge. (left, right, top, bottom)
-Dark pixel mask: mask the pixels too dark compared to their local environment
-Bright pixel mask: mask the pixels too bright compared to their local environment
-Average mask: Mask the pixels too bright or too dark compared to the average intensity
-    at the similar diffraction angle. Currect calibration information is required."""
+Edge mask: mask the pixels around the image edge.
+(left, right, top, bottom)
+
+Dark pixel mask: mask the pixels too dark
+compared to their local environment
+
+Bright pixel mask: mask the pixels too bright
+compared to their local environment
+Average mask: Mask the pixels too bright or too dark
+compared to the average intensity at the similar diffraction angle.
+Currect calibration information is required."""
     )
 
     advhint_view = View(

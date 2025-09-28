@@ -14,32 +14,7 @@
 
 import os
 
-import numpy as np
-from traits.api import (
-    Any,
-    Array,
-    Bool,
-    Button,
-    CFloat,
-    CInt,
-    DelegatesTo,
-    Dict,
-    Directory,
-    Enum,
-    Event,
-    File,
-    Float,
-    HasTraits,
-    Instance,
-    Int,
-    List,
-    Property,
-    Range,
-    Str,
-    cached_property,
-    on_trait_change,
-    property_depends_on,
-)
+from traits.api import File, HasTraits, Property, property_depends_on
 
 
 class DataContainer(HasTraits):
