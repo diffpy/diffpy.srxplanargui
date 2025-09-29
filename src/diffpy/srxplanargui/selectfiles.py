@@ -12,53 +12,29 @@
 #
 ##############################################################################
 
-import fnmatch
-import functools
+
 import os
-import re
-import sys
-from collections import OrderedDict
 
 from pyface.api import ImageResource
 from traits.api import (
     Any,
-    Array,
     Bool,
     Button,
-    CFloat,
-    CInt,
-    DelegatesTo,
-    Dict,
     Directory,
     Enum,
     Event,
-    File,
-    Float,
     HasTraits,
     Instance,
-    Int,
-    List,
     Property,
-    Range,
     Str,
-    cached_property,
     on_trait_change,
     property_depends_on,
 )
-from traits.etsconfig.api import ETSConfig
 from traitsui.api import (
-    Action,
-    ArrayEditor,
-    ButtonEditor,
-    CheckListEditor,
-    EnumEditor,
     Group,
     Handler,
     HGroup,
-    HistoryEditor,
     Item,
-    RangeEditor,
-    Tabbed,
     TableEditor,
     TextEditor,
     TitleEditor,
@@ -66,13 +42,13 @@ from traitsui.api import (
     View,
     spring,
 )
-from traitsui.menu import CancelButton, Menu, OKButton, OKCancelButtons, ToolBar
-from traitsui.qt4.table_editor import TableEditor as TableEditorBE
+from traitsui.editors.table_editor import TableEditor as TableEditorBE
+from traitsui.menu import CancelButton, OKButton
 from traitsui.table_column import ObjectColumn
 
 try:
     from diffpy.pdfgetx.functs import sortKeyNumericString
-except:
+except ImportError:
     from diffpy.pdfgete.functs import sortKeyNumericString
 
 from diffpy.srxplanar.loadimage import openImage, saveImage
@@ -97,7 +73,7 @@ class AddFilesHandler(Handler):
                 info.object.datafiles[i] for i in editor.filtered_indices
             ]
             editor.refresh()
-        except:
+        except (AttributeError, IndexError):
             pass
         return
 
@@ -211,9 +187,9 @@ class AddFiles(HasTraits):
     def _plotbb_fired(self):
         try:
             imagefile = self.selected[0].fullname
-        except:
+        except IndexError:
             imagefile = None
-        if imagefile != None:
+        if imagefile is not None:
             if os.path.exists(imagefile):
                 imageplot = ImagePlot(
                     imagefile=imagefile, srx=self.srx, srxconfig=self.srxconfig
@@ -335,18 +311,22 @@ def _createFileNameFilter(pattern, casesensitive):
     """
     try:
         from diffpy.pdfgetx.multipattern import MultiPattern
-    except:
+    except ImportError:
         from diffpy.pdfgete.multipattern import MultiPattern
     # MultiPattern always matches for an empty pattern, thus there
     # is no need to handle empty search string in a special way.
     patterns = pattern.split()
-    if casesensitive:
-        mp = MultiPattern(patterns)
-        rv = lambda x: mp.match(x.basename)
-    else:
+    if not casesensitive:
         patterns = [p.lower() for p in patterns]
-        mp = MultiPattern(patterns)
-        rv = lambda x: mp.match(x.basename.lower())
+
+    mp = MultiPattern(patterns)
+
+    def rv(x):
+        name = x.basename
+        if not casesensitive:
+            name = name.lower()
+        return mp.match(name)
+
     return rv
 
 
