@@ -16,74 +16,31 @@ import os
 import re
 import sys
 
-import numpy as np
-from traits.etsconfig.api import ETSConfig
-
-ETSConfig.toolkit = "qt4"
-
 from diffpy.srxconfutils.tools import module_exists_lower
 from diffpy.srxplanar.selfcalibrate import selfCalibrate
 from diffpy.srxplanar.srxplanar import SrXplanar
 from diffpy.srxplanar.srxplanarconfig import checkMax
-from pyface.api import ImageResource, SplashScreen
+from pyface.api import ImageResource
 from traits.api import (
-    Any,
-    Array,
     Bool,
-    Button,
-    CFloat,
-    CInt,
     DelegatesTo,
-    Dict,
     Directory,
     Enum,
-    Event,
     File,
     Float,
     HasTraits,
     Instance,
     Int,
-    List,
-    Property,
-    Range,
     Str,
-    cached_property,
     on_trait_change,
-    property_depends_on,
 )
-from traitsui.api import (
-    Action,
-    ArrayEditor,
-    ButtonEditor,
-    CheckListEditor,
-    Controller,
-    EnumEditor,
-    Group,
-    Handler,
-    HGroup,
-    HistoryEditor,
-    ImageEditor,
-    InstanceEditor,
-    Item,
-    RangeEditor,
-    Tabbed,
-    TableEditor,
-    TextEditor,
-    TitleEditor,
-    VGroup,
-    View,
-    spring,
-)
-from traitsui.menu import (
-    CancelButton,
-    Menu,
-    MenuBar,
-    OKButton,
-    OKCancelButtons,
-    ToolBar,
-)
+from traits.etsconfig.api import ETSConfig
+from traitsui.api import Group, Handler, HGroup, Item, VGroup, View
+from traitsui.menu import CancelButton, OKButton
 
 from diffpy.srxplanargui.srxconfig import SrXconfig
+
+ETSConfig.toolkit = "qt"
 
 if module_exists_lower("pyfai"):
     import pyFAI
@@ -146,7 +103,7 @@ class Calibration(HasTraits):
         pythonbin = sys.executable
         if sys.platform == "win32":
             pyFAIdir = os.path.join(sys.exec_prefix, "Scripts")
-        elif sys.platform == "linux2":
+        elif sys.platform.startswith("linux"):
             pyFAIdir = os.path.join(sys.exec_prefix, "bin")
         else:
             pyFAIdir = os.path.join(sys.exec_prefix, "bin")
@@ -159,7 +116,7 @@ class Calibration(HasTraits):
         if sys.platform == "win32":
             caliscript = os.path.join(self.pyFAIdir, "pyFAI-calib.py")
             intescript = os.path.join(self.pyFAIdir, "pyFAI-waxs.py")
-        elif sys.platform == "linux2":
+        elif sys.platform.startswith("linux"):
             caliscript = os.path.join(self.pyFAIdir, "pyFAI-calib")
             intescript = os.path.join(self.pyFAIdir, "pyFAI-waxs")
         else:
@@ -170,11 +127,11 @@ class Calibration(HasTraits):
         return
 
     def callPyFAICalibration(self, image=None, dspacefile=None):
-        if image == None:
+        if image is None:
             image = self.image
         else:
             self.image = image
-        if dspacefile == None:
+        if dspacefile is None:
             dspacefile = self.dspacefile
         else:
             self.dspacefile = dspacefile
@@ -208,7 +165,7 @@ class Calibration(HasTraits):
 
             try:
                 os.environ.pop("QT_API")
-            except:
+            except KeyError:
                 pass
             subprocess.call(calicmd)
 
@@ -227,7 +184,7 @@ class Calibration(HasTraits):
         return
 
     def parsePyFAIoutput(self, image=None):
-        if image == None:
+        if image is None:
             image = self.image
 
         filename = os.path.splitext(image)[0] + ".xy"
@@ -256,7 +213,7 @@ class Calibration(HasTraits):
 
     def selfCalibration(self, image=None):
         # self.addfiles.selected[0].fullname
-        if image == None:
+        if image is None:
             image = self.image
 
         if os.path.exists(image) and os.path.isfile(image):
@@ -290,7 +247,8 @@ class Calibration(HasTraits):
     qmaxcali = Float(10.0)
 
     @on_trait_change(
-        "srxconfig.[xpixelsize, ypixelsize, distance, wavelength, xdimension, ydimension]"
+        "srxconfig.[xpixelsize, ypixelsize, distance,"
+        " wavelength, xdimension, ydimension]"
     )
     def _qmaxChanged(self):
         tthmax, qmax = checkMax(self.srxconfig)
@@ -299,10 +257,12 @@ class Calibration(HasTraits):
         return
 
     inst1 = Str(
-        "Please install pyFAI and FabIO to use the calibration function (refer to help)."
+        "Please install pyFAI and FabIO to use"
+        " the calibration function (refer to help)."
     )
     inst2 = Str(
-        "(http://github.com/kif/pyFAI, https://forge.epn-campus.eu/projects/azimuthal/files)"
+        "(http://github.com/kif/pyFAI,"
+        " https://forge.epn-campus.eu/projects/azimuthal/files)"
     )
     main_View = View(
         # Item('calibrationmode', style='custom', label='Calibration mode'),
@@ -320,7 +280,8 @@ class Calibration(HasTraits):
             show_border=True,
             visible_when='calibrationmode=="calibrant"',
             enabled_when="not missingpyFAI",
-            label="Please specify the d-space file and the location of pyFAI executable",
+            label="Please specify the d-space file and"
+            + " the location of pyFAI executable",
         ),
         HGroup(
             Item(
@@ -371,7 +332,8 @@ class Calibration(HasTraits):
                 label="Camera Length(mm)",
                 visible_when='configmode == "TEM"',
             ),
-            label="Please specify the wavelength and distance between sample and detector:",
+            label="Please specify the wavelength and"
+            + " distance between sample and detector:",
             show_border=True,
             visible_when='calibrationmode=="self"',
         ),
@@ -416,7 +378,8 @@ class Calibration(HasTraits):
                 ),
             ),
             show_border=True,
-            label="Plasee specify the dimension of detector and size of pixel:",
+            label="Please specify the dimension of detector"
+            + " and size of pixel:",
             visible_when='calibrationmode=="self"',
         ),
         HGroup(
@@ -443,8 +406,8 @@ class Calibration(HasTraits):
 
 
 def findFloat(line):
-    temp = re.findall("[-+]?\d*\.\d+|[-+]?\d+", line)
-    return map(float, temp)
+    pattern = r"[-+]?(?:\d+\.\d*|\.\d+|\d+)"
+    return [float(x) for x in re.findall(pattern, line)]
 
 
 if __name__ == "__main__":
