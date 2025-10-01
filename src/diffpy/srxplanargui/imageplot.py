@@ -17,7 +17,10 @@ import os
 import numpy as np
 from chaco.api import ArrayPlotData, Plot, jet
 from chaco.tools.api import LineSegmentTool, PanTool, ZoomTool
-from chaco.tools.image_inspector_tool import ImageInspectorOverlay, ImageInspectorTool
+from chaco.tools.image_inspector_tool import (  # noqa: E501
+    ImageInspectorOverlay,
+    ImageInspectorTool,
+)
 
 # Chaco imports
 from enable.api import Component, ComponentEditor, KeySpec
