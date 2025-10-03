@@ -1,3 +1,5 @@
 numpy
 chaco
 pyface
+diffpy.srxplanar
+diffpy.srxconfutils

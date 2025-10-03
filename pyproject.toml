@@ -49,7 +49,7 @@ exclude = []  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [project.scripts]
-diffpy-srxplanargui = "diffpy.srxplanargui.app:main"
+diffpy-srxplanargui = "diffpy.srxplanargui_app:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements/pip.txt"]}
