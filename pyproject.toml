@@ -80,7 +80,7 @@ exclude = '''
   | buck-out
   | build
   | dist
-  | dpx/srxplanargui/(live|selectfiles|imageplot)\.py
+
   # The following are specific to Black, you probably don't want those.
   | blib2to3
   | tests/data

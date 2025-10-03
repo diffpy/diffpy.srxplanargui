@@ -4,7 +4,7 @@ diffpy.srxconfutils
 scipy
 traits
 traitsui
-chaco
 fabio
 pyfai
 matplotlib
+pyface
