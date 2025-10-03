@@ -1,7 +1,4 @@
 numpy
-scipy
-traits
-traitsui
 fabio
 pyfai
 matplotlib

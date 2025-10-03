@@ -1,5 +1,7 @@
 numpy
 chaco
 pyface
+scipy
+traits
+traitsui
 diffpy.srxplanar
-diffpy.srxconfutils
