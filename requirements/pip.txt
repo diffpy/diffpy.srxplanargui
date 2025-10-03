@@ -1,7 +1,1 @@
 numpy
-traits
-traitsui
-chaco
-pyface
-diffpy.srxplanar
-configparser
