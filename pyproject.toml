@@ -86,12 +86,3 @@ exclude = '''
   | tests/data
 )/
 '''
-
-[tool.isort]
-profile = "black"   # or whatever you use
-# skip expects a list of filenames/dirs relative to repo root
-skip = [
-  "src/diffpy/srxplanargui/live.py",
-  "src/diffpy/srxplanargui/selectfiles.py",
-  "src/diffpy/srxplanargui/imageplot.py",
-]
