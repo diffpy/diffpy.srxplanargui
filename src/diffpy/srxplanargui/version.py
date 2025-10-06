@@ -1,28 +1,26 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# diffpy.srxplanar  by DANSE Diffraction group
-#                   Simon J. L. Billinge
-#                   (c) 2010 Trustees of the Columbia University
-#                   in the City of New York.  All rights reserved.
+# (c) 2025 The Trustees of Columbia University in the City of New York.
+# All rights reserved.
 #
-# File coded by:    Xiaohao Yang
+# File coded by: Rundong Hua, Simon Billinge, Billinge Group members.
 #
-# See AUTHORS.txt for a list of people who contributed.
-# See LICENSENOTICE.txt for license information.
+# See GitHub contributions for a more detailed list of contributors.
+# https://github.com/diffpy/diffpy.srxplanargui/graphs/contributors  # noqa: E501
+#
+# See LICENSE.rst for license information.
 #
 ##############################################################################
-"""Definition of __version__ and __date__ for this package."""
+"""Definition of __version__."""
+
+#  We do not use the other three variables, but can be added back if needed.
+#  __all__ = ["__date__", "__git_commit__", "__timestamp__", "__version__"]
 
 # obtain version information
-from pkg_resources import get_distribution
+from importlib.metadata import PackageNotFoundError, version
 
-_pkgname = __name__.rsplit(".", 1)[0]
-__version__ = get_distribution(_pkgname).version
-
-# we assume that tag_date was used and __version__ ends in YYYYMMDD
-__date__ = (
-    __version__[-8:-4] + "-" + __version__[-4:-2] + "-" + __version__[-2:]
-)
-
-# End of file
+try:
+    __version__ = version("diffpy.srxplanargui")
+except PackageNotFoundError:
+    __version__ = "unknown"
