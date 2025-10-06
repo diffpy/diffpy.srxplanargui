@@ -1,0 +1,5 @@
+numpy
+fabio
+pyfai
+matplotlib
+pyface
