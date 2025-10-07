@@ -16,6 +16,7 @@
 
 **Fixed:**
 
+* Change "diffpy.srxplanargui" from python 2 to python 3 architecture.
 * Support ``scikit-package`` Level 5 standard (https://scikit-package.github.io/scikit-package/).
 
 **Security:**
