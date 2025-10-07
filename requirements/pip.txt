@@ -6,4 +6,5 @@ traits
 traitsui
 fabio
 pyfai
+matplotlib
 diffpy.srxplanar
