@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# dpx.pdfgetxgui    by Simon J. L. Billinge group
-#                   (c) 2012 Trustees of the Columbia University
-#                   in the City of New York.  All rights reserved.
+# (c) 2012-2025 The Trustees of Columbia University in the City of New York.
+# All rights reserved.
 #
-# File coded by:    Xiaohao Yang
+# File coded by: Xiaohao Yang, Billinge Group members.
 #
-# See AUTHORS.txt for a list of people who contributed.
-# See LICENSE.txt for license information.
+# See GitHub contributions for a more detailed list of contributors.
+# https://github.com/diffpy/diffpy.srxplanargui/graphs/contributors
+#
+# See LICENSE.rst for license information.
 #
 ##############################################################################
+"""xPDFsuite, a software for PDF transformation and visualization."""
 
+# package version
+from diffpy.srxplanargui.version import __version__  # noqa
 
-# obtain version information
-# from diffpy.srxplanargui.version import __version__
+# silence the pyflakes syntax checker
+assert __version__ or True
 
 # End of file
