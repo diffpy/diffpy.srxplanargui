@@ -1,7 +1,10 @@
 numpy
-traits
-traitsui
 chaco
 pyface
+scipy
+traits
+traitsui
+fabio
+pyfai
+matplotlib
 diffpy.srxplanar
-configparser
