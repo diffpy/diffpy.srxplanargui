@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2025, The Trustees of Columbia University in the City of New York.
+Copyright (c) 2009-2025, The Trustees of Columbia University in the City of New York.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,5 @@ is not a party to such an agreement, then your use of this software is
 prohibited.  If you don’t know whether or not your anticipated use is under
 a license, you must contact Prof. Simon Billinge at sb2896@columbia.edu.
 Use of this software without a license is prohibited.
-
-Copyright 2009-2016, Trustees of Columbia University in the City of New York.
-
 
 For more information please email Prof. Simon Billinge at sb2896@columbia.edu

@@ -3,7 +3,7 @@ Authors
 
 Xiaohao Yang
 
-Rundong Hua, Simon Billinge, Billinge Group members
+Billinge Group members
 
 Contributors
 ------------

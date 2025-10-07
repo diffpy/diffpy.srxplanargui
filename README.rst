@@ -8,9 +8,9 @@
         :target: https://diffpy.github.io/diffpy.srxplanargui
         :height: 100px
 
-|PyPI| |Forge| |PythonVersion| |PR|
+|PythonVersion| |PR|
 
-|CI| |Codecov| |Black| |Tracking|
+|CI| |Black| |Tracking|
 
 .. |Black| image:: https://img.shields.io/badge/code_style-black-black
         :target: https://github.com/psf/black
@@ -47,32 +47,14 @@ Citation
 
 If you use diffpy.srxplanargui in a scientific publication, we would like you to cite this package as
 
-        diffpy.srxplanargui Package, https://github.com/diffpy/diffpy.srxplanargui
+        Yang, X., Juhas, P., Farrow, C. L., & Billinge, S. J. (2014).
+        xPDFsuite: an end-to-end software solution for high throughput pair distribution function transformation,
+        visualization and analysis. arXiv preprint arXiv:1402.3163.
 
 Installation
 ------------
 
-The preferred method is to use `Miniconda Python
-<https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html>`_
-and install from the "conda-forge" channel of Conda packages.
-
-To add "conda-forge" to the conda channels, run the following in a terminal. ::
-
-        conda config --add channels conda-forge
-
-We want to install our packages in a suitable conda environment.
-The following creates and activates a new environment named ``diffpy.srxplanargui_env`` ::
-
-        conda create -n diffpy.srxplanargui_env diffpy.srxplanargui
-        conda activate diffpy.srxplanargui_env
-
-The output should print the latest version displayed on the badges above.
-
-If the above does not work, you can use ``pip`` to download and install the latest release from
-`Python Package Index <https://pypi.python.org>`_.
-To install using ``pip`` into your ``diffpy.srxplanargui_env`` environment, type ::
-
-        pip install diffpy.srxplanargui
+The preferred method is to be installed with ""xpdfsuite"" package or the wheel file.
 
 If you prefer to install from sources, after installing the dependencies, obtain the source archive from
 `GitHub <https://github.com/diffpy/diffpy.srxplanargui/>`_. Once installed, ``cd`` into your ``diffpy.srxplanargui`` directory
@@ -93,17 +75,12 @@ To view the basic usage and available commands, type ::
 
         diffpy.srxplanargui -h
 
-Getting Started
----------------
-
-You may consult our `online documentation <https://diffpy.github.io/diffpy.srxplanargui>`_ for tutorials and API references.
-
-Support and Contribute
+Support
 ----------------------
 
 If you see a bug or want to request a feature, please `report it as an issue <https://github.com/diffpy/diffpy.srxplanargui/issues>`_ and/or `submit a fix as a PR <https://github.com/diffpy/diffpy.srxplanargui/pulls>`_.
 
-Feel free to fork the project and contribute. To install diffpy.srxplanargui
+Feel free to fork the project. To install diffpy.srxplanargui
 in a development mode, with its sources being directly used by Python
 rather than copied to a package directory, use the following in the root
 directory ::
@@ -123,8 +100,6 @@ pass after they are modified). If the flake8 test fails please see the error mes
 trying to commit again.
 
 Improvements and fixes are always appreciated.
-
-Before contributing, please read our `Code of Conduct <https://github.com/diffpy/diffpy.srxplanargui/blob/main/CODE-OF-CONDUCT.rst>`_.
 
 Contact
 -------
