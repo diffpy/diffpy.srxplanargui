@@ -10,19 +10,13 @@
 
 |PythonVersion| |PR|
 
-|CI| |Black| |Tracking|
+|Black| |Tracking|
 
 .. |Black| image:: https://img.shields.io/badge/code_style-black-black
         :target: https://github.com/psf/black
 
-.. |CI| image:: https://github.com/diffpy/diffpy.srxplanargui/actions/workflows/matrix-and-codecov-on-merge-to-main.yml/badge.svg
-        :target: https://github.com/diffpy/diffpy.srxplanargui/actions/workflows/matrix-and-codecov-on-merge-to-main.yml
-
 .. |Codecov| image:: https://codecov.io/gh/diffpy/diffpy.srxplanargui/branch/main/graph/badge.svg
         :target: https://codecov.io/gh/diffpy/diffpy.srxplanargui
-
-.. |Forge| image:: https://img.shields.io/conda/vn/conda-forge/diffpy.srxplanargui
-        :target: https://anaconda.org/conda-forge/diffpy.srxplanargui
 
 .. |PR| image:: https://img.shields.io/badge/PR-Welcome-29ab47ff
         :target: https://github.com/diffpy/diffpy.srxplanargui/pulls
@@ -30,8 +24,7 @@
 .. |PyPI| image:: https://img.shields.io/pypi/v/diffpy.srxplanargui
         :target: https://pypi.org/project/diffpy.srxplanargui/
 
-.. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/diffpy.srxplanargui
-        :target: https://pypi.org/project/diffpy.srxplanargui/
+.. |PythonVersion| image:: https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-blue
 
 .. |Tracking| image:: https://img.shields.io/badge/issue_tracking-github-blue
         :target: https://github.com/diffpy/diffpy.srxplanargui/issues
@@ -39,8 +32,6 @@
 xPDFsuite, a software for PDF transformation and visualization.
 
 GUI for diffpy.srxplanar
-
-For more information about the diffpy.srxplanargui library, please consult our `online documentation <https://diffpy.github.io/diffpy.srxplanargui>`_.
 
 Citation
 --------
@@ -54,13 +45,7 @@ If you use diffpy.srxplanargui in a scientific publication, we would like you to
 Installation
 ------------
 
-The preferred method is to be installed with ""xpdfsuite"" package or the wheel file.
-
-If you prefer to install from sources, after installing the dependencies, obtain the source archive from
-`GitHub <https://github.com/diffpy/diffpy.srxplanargui/>`_. Once installed, ``cd`` into your ``diffpy.srxplanargui`` directory
-and run the following ::
-
-        pip install .
+The preferred method is to be installed with `xpdfsuite` package or the wheel file.
 
 This package also provides command-line utilities. To check the software has been installed correctly, type ::
 
