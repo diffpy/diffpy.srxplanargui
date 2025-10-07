@@ -4,4 +4,6 @@ pyface
 scipy
 traits
 traitsui
+fabio
+pyfai
 diffpy.srxplanar

@@ -1,5 +1,7 @@
 numpy
 fabio
+pyface
+scipy
+traits
 pyfai
 matplotlib
-pyface
