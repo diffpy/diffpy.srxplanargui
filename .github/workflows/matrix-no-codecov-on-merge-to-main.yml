@@ -17,5 +17,3 @@ jobs:
       project: diffpy.srxplanargui
       c_extension: false
       headless: false
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
