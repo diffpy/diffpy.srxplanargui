@@ -7,8 +7,8 @@ def main():
     parser = argparse.ArgumentParser(
         prog="diffpy.srxplanargui",
         description=(
-            "xPDFsuite, a software for PDF transformation and visualization.\n\n"
-            "For more information, visit: "
+            "xPDFsuite, a software for PDF transformation"
+            " and visualization.\n\n For more information, visit: "
             "https://github.com/diffpy/diffpy.srxplanargui/"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,

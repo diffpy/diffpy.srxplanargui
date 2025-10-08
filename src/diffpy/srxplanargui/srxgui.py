@@ -16,7 +16,6 @@
 import os
 import sys
 
-from diffpy.srxplanar.srxplanar import SrXplanar
 from pyface.api import ImageResource
 from traits.api import Any, Button, File, HasTraits, Instance
 from traits.etsconfig.api import ETSConfig
@@ -33,6 +32,7 @@ from traitsui.api import (
 )
 from traitsui.menu import CancelButton, OKButton
 
+from diffpy.srxplanar.srxplanar import SrXplanar
 from diffpy.srxplanargui.calibration import Calibration
 from diffpy.srxplanargui.help import SrXguiHelp
 from diffpy.srxplanargui.selectfiles import AddFiles

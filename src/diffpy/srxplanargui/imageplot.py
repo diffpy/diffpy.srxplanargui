@@ -701,7 +701,7 @@ Bright pixel mask: mask the pixels too bright
 compared to their local environment
 Average mask: Mask the pixels too bright or too dark
 compared to the average intensity at the similar diffraction angle.
-Currect calibration information is required."""
+Correct calibration information is required."""
     )
 
     advhint_view = View(
