@@ -94,7 +94,7 @@ class AddFiles(HasTraits):
 
     srxconfig = Instance(SrXconfig)
 
-    # The currenty inputdir directory being searched:
+    # The currently inputdir directory being searched:
     # inputdir = DelegatesTo('srxconfig')
     inputdir = Directory()  # , entries = 10 )
 
