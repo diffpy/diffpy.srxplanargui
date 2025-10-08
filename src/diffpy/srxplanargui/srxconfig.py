@@ -17,6 +17,11 @@
 import os
 
 import numpy as np
+from pyface.api import ImageResource
+from traits.api import Bool, Enum, Property, on_trait_change
+from traits.etsconfig.api import ETSConfig
+from traitsui.api import Group, Item, View
+
 from diffpy.srxconfutils.configtraits import ConfigBaseTraits
 from diffpy.srxplanar.srxplanarconfig import (
     _description,
@@ -24,10 +29,6 @@ from diffpy.srxplanar.srxplanarconfig import (
     _optdatalist,
     checkMax,
 )
-from pyface.api import ImageResource
-from traits.api import Bool, Enum, Property, on_trait_change
-from traits.etsconfig.api import ETSConfig
-from traitsui.api import Group, Item, View
 
 ETSConfig.toolkit = "qt"
 
@@ -109,7 +110,7 @@ class SrXconfig(ConfigBaseTraits):
 
     _optdatalist = _optdatalist
 
-    _defaultdata = {"configfile": [], "headertitle": "SrXgui configration"}
+    _defaultdata = {"configfile": [], "headertitle": "SrXgui configuration"}
 
     rotation = Property(
         depends_on="rotationd", fget=lambda self: np.radians(self.rotationd)

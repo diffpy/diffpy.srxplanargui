@@ -16,10 +16,6 @@ import os
 import re
 import sys
 
-from diffpy.srxconfutils.tools import module_exists_lower
-from diffpy.srxplanar.selfcalibrate import selfCalibrate
-from diffpy.srxplanar.srxplanar import SrXplanar
-from diffpy.srxplanar.srxplanarconfig import checkMax
 from pyface.api import ImageResource
 from traits.api import (
     Bool,
@@ -38,6 +34,10 @@ from traits.etsconfig.api import ETSConfig
 from traitsui.api import Group, Handler, HGroup, Item, VGroup, View
 from traitsui.menu import CancelButton, OKButton
 
+from diffpy.srxconfutils.tools import module_exists_lower
+from diffpy.srxplanar.selfcalibrate import selfCalibrate
+from diffpy.srxplanar.srxplanar import SrXplanar
+from diffpy.srxplanar.srxplanarconfig import checkMax
 from diffpy.srxplanargui.srxconfig import SrXconfig
 
 ETSConfig.toolkit = "qt"

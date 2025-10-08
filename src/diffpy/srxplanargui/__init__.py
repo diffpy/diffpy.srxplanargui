@@ -12,7 +12,7 @@
 # See LICENSE.rst for license information.
 #
 ##############################################################################
-"""xPDFsuite, a software for PDF transformation and visualization."""
+"""XPDFsuite, a software for PDF transformation and visualization."""
 
 # package version
 from diffpy.srxplanargui.version import __version__  # noqa

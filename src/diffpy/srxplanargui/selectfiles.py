@@ -52,7 +52,6 @@ except ImportError:
     from diffpy.pdfgete.functs import sortKeyNumericString
 
 from diffpy.srxplanar.loadimage import openImage, saveImage
-
 from diffpy.srxplanargui.datacontainer import DataContainer
 from diffpy.srxplanargui.imageplot import ImagePlot
 from diffpy.srxplanargui.srxconfig import SrXconfig
@@ -94,7 +93,7 @@ class AddFiles(HasTraits):
 
     srxconfig = Instance(SrXconfig)
 
-    # The currenty inputdir directory being searched:
+    # The currently inputdir directory being searched:
     # inputdir = DelegatesTo('srxconfig')
     inputdir = Directory()  # , entries = 10 )
 
