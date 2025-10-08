@@ -1,7 +1,0 @@
-This code is developed by:
-
-	Xiaohao Yang
-
-This code was developed as part of the xPDFsuite project to create software
-and tools for general researchers to use PDF in their work. For more
-information on the DiffPy project email sb2896@columbia.edu
