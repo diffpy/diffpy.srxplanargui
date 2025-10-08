@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# dpx.pdfgetxgui    by Simon J. L. Billinge group
+# diffpy.srxplanargui    by Simon J. L. Billinge group
 #                   (c) 2012 Trustees of the Columbia University
 #                   in the City of New York.  All rights reserved.
 #
