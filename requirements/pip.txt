@@ -1,0 +1,10 @@
+numpy
+chaco
+pyface
+scipy
+traits
+traitsui
+fabio
+pyfai
+matplotlib
+diffpy.srxplanar
