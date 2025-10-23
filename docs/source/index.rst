@@ -13,7 +13,7 @@
 Authors
 =======
 
-``diffpy.srxplanargui`` is developed by Rundong Hua, Simon Billinge, Billinge Group members. The maintainer for this project is Simon Billinge. For a detailed list of contributors see
+``diffpy.srxplanargui`` is developed by Xiaohao Yang, Simon Billinge, Billinge Group members. The maintainer for this project is Simon Billinge. For a detailed list of contributors see
 https://github.com/diffpy/diffpy.srxplanargui/graphs/contributors.
 
 ============
