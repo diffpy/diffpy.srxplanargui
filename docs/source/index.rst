@@ -9,14 +9,6 @@
 | Software version |release|
 | Last updated |today|.
 
-===============
-Getting started
-===============
-
-Welcome to the ``diffpy.srxplanargui`` documentation!
-
-To get started, please visit the :ref:`Getting started <getting-started>` page.
-
 =======
 Authors
 =======
