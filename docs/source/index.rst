@@ -9,6 +9,15 @@
 | Software version |release|
 | Last updated |today|.
 
+===============
+Getting started
+===============
+
+Welcome to the ``diffpy.srxplanargui`` documentation!
+
+This package is not designed to be run on its own. Please visit https://www.diffpy.org/products/xPDFsuite.html
+for getting the whole xpdfsuite package and download the package there.
+
 =======
 Authors
 =======
