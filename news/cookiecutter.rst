@@ -1,6 +1,6 @@
 **Added:**
 
-* no news needed: add Makefile and change README.rst badge display
+* no news needed: add cookiecutter.json.
 
 **Changed:**
 
