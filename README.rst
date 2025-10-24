@@ -8,7 +8,7 @@
         :target: https://diffpy.github.io/diffpy.srxplanargui
         :height: 100px
 
-|PythonVersion| |PR|
+|PythonVersion|
 
 |Black| |Tracking|
 
@@ -17,9 +17,6 @@
 
 .. |Codecov| image:: https://codecov.io/gh/diffpy/diffpy.srxplanargui/branch/main/graph/badge.svg
         :target: https://codecov.io/gh/diffpy/diffpy.srxplanargui
-
-.. |PR| image:: https://img.shields.io/badge/PR-Welcome-29ab47ff
-        :target: https://github.com/diffpy/diffpy.srxplanargui/pulls
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/diffpy.srxplanargui
         :target: https://pypi.org/project/diffpy.srxplanargui/
