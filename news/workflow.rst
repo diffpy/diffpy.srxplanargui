@@ -1,6 +1,6 @@
 **Added:**
 
-* <news item>
+* no news needed: Changed CI python workflow to 3.13.
 
 **Changed:**
 
@@ -16,7 +16,7 @@
 
 **Fixed:**
 
-* Changed CI python workflow to 3.13.
+* <news item>
 
 **Security:**
 
