@@ -16,7 +16,7 @@
 
 **Fixed:**
 
-* Change documentation for diffpy.srxplanargui to successfully display.
+* <news item>
 
 **Security:**
 
