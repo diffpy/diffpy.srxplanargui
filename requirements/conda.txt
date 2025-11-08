@@ -5,3 +5,6 @@ scipy
 traits
 pyfai
 matplotlib
+chaco
+traitsui
+diffpy.srxplanar
