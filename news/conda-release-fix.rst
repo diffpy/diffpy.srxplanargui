@@ -1,6 +1,6 @@
 **Added:**
 
-* no news needed: add traitsui into conda requirement
+* no news needed: add traitsui into conda.txt
 
 **Changed:**
 
