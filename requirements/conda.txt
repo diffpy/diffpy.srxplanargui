@@ -5,3 +5,5 @@ scipy
 traits
 pyfai
 matplotlib
+traitsui
+diffpy.srxplanar
