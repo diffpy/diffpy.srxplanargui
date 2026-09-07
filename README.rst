@@ -40,6 +40,8 @@ xPDFsuite, a software for PDF transformation and visualization.
 
 GUI for diffpy.srxplanar
 
+For more information about the diffpy.srxplanargui library, please consult our `online documentation <https://diffpy.github.io/diffpy.srxplanargui>`_.
+
 Citation
 --------
 
@@ -129,7 +131,7 @@ Before contributing, please read our `Code of Conduct <https://github.com/diffpy
 Contact
 -------
 
-For more information on diffpy.srxplanargui please visit the project `web-page <https://diffpy.github.io/>`_ or email Simon Billinge at sb2896@columbia.edu.
+For more information on diffpy.srxplanargui please visit the project `web-page <https://diffpy.github.io/>`_ or email the maintainers ``Simon Billinge(sbillinge@ucsb.edu)``.
 
 Acknowledgements
 ----------------

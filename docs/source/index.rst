@@ -4,7 +4,7 @@
 
 .. |title| replace:: diffpy.srxplanargui documentation
 
-``diffpy.srxplanargui`` - xPDFsuite, a software for PDF transformation and visualization.
+``diffpy.srxplanargui`` - GUI for diffpy.srxplanar
 
 | Software version |release|
 | Last updated |today|.
@@ -22,7 +22,7 @@ for getting the whole xpdfsuite package and download the package there.
 Authors
 =======
 
-``diffpy.srxplanargui`` is developed by Xiaohao Yang, Simon Billinge, Billinge Group members. The maintainer for this project is Simon Billinge. For a detailed list of contributors see
+``diffpy.srxplanargui`` is developed by Xiaohao Yang, Simon Billinge, Billinge Group members, and the DiffPy Team. This project is maintained by Simon Billinge. For a detailed list of contributors see
 https://github.com/diffpy/diffpy.srxplanargui/graphs/contributors.
 
 ============
