@@ -13,7 +13,8 @@
 # See LICENSE.rst for license information.
 #
 ##############################################################################
-"""GUI for diffpy.srxplanar."""
+"""GUI for diffpy.srxplanar; subpart for xPDFsuite, a software for PDF
+transformation and visualization."""
 
 # package version
 from diffpy.srxplanargui.version import __version__  # noqa

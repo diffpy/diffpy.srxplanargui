@@ -7,7 +7,8 @@ def main():
     parser = argparse.ArgumentParser(
         prog="diffpy.srxplanargui",
         description=(
-            "GUI for diffpy.srxplanar\n\n"
+            "GUI for diffpy.srxplanar; subpart for xPDFsuite,"
+            "a software for PDF transformation and visualization\n\n"
             "For more information, visit: "
             "https://github.com/diffpy/diffpy.srxplanargui/"
         ),

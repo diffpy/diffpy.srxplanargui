@@ -38,7 +38,7 @@
 
 xPDFsuite, a software for PDF transformation and visualization.
 
-GUI for diffpy.srxplanar
+GUI for diffpy.srxplanar; subpart for xPDFsuite, a software for PDF transformation and visualization
 
 For more information about the diffpy.srxplanargui library, please consult our `online documentation <https://diffpy.github.io/diffpy.srxplanargui>`_.
 

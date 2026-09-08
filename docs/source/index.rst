@@ -4,7 +4,8 @@
 
 .. |title| replace:: diffpy.srxplanargui documentation
 
-``diffpy.srxplanargui`` - GUI for diffpy.srxplanar
+``diffpy.srxplanargui`` - GUI for diffpy.srxplanar; subpart for xPDFsuite,
+a software for PDF transformation and visualization
 
 | Software version |release|
 | Last updated |today|.

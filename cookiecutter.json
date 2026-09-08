@@ -11,7 +11,7 @@
   "github_repo_name": "diffpy.srxplanargui",
   "conda_pypi_package_dist_name": "diffpy.srxplanargui",
   "package_dir_name": "diffpy.srxplanargui",
-  "project_short_description": "GUI for diffpy.srxplanar",
+  "project_short_description": "GUI for diffpy.srxplanar; subpart for xPDFsuite",
   "project_keywords": "diffpy, pdf, data interpretation",
   "minimum_supported_python_version": "3.11",
   "maximum_supported_python_version": "3.13",
