@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path("../..").resolve()))
 sys.path.insert(0, str(Path("../../src").resolve()))
 
 # abbreviations
-ab_authors = "Rundong Hua, Simon Billinge, Billinge Group members"
+ab_authors = "Billinge Group members and the DiffPy Team"
 
 # -- General configuration ------------------------------------------------
 
@@ -50,7 +50,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_rtd_theme",
     "sphinx_copybutton",
-    "m2r",
+    "m2r2",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

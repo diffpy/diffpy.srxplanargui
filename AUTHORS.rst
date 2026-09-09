@@ -3,7 +3,7 @@ Authors
 
 Xiaohao Yang
 
-Billinge Group members
+Billinge Group members and the DiffPy Team
 
 Contributors
 ------------
